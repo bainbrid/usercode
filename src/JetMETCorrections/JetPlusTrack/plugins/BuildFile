@@ -1,0 +1,9 @@
+<use name=FWCore/Framework>
+<use name=FWCore/MessageLogger>
+<use name=FWCore/ParameterSet>
+<use name=FWCore/ServiceRegistry>
+<use name=JetMETCorrections/JetPlusTrack>
+
+<library file="*.cc" name=JetMETCorrectionsJetPlusTrackPlugins>
+  <flags EDM_PLUGIN=1>
+</library>

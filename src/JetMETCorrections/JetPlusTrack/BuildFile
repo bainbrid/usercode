@@ -13,4 +13,3 @@
   <use name=FWCore/ParameterSet>
   <use name=clhep>
 </export>
-
