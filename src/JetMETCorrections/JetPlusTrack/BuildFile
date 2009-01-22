@@ -1,0 +1,16 @@
+<use name=DataFormats/Common>
+<use name=DataFormats/JetReco>
+<use name=DataFormats/PatCandidates>
+<use name=DataFormats/Provenance>
+<use name=FWCore/MessageLogger>
+<use name=FWCore/ParameterSet>
+<use name=FWCore/ServiceRegistry>
+<use name=roothistmatrix>
+<use name=clhep>
+
+<export>
+  <lib name=JetMETCorrectionsJetPlusTrack>
+  <use name=FWCore/ParameterSet>
+  <use name=clhep>
+</export>
+
