@@ -17,8 +17,6 @@ L1CorJetIC5ZSP = cms.EDProducer(
 
 #################### Level-3 "absolute" corrections ##################################
 
-# NB: requires JetTrackAssociation object built from ZSP-corrected jets
-
 L3JetCorrectorIC5JPT = cms.ESSource(
     "JetPlusTrackCorrectionService",
     label = cms.string('L3AbsoluteJetCorrectorJPT'),
@@ -26,7 +24,7 @@ L3JetCorrectorIC5JPT = cms.ESSource(
     NonEfficiencyFile     = cms.string('CMSSW_167_TrackNonEff'),
     NonEfficiencyFileResp = cms.string('CMSSW_167_TrackLeakage'),
     ResponseFile          = cms.string('CMSSW_167_response'),
-    # JetTrackAssociation (built from ZSP-corrected jets) 
+    # JetTrackAssociation objects built from ZSP-corrected ("L1CorJetIC5ZSP") jets 
     JetTrackCollectionAtVertex = cms.InputTag("L1CorJetIC5ZSPJetTracksAssociatorAtVertex"),
     JetTrackCollectionAtCalo   = cms.InputTag("L1CorJetIC5ZSPJetTracksAssociatorAtCaloFace"),
     # Muon collection
