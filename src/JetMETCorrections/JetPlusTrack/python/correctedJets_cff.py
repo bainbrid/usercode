@@ -15,7 +15,7 @@ process.source = cms.Source(
     )
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(-1)
+    input = cms.untracked.int32(1000)
     )
 
 process.content = cms.EDAnalyzer("EventContentAnalyzer")
@@ -30,35 +30,8 @@ process.output = cms.OutputModule(
     outputCommands = cms.untracked.vstring('drop *')
     )
 
-process.load("JetMETCorrections.JetPlusTrack.EnergyScaleHistogrammer_cfi")
-from JetMETCorrections.JetPlusTrack.EnergyScaleAnalyzer_cfi import * 
-
-process.calo = energyScaleAnalyzer.clone(
-    GenObjectType  = cms.string('GenJet'),
-    RecoObjectType = cms.string('CaloJet'),
-    GenObjectTag   = cms.InputTag('iterativeCone5GenJets'),
-    RecoObjectTag  = cms.InputTag('iterativeCone5CaloJets')
-    )
-
-process.zsp = energyScaleAnalyzer.clone(
-    GenObjectType  = cms.string('GenJet'),
-    RecoObjectType = cms.string('CaloJet'),
-    GenObjectTag   = cms.InputTag('iterativeCone5GenJets'),
-    RecoObjectTag  = cms.InputTag('L1CorJetIC5ZSP')
-    )
-
-process.jpt = energyScaleAnalyzer.clone(
-    GenObjectType  = cms.string('GenJet'),
-    RecoObjectType = cms.string('CaloJet'),
-    GenObjectTag   = cms.InputTag('iterativeCone5GenJets'),
-    RecoObjectTag  = cms.InputTag('L3CorJetIC5JPT')
-    )
-
 process.e = cms.EndPath(
     process.output
-    + process.calo
-    + process.zsp
-    + process.jpt
     )
 
 inputFiles.extend( [
