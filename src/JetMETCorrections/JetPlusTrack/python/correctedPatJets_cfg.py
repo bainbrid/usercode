@@ -7,3 +7,4 @@ process.output.fileName = 'CorrectedPatJets.root'
 process.output.outputCommands += process.keepCorrectedPatJets.outputCommands
 
 process.p += process.correctedPatJetSeq 
+process.e += process.correctedPatJetHistos 

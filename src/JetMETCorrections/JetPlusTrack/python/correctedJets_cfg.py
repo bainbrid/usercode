@@ -9,3 +9,6 @@ process.output.outputCommands += process.keepCorrectedPatJets.outputCommands
 
 process.p += process.correctedCaloJetSeq 
 process.p += process.correctedPatJetSeq 
+
+process.e += process.correctedCaloJetHistos 
+process.e += process.correctedPatJetHistos 

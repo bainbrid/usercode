@@ -7,3 +7,4 @@ process.output.fileName = 'CorrectedCaloJets.root'
 process.output.outputCommands += process.keepCorrectedCaloJets.outputCommands
 
 process.p += process.correctedCaloJetSeq 
+process.e += process.correctedCaloJetHistos 

@@ -30,4 +30,34 @@ keepCorrectedCaloJets = cms.PSet(
     )
     )
 
+from JetMETCorrections.JetPlusTrack.EnergyScaleHistogrammer_cfi import * 
+energyScaleHistogrammer.RootFileName = 'CaloJetEnergyScale.root'
 
+from JetMETCorrections.JetPlusTrack.EnergyScaleAnalyzer_cfi import * 
+
+rawCaloHistos = energyScaleAnalyzer.clone(
+    GenObjectType  = cms.string('GenJet'),
+    RecoObjectType = cms.string('CaloJet'),
+    GenObjectTag   = cms.InputTag('iterativeCone5GenJets'),
+    RecoObjectTag  = cms.InputTag('iterativeCone5CaloJets')
+    )
+
+zspCaloHistos = energyScaleAnalyzer.clone(
+    GenObjectType  = cms.string('GenJet'),
+    RecoObjectType = cms.string('CaloJet'),
+    GenObjectTag   = cms.InputTag('iterativeCone5GenJets'),
+    RecoObjectTag  = cms.InputTag('L1CorJetIC5ZSP')
+    )
+
+jptCaloHistos = energyScaleAnalyzer.clone(
+    GenObjectType  = cms.string('GenJet'),
+    RecoObjectType = cms.string('CaloJet'),
+    GenObjectTag   = cms.InputTag('iterativeCone5GenJets'),
+    RecoObjectTag  = cms.InputTag('L3CorJetIC5JPT')
+    )
+
+correctedCaloJetHistos = cms.Sequence(
+    rawCaloHistos +
+    zspCaloHistos +
+    jptCaloHistos
+    )
