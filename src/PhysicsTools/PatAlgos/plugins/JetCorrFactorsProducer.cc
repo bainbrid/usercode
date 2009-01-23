@@ -1,5 +1,5 @@
 //
-// $Id: JetCorrFactorsProducer.cc,v 1.3 2008/11/04 14:12:58 auterman Exp $
+// $Id: JetCorrFactorsProducer.cc,v 1.1 2009/01/23 14:02:20 bainbrid Exp $
 //
 
 #include "PhysicsTools/PatAlgos/plugins/JetCorrFactorsProducer.h"
@@ -85,22 +85,28 @@ void JetCorrFactorsProducer::produce(edm::Event & iEvent, const edm::EventSetup 
   // loop over jets and retrieve the correction factors
   std::vector<JetCorrFactors> jetCorrs;
   for (edm::View<reco::Jet>::const_iterator itJet = jets->begin(); itJet != jets->end(); itJet++) {
+    reco::Jet& jet = const_cast<reco::Jet&> ( *itJet ); //@@ TEMPORARY!!!
+    reco::Jet copy(jet); //@@ TEMPORARY!!!
     // retrieve the energy correction factors
     float l1=-1, l2=-1, l3=-1, l4=-1, l6=-1;
     JetCorrFactors::FlavourCorrections l5, l7; 
-    if (bl1_)	 l1 =	  L1JetCorr->correction( *itJet );
-    if (bl2_)	 l2 =	  L2JetCorr->correction( *itJet );  
-    if (bl3_)	 l3 =	  L3JetCorr->correction( *itJet );
-    if (bl4_)	 l4 =	  L4JetCorr->correction( *itJet );
-    if (bl6_)	 l6 =	  L6JetCorr->correction( *itJet );
-    if (bl5uds_) l5.uds = L5udsJetCorr->correction( *itJet );
-    if (bl5g_)   l5.g =   L5gluJetCorr->correction( *itJet );
-    if (bl5c_)   l5.c =   L5cJetCorr->correction( *itJet );
-    if (bl5b_)   l5.b =   L5bJetCorr->correction( *itJet );
-    if (bl7uds_) l7.uds = L7udsJetCorr->correction( *itJet );
-    if (bl7g_)   l7.g =   L7gluJetCorr->correction( *itJet );
-    if (bl7c_)   l7.c =   L7cJetCorr->correction( *itJet );
-    if (bl7b_)   l7.b =   L7bJetCorr->correction( *itJet );
+    if (bl1_)	 l1 =	  L1JetCorr->correction( jet, iEvent, iSetup );
+    if ( l1 != -1. ) { jet.scaleEnergy (l1); } //@@ TEMPORARY!!!
+    if (bl2_)	 l2 =	  L2JetCorr->correction( jet, iEvent, iSetup );  
+    if ( l2 != -1. ) { jet.scaleEnergy (l2); } //@@ TEMPORARY!!!
+    if (bl3_)	 l3 =	  L3JetCorr->correction( jet, iEvent, iSetup );
+    if ( l3 != -1. ) { jet.scaleEnergy (l3); } //@@ TEMPORARY!!!
+    if (bl4_)	 l4 =	  L4JetCorr->correction( jet, iEvent, iSetup );
+    if (bl6_)	 l6 =	  L6JetCorr->correction( jet, iEvent, iSetup );
+    if (bl5uds_) l5.uds = L5udsJetCorr->correction( jet, iEvent, iSetup );
+    if (bl5g_)   l5.g =   L5gluJetCorr->correction( jet, iEvent, iSetup );
+    if (bl5c_)   l5.c =   L5cJetCorr->correction( jet, iEvent, iSetup );
+    if (bl5b_)   l5.b =   L5bJetCorr->correction( jet, iEvent, iSetup );
+    if (bl7uds_) l7.uds = L7udsJetCorr->correction( jet, iEvent, iSetup );
+    if (bl7g_)   l7.g =   L7gluJetCorr->correction( jet, iEvent, iSetup );
+    if (bl7c_)   l7.c =   L7cJetCorr->correction( jet, iEvent, iSetup );
+    if (bl7b_)   l7.b =   L7bJetCorr->correction( jet, iEvent, iSetup );
+    jet = copy; //@@ TEMPORARY!!!
 
     // create the actual object with scalefactos we want the valuemap to refer to
     JetCorrFactors aJetCorr( l1, l2, l3, l4, l5, l6, l7 );
