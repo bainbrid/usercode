@@ -6,6 +6,7 @@
 <use name=FWCore/ParameterSet>
 <use name=FWCore/ServiceRegistry>
 <use name=roothistmatrix>
+<use name=rootgraphics>
 <use name=clhep>
 
 <export>
