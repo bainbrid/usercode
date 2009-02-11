@@ -81,10 +81,11 @@ void EnergyScaleHistograms::analyze( const std::vector<LorentzVectorPair>& input
       if( ii->gen().perp() >= eBins_[ihist] && 
 	  ii->gen().perp() < eBins_[ihist+1]  ) { 
 	
-	float scale = 
-	  ( ii->gen().perp() > 0. ) ? 
-	  ( ii->reco().perp() / ii->gen().perp() ) :
-	  ( -1. );
+	// Define scale
+	float scale = -1.;
+	if ( ii->gen().perp() > 0. ) { 
+	  scale = ii->reco().perp() / ii->gen().perp(); 
+	}
 	
 	// Check scale
 	if ( scale < 0.1 ) { continue; }
@@ -96,16 +97,19 @@ void EnergyScaleHistograms::analyze( const std::vector<LorentzVectorPair>& input
 	if ( fabs( ii->gen().eta() ) < 0. ||
 	     fabs( ii->gen().eta() ) > 1. ) { continue; }
 	
-	// Build pair of gen jets
+	// Check dR for pair of gen jets
 	LorentzVectorPair other( ii->gen() );
-	if ( input.size() < 2 ) { other.reco( 0., 0., 1., 1. ); }
+	if ( input.size() != 2 ) { continue; } 
 	else {
-	  if ( ii < input.end() - 1 ) { other.reco( (ii+1)->gen() ); }
-	  else { other.reco( (ii-1)->gen() ); }
+	  if ( ii == input.begin() ) { 
+	    if ( !ii->both() || !(ii+1)->both() ) { continue; }
+	    other.reco( (ii+1)->gen() ); 
+	  } else { 
+	    if ( !(ii-1)->both() || !ii->both() ) { continue; }
+	    other.reco( (ii-1)->gen() ); 
+	  }
+	  if ( other.dR() < 2. ) { continue; }
 	}
-	
-	// Check dR for gen jets
-	if ( other.dR() < 2. ) { continue; }
 	
 	// Fill histograms
 	if ( ihist < hScale_.size() && hScale_[ihist] ) { hScale_[ihist]->Fill( scale ); }
@@ -186,6 +190,7 @@ void EnergyScaleHistograms::end( TStyle* const style ) {
     << "[EnergyScaleHistograms::"<<__func__<<"]";
   
   // Set style
+  if ( style ) { style->cd(); }
   if ( style ) { style->SetOptFit(); }
   
   // Create canvas 
@@ -269,14 +274,13 @@ void EnergyScaleHistograms::end( TStyle* const style ) {
     hScaleVsE_->SetMarkerStyle(21);
     hScaleVsE_->SetMarkerSize(1.2);
     hScaleVsE_->Draw("histPE1");
-  
+
+    TLatex* t = new TLatex();
+    t->SetTextSize( 0.042 );
     TLegend* leg = new TLegend( 0.5, 0.15, 0.9, 0.35, NULL, "brNDC" );
     leg->SetFillColor(10);
     leg->AddEntry( hScaleVsE_, tags_.reco().str().c_str(),"P" );
     leg->Draw();  
-  
-    TLatex* t = new TLatex();
-    t->SetTextSize( 0.042 );
     t->DrawLatex( 25, 1.12, "CMSSW220" );
     t->DrawLatex( 25, 1.06, "RelVal QCD 80-120 GeV, |#eta ^{jet}|< 1.0" );
 
