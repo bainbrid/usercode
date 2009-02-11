@@ -48,28 +48,32 @@ void ObjectMatcher<GEN,RECO>::gen( const edm::Event& event,
   event.getByLabel( tags_.gen().tag(), collection );
   
   // Check if collection is found
-  if ( !collection.isValid() ) {
-    edm::LogError("EnergyScale")
-      << "[ObjectMatcher" << id() << "::" << __func__ << "]"
-      << " Invalid handle to \"" << collection.provenance()->className()
-      << "\" with label \"" << collection.provenance()->moduleLabel() << "\"!";
+  if ( !collection.isValid() || collection.failedToGet() ) {
+    std::stringstream ss;
+    ss << "[ObjectMatcher" << id() << "::" << __func__ << "]"
+       << " Unable to retrieve collection from event!" << std::endl
+       << " Type     : \"" << tags_.gen().type_ << "\"" << std::endl
+       << " Label    : \"" << tags_.gen().label_ << "\"" << std::endl
+       << " Instance : \"" << tags_.gen().instance_ << "\"" << std::endl
+       << " Process  : \"" << tags_.gen().process_ << "\"";
+    edm::LogError("EnergyScale") << ss.str();
     return;
+  } else {
+    if ( edm::isDebugEnabled() && verbose_ ) {
+      std::stringstream ss;
+      ss << "[ObjectMatcher" << id() << "::" << __func__ << "]"
+	 << " Retrieved collection from event:" << std::endl
+	 << " ClassName           : \"" << collection.provenance()->className() << "\"" << std::endl
+	 << " FriendlyClassName   : \"" << collection.provenance()->friendlyClassName() << "\"" << std::endl
+	 << " ModuleName          : \"" << collection.provenance()->moduleName() << "\"" << std::endl
+	 << " ModuleLabel         : \"" << collection.provenance()->moduleLabel() << "\"" << std::endl
+	 << " ProductInstanceName : \"" << collection.provenance()->productInstanceName() << "\"" << std::endl
+	 << " ProcessName         : \"" << collection.provenance()->processName() << "\"" << std::endl
+	 << " CollectionSize      : "   << collection->size();
+      LogTrace("EnergyScale") << ss.str();
+    }      
   }
   
-  // Check 
-  if ( collection.failedToGet() ) {
-    edm::LogError("EnergyScale")
-      << "[ObjectMatcher" << id() << "::" << __func__ << "]"
-      << " Invalid handle to object!" << std::endl
-      << " Type                    : \"" << tags_.gen().type_ << "\"" << std::endl
-      << " InputTag: Label         : \"" << tags_.gen().label_ << "\""
-      << "           Instance      : \"" << tags_.gen().instance_ << "\""
-      << "           Process       : \"" << tags_.gen().process_ << "\""
-      << " Provenance: ClassName   : \"" << collection.provenance()->className() << "\""
-      << "             ModuleLabel : \"" << collection.provenance()->moduleLabel() << "\"";
-    return;
-  }
-
   // Two "leptons" in z-dir (why?!)
   HepLorentzVector l1(0.,0.,1.,1.);
   HepLorentzVector l2(0.,0.,1.,1.); //@@ should be (0.,0.,-1.,1.) ??
@@ -81,43 +85,56 @@ void ObjectMatcher<GEN,RECO>::gen( const edm::Event& event,
   typename edm::View<GEN>::const_iterator ii = collection->begin(); 
   typename edm::View<GEN>::const_iterator jj = collection->end(); 
   for ( ; ii != jj; ++ii ) {
+
+//     std::cout << "ALL GenJets:"
+// 	      << " Event: " << event.id().event()
+// 	      << " GenJet# " << int( ii - collection->begin() )
+// 	      << " e= " << ii->energy()
+// 	      << " et= " << ii->et()
+// 	      << " pt= " << ii->pt()
+// 	      << " px= " << ii->px()
+// 	      << " py= " << ii->py()
+// 	      << " pz= " << ii->pz()
+// 	      << std::endl;
     
-    // Only consider objects above energy threshold
-    if ( ii->pt() < pt_threshold ) { continue; } //@@ configurable ??
+//     if ( edm::isDebugEnabled() && verbose_ ) {
+//       std::stringstream ss;
+//       ss << "[ObjectMatcher" << id() << "::" << __func__ << "]"
+// 	 << " Event: " << event.id().event()
+// 	 << " Object# " << static_cast<uint32_t>( ii - collection->begin() ) 
+// 	 << std::endl
+// 	 << " e: " << ii->energy() << std::endl
+// 	 << " et: " << ii->et()
+// 	 << " pt: " << ii->pt()
+// 	 << " px: " << ii->px()
+// 	 << " py: " << ii->py()
+// 	 << " pz: " << ii->pz()
+// 	 << " eta: " << ii->eta()
+// 	 << " phi: " << ii->phi()
+// 	 << std::endl 
+// 	 << ii->print();
+//       LogTrace("EnergyScale") << ss.str();
+//     }
+    
+//     // Only consider objects above energy threshold
+//     if ( ii->pt() < pt_threshold ) { continue; } //@@ configurable ??
     
     // Build Lorentz vector for each object
     HepLorentzVector vec( ii->px(), 
 			  ii->py(), 
 			  ii->pz(), 
 			  ii->energy() );
-
-    double dr1 = l1.deltaR(vec);
-    double dr2 = l2.deltaR(vec);
-
+    
     // Check jet not co-linear with either of "leptons"
-    if ( dr1 < 1. || dr2 < 1. ) { continue; }
+    if ( l1.deltaR(vec) < 1. || 
+	 l2.deltaR(vec) < 1. ) { continue; }
     
     // Push back first 'N' objects
     if ( objects.size() < 2 ) { objects.push_back(vec); } //@@ configurable ??
     
-    if ( edm::isDebugEnabled() ) {
-      std::stringstream ss;
-      ss << "[ObjectMatcher" << id() << "::" << __func__ << "]"
-	 << " Object"
-	 << " #: " << static_cast<uint32_t>( ii - collection->begin() ) 
-	 << std::endl
-	 << "  e: " << ii->energy() << std::endl
-	 << "  pt: " << ii->pt() << std::endl
-	 << "  px: " << ii->px() << std::endl
-	 << "  py: " << ii->py() << std::endl
-	 << "  pz: " << ii->pz() << std::endl
-	 << "  eta: " << ii->eta() << std::endl
-	 << "  phi: " << ii->phi();
-      LogTrace("EnergyScale") << ss.str();
-    }
   }
 
-  if ( edm::isDebugEnabled() ) {
+  if ( edm::isDebugEnabled() && verbose_ ) {
     LogTrace("EnergyScale")
       << "[ObjectMatcher" << id() << "::" << __func__ << "]"
       << " Found " << objects.size() 
@@ -137,28 +154,32 @@ void ObjectMatcher<GEN,RECO>::reco( const edm::Event& event,
   // Get collection
   edm::Handle< edm::View<RECO> > collection;
   event.getByLabel( tags_.reco().tag(), collection );
-  
-  // Check if collection is found
-  if ( !collection.isValid() ) {
-    edm::LogError("EnergyScale")
-      << "[ObjectMatcher" << id() << "::" << __func__ << "]"
-      << " Invalid handle to \"" << collection.provenance()->className()
-      << "\" with label \"" << collection.provenance()->moduleLabel() << "\"!";
-    return;
-  }
 
-  // Check 
-  if ( collection.failedToGet() ) {
-    edm::LogError("EnergyScale")
-      << "[ObjectMatcher" << id() << "::" << __func__ << "]"
-      << " Invalid handle to object!" << std::endl
-      << " Type                    : \"" << tags_.reco().type_ << "\"" << std::endl
-      << " InputTag: Label         : \"" << tags_.reco().label_ << "\""
-      << "           Instance      : \"" << tags_.reco().instance_ << "\""
-      << "           Process       : \"" << tags_.reco().process_ << "\""
-      << " Provenance: ClassName   : \"" << collection.provenance()->className() << "\""
-      << "             ModuleLabel : \"" << collection.provenance()->moduleLabel() << "\"";
+  // Check if collection is found
+  if ( !collection.isValid() || collection.failedToGet() ) {
+    std::stringstream ss;
+    ss << "[ObjectMatcher" << id() << "::" << __func__ << "]"
+       << " Unable to retrieve collection from event!" << std::endl
+       << " Type     : \"" << tags_.reco().type_ << "\"" << std::endl
+       << " Label    : \"" << tags_.reco().label_ << "\"" << std::endl
+       << " Instance : \"" << tags_.reco().instance_ << "\"" << std::endl
+       << " Process  : \"" << tags_.reco().process_ << "\"";
+    edm::LogError("EnergyScale") << ss.str();
     return;
+  } else {
+    if ( edm::isDebugEnabled() && verbose_ ) {
+      std::stringstream ss;
+      ss << "[ObjectMatcher" << id() << "::" << __func__ << "]"
+	 << " Retrieved collection from event:" << std::endl
+	 << " ClassName           : \"" << collection.provenance()->className() << "\"" << std::endl
+	 << " FriendlyClassName   : \"" << collection.provenance()->friendlyClassName() << "\"" << std::endl
+	 << " ModuleName          : \"" << collection.provenance()->moduleName() << "\"" << std::endl
+	 << " ModuleLabel         : \"" << collection.provenance()->moduleLabel() << "\"" << std::endl
+	 << " ProductInstanceName : \"" << collection.provenance()->productInstanceName() << "\"" << std::endl
+	 << " ProcessName         : \"" << collection.provenance()->processName() << "\"" << std::endl
+	 << " CollectionSize      : "   << collection->size();
+      LogTrace("EnergyScale") << ss.str();
+    }      
   }
   
   // pT threshold
@@ -168,37 +189,52 @@ void ObjectMatcher<GEN,RECO>::reco( const edm::Event& event,
   typename edm::View<RECO>::const_iterator ii = collection->begin(); 
   typename edm::View<RECO>::const_iterator jj = collection->end(); 
   for ( ; ii != jj; ++ii ) {
+
+//     std::cout << "ALL RecoJets:"
+// 	      << " Event: " << event.id().event()
+// 	      << " RecoJet# " << int( ii - collection->begin() )
+// 	      << " e= " << ii->energy()
+// 	      << " et= " << ii->et()
+// 	      << " pt= " << ii->pt()
+// 	      << " px= " << ii->px()
+// 	      << " py= " << ii->py()
+// 	      << " pz= " << ii->pz()
+// 	      << std::endl;
     
+    if ( edm::isDebugEnabled() && verbose_ ) {
+      std::stringstream ss;
+      ss << "[ObjectMatcher" << id() << "::" << __func__ << "]"
+	 << " Event: " << event.id().event()
+	 << " Object# " << static_cast<uint32_t>( ii - collection->begin() ) 
+	 << std::endl
+// 	 << " e: " << ii->energy() << std::endl
+// 	 << " et: " << ii->et()
+// 	 << " pt: " << ii->pt()
+// 	 << " px: " << ii->px()
+// 	 << " py: " << ii->py()
+// 	 << " pz: " << ii->pz()
+// 	 << " eta: " << ii->eta()
+// 	 << " phi: " << ii->phi()
+// 	 << std::endl 
+	 << ii->print();
+      LogTrace("EnergyScale") << ss.str();
+    }
+
     // Only consider objects above energy threshold
     if ( ii->pt() < pt_threshold ) { continue; } //@@ configurable ??
     
     // Build Lorentz vector for each object
-    HepLorentzVector vec( ii->px(), 
-			  ii->py(), 
-			  ii->pz(), 
+    HepLorentzVector vec( ii->px(),
+			  ii->py(),
+			  ii->pz(),
 			  ii->energy() );
     
     // Push back first 'N' objects
-    if ( objects.size() < 1000. ) { objects.push_back(vec); } //@@ configurable ??
+    if ( objects.size() < 100 ) { objects.push_back(vec); } //@@ configurable ??
     
-    if ( edm::isDebugEnabled() ) {
-      std::stringstream ss;
-      ss << "[ObjectMatcher" << id() << "::" << __func__ << "]"
-	 << " Object"
-	 << " #: " << static_cast<uint32_t>( ii - collection->begin() ) 
-	 << std::endl
-	 << "  e: " << ii->energy() << std::endl
-	 << "  pt: " << ii->pt() << std::endl
-	 << "  px: " << ii->px() << std::endl
-	 << "  py: " << ii->py() << std::endl
-	 << "  pz: " << ii->pz() << std::endl
-	 << "  eta: " << ii->eta() << std::endl
-	 << "  phi: " << ii->phi();
-      LogTrace("EnergyScale") << ss.str();
-    }
   }
 
-  if ( edm::isDebugEnabled() ) {
+  if ( edm::isDebugEnabled() && verbose_ ) {
     LogTrace("EnergyScale")
       << "[ObjectMatcher" << id() << "::" << __func__ << "]"
       << " Found " << objects.size() 
