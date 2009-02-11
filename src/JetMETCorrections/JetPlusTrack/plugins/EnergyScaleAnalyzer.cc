@@ -15,6 +15,7 @@ EnergyScaleAnalyzer::EnergyScaleAnalyzer( const edm::ParameterSet& pset )
   LogTrace("EnergyScale")
     << "[EnergyScaleAnalyzer::"<<__func__<<"]"
     << " Constructing...";  
+  if ( matcher_ ) { matcher_->verbose( pset.getUntrackedParameter<bool>("verbose",false) ); }
 }
 
 // -----------------------------------------------------------------------------
@@ -25,7 +26,7 @@ EnergyScaleAnalyzer::~EnergyScaleAnalyzer() {
     << " Destructing...";  
 
   // Do stuff here
-  
+  if ( matcher_ ) { delete matcher_; }
 }
 
 // -----------------------------------------------------------------------------
