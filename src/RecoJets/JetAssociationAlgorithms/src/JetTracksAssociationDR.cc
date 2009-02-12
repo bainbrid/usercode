@@ -1,8 +1,9 @@
 // Associate jets with tracks by simple "dR" criteria
 // Fedor Ratnikov (UMd), Aug. 28, 2007
-// $Id: JetTracksAssociationDR.cc,v 1.1 2009/02/11 15:01:53 bainbrid Exp $
+// $Id: JetTracksAssociationDR.cc,v 1.2 2009/02/12 17:11:11 bainbrid Exp $
 
 #include "RecoJets/JetAssociationAlgorithms/interface/JetTracksAssociationDR.h"
+#include "FWCore/MessageLogger/interface/MessageLogger.h"
 
 // -----------------------------------------------------------------------------
 //
@@ -40,7 +41,7 @@ void JetTracksAssociationDR::createJetRefs( JetRefs& output,
 //
 void JetTracksAssociationDR::createTrackRefs( TrackRefs& output,
 					      const Tracks& input,
-					      const TrackQuality quality ) {
+					      const TrackQuality& quality ) {
 
   if ( quality == reco::TrackBase::undefQuality ) {
     edm::LogError("JetTracksAssociationDR")
@@ -52,7 +53,7 @@ void JetTracksAssociationDR::createTrackRefs( TrackRefs& output,
   output.clear();
   output.reserve( input->size() );
   for ( unsigned ii = 0; ii < input->size(); ++ii ) { 
-    if ( input[ii].quality( quality ) ) { 
+    if ( (*input)[ii].quality( quality ) ) { 
       output.push_back( reco::TrackRef( input, ii ) );
     }
   }
