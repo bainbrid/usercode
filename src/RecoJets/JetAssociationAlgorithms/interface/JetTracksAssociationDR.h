@@ -1,7 +1,7 @@
 // \class JetTracksAssociationDR
 // Associate jets with tracks by simple "delta R" criteria
 // Fedor Ratnikov (UMd)
-// $Id: $
+// $Id: JetTracksAssociationDR.h,v 1.1 2009/02/11 15:01:40 bainbrid Exp $
 
 #ifndef RecoJets_JetAssociationAlgorithms_JetTracksAssociationDR_h
 #define RecoJets_JetAssociationAlgorithms_JetTracksAssociationDR_h
@@ -46,6 +46,9 @@ class JetTracksAssociationDR {
   // Collection of track references
   typedef std::vector<reco::TrackRef> TrackRefs;
 
+  // Track Quality
+  typedef reco::TrackBase::TrackQuality TrackQuality;
+
   // ---------- Public interface ----------
   
   // Associate tracks to jets
@@ -59,10 +62,13 @@ class JetTracksAssociationDR {
 				     const TrackRefs& ) = 0;
 
   // Takes Handle as input and creates collection of edm::Refs
-  static void createJetRefs( const Jets&, JetRefs& );
+  static void createJetRefs( JetRefs&, 
+			     const Jets& );
   
   // Takes Handle as input and creates collection of edm::Refs
-  static void createTrackRefs( const Tracks&, TrackRefs& );
+  static void createTrackRefs( TrackRefs&,
+			       const Tracks&, 
+			       const TrackQuality& );
   
  protected:
   

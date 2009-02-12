@@ -1,6 +1,6 @@
 // Associate jets with tracks by simple "dR" criteria
 // Fedor Ratnikov (UMd), Aug. 28, 2007
-// $Id: JetTracksAssociationDRVertex.cc,v 1.2 2007/09/19 18:02:40 fedor Exp $
+// $Id: JetTracksAssociationDRVertex.cc,v 1.1 2009/02/11 15:01:58 bainbrid Exp $
 
 #include "RecoJets/JetAssociationAlgorithms/interface/JetTracksAssociationDRVertex.h"
 #include "DataFormats/Math/interface/deltaR.h"
@@ -16,12 +16,13 @@ JetTracksAssociationDRVertex::JetTracksAssociationDRVertex( double fDr )
 //
 void JetTracksAssociationDRVertex::produce( Association* fAssociation, 
 					    const Jets& fJets,
-					    const Tracks& fTracks ) 
+					    const Tracks& fTracks,
+					    const TrackQuality& fQuality ) 
 {
   JetRefs jets;
-  createJetRefs( fJets, jets );
+  createJetRefs( jets, fJets );
   TrackRefs tracks;
-  createTrackRefs( fTracks, tracks );
+  createTrackRefs( tracks, fTracks, fQuality );
   produce( fAssociation, jets, tracks );
 }
 

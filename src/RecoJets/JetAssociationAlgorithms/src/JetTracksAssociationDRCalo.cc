@@ -1,6 +1,6 @@
 // Associate jets with tracks by simple "dR" criteria
 // Fedor Ratnikov (UMd), Aug. 28, 2007
-// $Id: JetTracksAssociationDRCalo.cc,v 1.6 2008/11/04 19:36:11 oehler Exp $
+// $Id: JetTracksAssociationDRCalo.cc,v 1.1 2009/02/11 15:01:56 bainbrid Exp $
 
 #include "RecoJets/JetAssociationAlgorithms/interface/JetTracksAssociationDRCalo.h"
 #include "DataFormats/GeometrySurface/interface/Cylinder.h"
@@ -25,13 +25,14 @@ JetTracksAssociationDRCalo::JetTracksAssociationDRCalo( double fDr )
 void JetTracksAssociationDRCalo::produce( Association* fAssociation, 
 					  const Jets& fJets,
 					  const Tracks& fTracks,
+					  const TrackQuality& fQuality,
 					  const MagneticField& fField,
 					  const Propagator& fPropagator ) 
 {
   JetRefs jets;
-  createJetRefs( fJets, jets );
+  createJetRefs( jets, fJets );
   TrackRefs tracks;
-  createTrackRefs( fTracks, tracks );
+  createTrackRefs( tracks, fTracks, fQuality );
   produce( fAssociation, jets, tracks, fField, fPropagator );
 }
 
@@ -114,7 +115,7 @@ GlobalPoint JetTracksAssociationDRCalo::propagateTrackToCalo( const reco::Track&
     double eta;
     double phi;
   };
-
+  
   GlobalPoint trackPosition (fTrack.vx(), fTrack.vy(), fTrack.vz()); // reference point
   GlobalVector trackMomentum (fTrack.px(), fTrack.py(), fTrack.pz()); // reference momentum
   if (fTrack.extra().isAvailable() ) { // use outer point information, if available

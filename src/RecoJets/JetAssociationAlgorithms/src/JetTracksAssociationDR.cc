@@ -1,6 +1,6 @@
 // Associate jets with tracks by simple "dR" criteria
 // Fedor Ratnikov (UMd), Aug. 28, 2007
-// $Id: $
+// $Id: JetTracksAssociationDR.cc,v 1.1 2009/02/11 15:01:53 bainbrid Exp $
 
 #include "RecoJets/JetAssociationAlgorithms/interface/JetTracksAssociationDR.h"
 
@@ -27,7 +27,8 @@ void JetTracksAssociationDR::associateTracksToJets( Association* fAssociation,
 
 // -----------------------------------------------------------------------------
 //
-void JetTracksAssociationDR::createJetRefs( const Jets& input, JetRefs& output ) {
+void JetTracksAssociationDR::createJetRefs( JetRefs& output, 
+					    const Jets& input ) {
   output.clear();
   output.reserve( input->size() );
   for ( unsigned ii = 0; ii < input->size(); ++ii ) { 
@@ -37,10 +38,23 @@ void JetTracksAssociationDR::createJetRefs( const Jets& input, JetRefs& output )
 
 // -----------------------------------------------------------------------------
 //
-void JetTracksAssociationDR::createTrackRefs( const Tracks& input, TrackRefs& output ) {
+void JetTracksAssociationDR::createTrackRefs( TrackRefs& output,
+					      const Tracks& input,
+					      const TrackQuality quality ) {
+
+  if ( quality == reco::TrackBase::undefQuality ) {
+    edm::LogError("JetTracksAssociationDR")
+      << " Unknown TrackQuality value: " 
+      << static_cast<int>( quality )
+      << ". See possible values in 'reco::TrackBase::TrackQuality'";
+  }
+
   output.clear();
   output.reserve( input->size() );
   for ( unsigned ii = 0; ii < input->size(); ++ii ) { 
-    output.push_back( reco::TrackRef( input, ii ) );
+    if ( input[ii].quality( quality ) ) { 
+      output.push_back( reco::TrackRef( input, ii ) );
+    }
   }
+
 }

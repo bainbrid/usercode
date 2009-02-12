@@ -1,7 +1,7 @@
 // \class JetTracksAssociationDRCalo
 // Associate jets with tracks by simple "delta R" criteria
 // Fedor Ratnikov (UMd), Aug. 28, 2007
-// $Id: JetTracksAssociationDRCalo.h,v 1.4 2007/09/24 20:59:57 fedor Exp $
+// $Id: JetTracksAssociationDRCalo.h,v 1.1 2009/02/11 15:01:45 bainbrid Exp $
 
 #ifndef RecoJets_JetAssociationAlgorithms_JetTracksAssociationDRCalo_h
 #define RecoJets_JetAssociationAlgorithms_JetTracksAssociationDRCalo_h
@@ -28,6 +28,7 @@ class JetTracksAssociationDRCalo : public JetTracksAssociationDR {
   void produce( Association*,
 		const Jets&,
 		const Tracks&,
+		const TrackQuality&,
 		const MagneticField&,
 		const Propagator& );
 
