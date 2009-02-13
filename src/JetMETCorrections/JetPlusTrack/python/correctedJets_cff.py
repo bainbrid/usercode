@@ -20,6 +20,8 @@ process.load("Configuration.StandardSequences.FakeConditions_cff")
 #process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
 #process.GlobalTag.globaltag = cms.string('STARTUP_V4::All')
 
+process.load("JetMETCorrections.JetPlusTrack.EnergyScaleHistogrammer_cfi")
+
 inputFiles21X = cms.untracked.vstring()
 inputFiles22X = cms.untracked.vstring()
 process.source = cms.Source(
@@ -40,7 +42,7 @@ process.genParticlesForJets.excludeFromResonancePids = cms.vuint32(
     )
 from RecoJets.JetProducers.iterativeCone5GenJets_cff import iterativeCone5GenJets
 process.iterativeCone5GenJetsNoNuBSM = iterativeCone5GenJets.clone()
-    
+
 process.content = cms.EDAnalyzer("EventContentAnalyzer")
 
 process.correctedJetSeq = cms.Sequence(

@@ -14,9 +14,6 @@ keepCorrectedCaloJets = cms.PSet(
     )
     )
 
-from JetMETCorrections.JetPlusTrack.EnergyScaleHistogrammer_cfi import * 
-energyScaleHistogrammer.RootFileName = 'CaloJetEnergyScale.root'
-
 from JetMETCorrections.JetPlusTrack.EnergyScaleAnalyzer_cfi import * 
 
 rawCaloHistos = energyScaleAnalyzer.clone(

@@ -51,9 +51,6 @@ keepCorrectedPatJets = cms.PSet(
     )
     )
 
-from JetMETCorrections.JetPlusTrack.EnergyScaleHistogrammer_cfi import * 
-energyScaleHistogrammer.RootFileName = 'PatJetEnergyScale.root'
-
 from JetMETCorrections.JetPlusTrack.EnergyScaleAnalyzer_cfi import * 
 
 rawPatHistos = energyScaleAnalyzer.clone(
