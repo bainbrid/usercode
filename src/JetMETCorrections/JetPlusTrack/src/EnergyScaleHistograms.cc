@@ -128,7 +128,7 @@ void EnergyScaleHistograms::book( TFile* const file ) {
   LogTrace("EnergyScale")
     << "[EnergyScaleHistograms::"<<__func__<<"]";
   
-  if ( file ) { file->cd(); }
+  if ( file ) { cd(file); }
   
   hScale_.resize( nBins_, 0 );
   for ( uint16_t ii = 0; ii < nBins_; ii++ ) { 
@@ -171,7 +171,7 @@ void EnergyScaleHistograms::write( TFile* const file ) {
   LogTrace("EnergyScale")
     << "[EnergyScaleHistograms::"<<__func__<<"]";
   
-  if ( file ) { file->cd(); }
+  if ( file ) { cd(file); }
   
   std::vector<TH1F*>::const_iterator ii = hScale_.begin();
   std::vector<TH1F*>::const_iterator jj = hScale_.end();
@@ -315,4 +315,15 @@ void EnergyScaleHistograms::end( TStyle* const style ) {
     c40->SaveAs( f.c_str() );
   }
   
+}
+
+// -----------------------------------------------------------------------------
+// 
+void EnergyScaleHistograms::cd( TFile* const file ) {
+//   LogTrace("EnergyScale")
+//     << "[EnergyScaleHistograms::"<<__func__<<"]";
+  if ( file ) { 
+    std::string dir = "";//"/" + tags_.reco().str();
+    file->cd( dir.c_str() ); 
+  }
 }

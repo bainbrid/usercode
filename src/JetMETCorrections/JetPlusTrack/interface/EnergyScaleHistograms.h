@@ -46,6 +46,8 @@ class EnergyScaleHistograms {
   /// Creates scale and resolution histograms
   void end( TStyle* const );
 
+  void cd( TFile* const );
+
  private:
   
   /// Tags used to identify objects
