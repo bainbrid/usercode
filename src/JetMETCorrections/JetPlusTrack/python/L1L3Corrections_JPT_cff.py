@@ -27,14 +27,14 @@ L3JetCorrectorJPT = cms.ESSource(
     NonEfficiencyFile     = cms.string('CMSSW_167_TrackNonEff'),
     NonEfficiencyFileResp = cms.string('CMSSW_167_TrackLeakage'),
     ResponseFile          = cms.string('CMSSW_167_response'),
-    # Muon collection
-    muonSrc  = cms.InputTag("globalMuons"),
-    # Track collection and quality (also used by JTA)
+    # Configurables for jet-tracks assoication
     trackSrc = cms.InputTag("generalTracks"),
     TrackQuality = cms.string('highPurity'),
     UseQuality   = cms.bool(True),
-    # Cone size for jet-track association
+    Propagator = cms.string('SteppingHelixPropagatorAlong'),
     coneSize = cms.double(0.5),
+    # Muon collection
+    muonSrc  = cms.InputTag("globalMuons"),
     # Configuration of algorithm
     respalgo           = cms.int32(5),
     AddOutOfConeTracks = cms.bool(True)
