@@ -24,7 +24,7 @@ process.test = energyScaleAnalyzer.clone(
     GenObjectType  = cms.string('GenJet'),
     RecoObjectType = cms.string('CaloJet'),
     GenObjectTag   = cms.InputTag('iterativeCone5GenJets'),
-    RecoObjectTag  = cms.InputTag('iterativeCone5CaloJets')
+    RecoObjectTag  = cms.InputTag('iterativeCone5CaloJects')
     )
 
 process.p1 = cms.Path(

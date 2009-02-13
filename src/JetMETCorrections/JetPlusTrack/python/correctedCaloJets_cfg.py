@@ -6,5 +6,12 @@ process.load("JetMETCorrections.JetPlusTrack.correctedCaloJets_cff")
 process.output.fileName = 'CorrectedCaloJets.root'
 process.output.outputCommands += process.keepCorrectedCaloJets.outputCommands
 
-process.p += process.correctedCaloJetSeq 
-process.e += process.correctedCaloJetHistos 
+process.p = cms.Path(
+    process.correctedJetSeq *
+    process.correctedCaloJetSeq *
+    process.correctedCaloJetHistos 
+    )
+
+process.e = cms.EndPath(
+    process.output 
+    )

@@ -7,8 +7,14 @@ process.load("JetMETCorrections.JetPlusTrack.correctedPatJets_cff")
 process.output.outputCommands += process.keepCorrectedCaloJets.outputCommands
 process.output.outputCommands += process.keepCorrectedPatJets.outputCommands
 
-process.p += process.correctedCaloJetSeq 
-process.p += process.correctedPatJetSeq 
+process.p = cms.Path(
+    process.correctedJetSeq *
+    process.correctedCaloJetSeq *
+    process.correctedPatJetSeq *
+    process.correctedCaloJetHistos *
+    process.correctedPatJetHistos 
+    )
 
-process.e += process.correctedCaloJetHistos 
-process.e += process.correctedPatJetHistos 
+process.e = cms.EndPath(
+    process.output 
+    )

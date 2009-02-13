@@ -4,20 +4,13 @@ from JetMETCorrections.Configuration.L2L3Corrections_Summer08_cff import *
 from JetMETCorrections.Configuration.L7PartonCorrections_cff import *
 
 from JetMETCorrections.JetPlusTrack.L1L3Corrections_JPT_cff import *
-L3JetCorrectorIC5PAT = L3JetCorrectorIC5JPT.clone(
-    label = cms.string('L3AbsoluteJetCorrectorPAT'),
-    JetTrackCollectionAtVertex = cms.InputTag("iterativeCone5JetTracksAssociatorAtVertex"),
-    JetTrackCollectionAtCalo   = cms.InputTag("iterativeCone5JetTracksAssociatorAtCaloFace")
-    )
-
-from RecoJets.JetAssociationProducers.iterativeCone5JTA_cff import *
 
 from PhysicsTools.PatAlgos.recoLayer0.jetCorrFactors_cfi import *
 patJetCorrFactors = jetCorrFactors.clone(
     jetSource           = cms.InputTag("iterativeCone5CaloJets"),
     L1JetCorrector      = cms.string('L1OffsetJetCorrectorZSP'),
     L2JetCorrector      = cms.string('none'),
-    L3JetCorrector      = cms.string('L3AbsoluteJetCorrectorPAT'),
+    L3JetCorrector      = cms.string('L3AbsoluteJetCorrectorJPT'),
     L7udsJetCorrector   = cms.string('none'),
     L7gluonJetCorrector = cms.string('none'),
     L7cJetCorrector     = cms.string('none'),
@@ -47,17 +40,15 @@ correctedPatJets = allLayer1Jets.clone(
     )
 
 correctedPatJetSeq = cms.Sequence(
-    iterativeCone5JTA *
     patJetCorrFactors *
     correctedPatJets
     )
 
 keepCorrectedPatJets = cms.PSet(
-    outputCommands = cms.untracked.vstring('keep recoGenJets_iterativeCone5GenJets_*_*',
-                                           'keep recoCaloJets_iterativeCone5CaloJets_*_*',
-                                           'keep patJets_correctedPatJets_*_*',
-                                           'keep patJetCorrFactorsedmValueMap_patJetCorrFactors_*_*'
-                                           )
+    outputCommands = cms.untracked.vstring(
+    'keep patJets_correctedPatJets_*_*',
+    'keep patJetCorrFactorsedmValueMap_patJetCorrFactors_*_*'
+    )
     )
 
 from JetMETCorrections.JetPlusTrack.EnergyScaleHistogrammer_cfi import * 
@@ -68,14 +59,14 @@ from JetMETCorrections.JetPlusTrack.EnergyScaleAnalyzer_cfi import *
 rawPatHistos = energyScaleAnalyzer.clone(
     GenObjectType  = cms.string('GenJet'),
     RecoObjectType = cms.string('CaloJet'),
-    GenObjectTag   = cms.InputTag('iterativeCone5GenJets'),
+    GenObjectTag   = cms.InputTag('iterativeCone5GenJetsNoNuBSM'),
     RecoObjectTag  = cms.InputTag('iterativeCone5CaloJets')
     )
 
 jptPatHistos = energyScaleAnalyzer.clone(
     GenObjectType  = cms.string('GenJet'),
     RecoObjectType = cms.string('PatJet'),
-    GenObjectTag   = cms.InputTag('iterativeCone5GenJets'),
+    GenObjectTag   = cms.InputTag('iterativeCone5GenJetsNoNuBSM'),
     RecoObjectTag  = cms.InputTag('correctedPatJets')
     )
 

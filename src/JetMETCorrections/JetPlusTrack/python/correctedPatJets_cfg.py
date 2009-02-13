@@ -6,5 +6,12 @@ process.load("JetMETCorrections.JetPlusTrack.correctedPatJets_cff")
 process.output.fileName = 'CorrectedPatJets.root'
 process.output.outputCommands += process.keepCorrectedPatJets.outputCommands
 
-process.p += process.correctedPatJetSeq 
-process.e += process.correctedPatJetHistos 
+process.p = cms.Path(
+    process.correctedJetSeq *
+    process.correctedPatJetSeq
+    )
+
+process.e = cms.EndPath(
+    process.output +
+    process.correctedPatJetHistos 
+    )
