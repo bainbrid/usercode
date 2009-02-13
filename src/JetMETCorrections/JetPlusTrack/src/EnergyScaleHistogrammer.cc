@@ -12,12 +12,14 @@
 EnergyScaleHistogrammer::EnergyScaleHistogrammer( const edm::ParameterSet& pset,
 						  const edm::ActivityRegistry& reg ) 
   : histos_(),
-    file_( new TFile( pset.getParameter<std::string>("RootFileName").c_str(), "RECREATE" ) ),
+    file_(0),
     style_( new TStyle( "TDRstyle" , "Style for P-TDR" ) )
 {
   LogTrace("EnergyScale")
     << "[EnergyScaleHistogrammer::" << __func__ << "]"
     << " Constructing...";  
+  std::string filename = pset.getParameter<std::string>("RootFileName");
+  if ( !file_ && !filename.empty() ) { file_ = new TFile( filename.c_str(), "RECREATE" ); }
   if ( file_ ) { file_->cd(); }
   style();
 }
