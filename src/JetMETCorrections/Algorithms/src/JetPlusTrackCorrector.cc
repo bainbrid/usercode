@@ -36,7 +36,7 @@ JetPlusTrackCorrector::JetPlusTrackCorrector(const edm::ParameterSet& iConfig)
   theAddOutOfConeTracks = iConfig.getParameter<bool>("AddOutOfConeTracks");
   theUseQuality = iConfig.getParameter<bool>("UseQuality");
   theTrackQuality = iConfig.getParameter<std::string>("TrackQuality");
-  thePropagator = iConfig.getParameter<std::string>("SteppingHelixPropagator");
+  thePropagator = iConfig.getParameter<std::string>("Propagator");
   
   trackQuality_=reco::TrackBase::qualityByName(theTrackQuality);
 
