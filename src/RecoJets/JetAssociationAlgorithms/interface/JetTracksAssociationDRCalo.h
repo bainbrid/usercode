@@ -1,7 +1,7 @@
 // \class JetTracksAssociationDRCalo
 // Associate jets with tracks by simple "delta R" criteria
 // Fedor Ratnikov (UMd), Aug. 28, 2007
-// $Id: JetTracksAssociationDRCalo.h,v 1.1 2009/02/11 15:01:45 bainbrid Exp $
+// $Id: JetTracksAssociationDRCalo.h,v 1.2 2009/02/12 17:11:11 bainbrid Exp $
 
 #ifndef RecoJets_JetAssociationAlgorithms_JetTracksAssociationDRCalo_h
 #define RecoJets_JetAssociationAlgorithms_JetTracksAssociationDRCalo_h
@@ -22,7 +22,7 @@ class JetTracksAssociationDRCalo : public JetTracksAssociationDR {
   explicit JetTracksAssociationDRCalo( double dr_threshold );
   
   /// Destructor
-  ~JetTracksAssociationDRCalo() {;}
+  ~JetTracksAssociationDRCalo();
 
   /// Associates tracks to jets (using Handles as input)
   void produce( Association*,

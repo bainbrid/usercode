@@ -1,6 +1,6 @@
 // Associate jets with tracks by simple "dR" criteria
 // Fedor Ratnikov (UMd), Aug. 28, 2007
-// $Id: JetTracksAssociationDRCalo.cc,v 1.1 2009/02/11 15:01:56 bainbrid Exp $
+// $Id: JetTracksAssociationDRCalo.cc,v 1.2 2009/02/12 17:11:11 bainbrid Exp $
 
 #include "RecoJets/JetAssociationAlgorithms/interface/JetTracksAssociationDRCalo.h"
 #include "DataFormats/GeometrySurface/interface/Cylinder.h"
@@ -18,6 +18,11 @@
 JetTracksAssociationDRCalo::JetTracksAssociationDRCalo( double fDr ) 
   : JetTracksAssociationDR(fDr),
     propagatedTracks_()
+{;}
+
+// -----------------------------------------------------------------------------
+//
+JetTracksAssociationDRCalo::~JetTracksAssociationDRCalo() 
 {;}
 
 // -----------------------------------------------------------------------------

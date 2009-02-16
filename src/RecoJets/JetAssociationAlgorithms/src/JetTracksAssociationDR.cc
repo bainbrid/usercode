@@ -1,6 +1,6 @@
 // Associate jets with tracks by simple "dR" criteria
 // Fedor Ratnikov (UMd), Aug. 28, 2007
-// $Id: JetTracksAssociationDR.cc,v 1.2 2009/02/12 17:11:11 bainbrid Exp $
+// $Id: JetTracksAssociationDR.cc,v 1.3 2009/02/12 17:36:06 bainbrid Exp $
 
 #include "RecoJets/JetAssociationAlgorithms/interface/JetTracksAssociationDR.h"
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
@@ -9,6 +9,11 @@
 //
 JetTracksAssociationDR::JetTracksAssociationDR( double fDr ) 
   : mDeltaR2Threshold(fDr*fDr)
+{;}
+
+// -----------------------------------------------------------------------------
+//
+JetTracksAssociationDR::~JetTracksAssociationDR() 
 {;}
 
 // -----------------------------------------------------------------------------
