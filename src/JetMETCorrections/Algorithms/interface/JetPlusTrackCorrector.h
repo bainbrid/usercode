@@ -12,6 +12,7 @@
 #include "DataFormats/TrackReco/interface/Track.h"
 #include "DataFormats/MuonReco/interface/Muon.h"
 #include "DataFormats/MuonReco/interface/MuonFwd.h"
+#include <string>
 
 class SingleParticleJetResponse;
 
@@ -48,9 +49,12 @@ public:
   virtual bool eventRequired () const {return true;}
    
 private:
-  edm::InputTag m_JetTracksAtVertex;
-  edm::InputTag m_JetTracksAtCalo;
   edm::InputTag m_muonsSrc;
+  
+  // used by jet-tracks association
+  edm::InputTag m_tracksSrc;
+  double coneSize;
+  std::string thePropagator;
 
   // responce algo (will be absolete)
   int theResponseAlgo;

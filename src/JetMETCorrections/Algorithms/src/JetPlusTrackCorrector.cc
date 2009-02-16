@@ -12,13 +12,22 @@
 //#include "DataFormats/MuonReco/interface/MuonFwd.h"
 //
 
+#include "DataFormats/Common/interface/Handle.h"
+#include "DataFormats/Common/interface/View.h"
+#include "FWCore/Framework/interface/ESHandle.h"
+#include "MagneticField/Records/interface/IdealMagneticFieldRecord.h" 
+#include "RecoJets/JetAssociationAlgorithms/interface/JetTracksAssociationDRCalo.h"
+#include "RecoJets/JetAssociationAlgorithms/interface/JetTracksAssociationDRVertex.h"
+#include "TrackingTools/Records/interface/TrackingComponentsRecord.h"
+#include "FWCore/MessageLogger/interface/MessageLogger.h"
+
 using namespace std;
 
 JetPlusTrackCorrector::JetPlusTrackCorrector(const edm::ParameterSet& iConfig)
 {
-  m_JetTracksAtVertex = iConfig.getParameter<edm::InputTag>("JetTrackCollectionAtVertex");
-  m_JetTracksAtCalo = iConfig.getParameter<edm::InputTag>("JetTrackCollectionAtCalo");
+  m_tracksSrc = iConfig.getParameter<edm::InputTag>("trackSrc");
   m_muonsSrc = iConfig.getParameter<edm::InputTag>("muonSrc");
+  coneSize = iConfig.getParameter<double>("coneSize");
   theResponseAlgo = iConfig.getParameter<int>("respalgo");
   theAddOutOfConeTracks = iConfig.getParameter<bool>("AddOutOfConeTracks");
   theNonEfficiencyFile = iConfig.getParameter<std::string>("NonEfficiencyFile");
@@ -27,7 +36,8 @@ JetPlusTrackCorrector::JetPlusTrackCorrector(const edm::ParameterSet& iConfig)
   theAddOutOfConeTracks = iConfig.getParameter<bool>("AddOutOfConeTracks");
   theUseQuality = iConfig.getParameter<bool>("UseQuality");
   theTrackQuality = iConfig.getParameter<std::string>("TrackQuality");
-
+  thePropagator = iConfig.getParameter<std::string>("Propagator");
+  
   trackQuality_=reco::TrackBase::qualityByName(theTrackQuality);
 
   std::cout<<" BugFix JetPlusTrackCorrector::JetPlusTrackCorrector::response algo "<< theResponseAlgo
@@ -223,23 +233,6 @@ double JetPlusTrackCorrector::correction(const reco::Jet& fJet,
    }
    }
 
-   // Get Jet-track association at Vertex
-   edm::Handle<reco::JetTracksAssociation::Container> jetTracksAtVertex;
-   iEvent.getByLabel(m_JetTracksAtVertex,jetTracksAtVertex);
-   
-//
-// No tracks at Vertex - no Corrections
-// 
-  
-   if(!jetTracksAtVertex.isValid()) {return NewResponse/fJet.energy();}
-    
-   // std::cout<<" Get collection of tracks at vertex "<<m_JetTracksAtVertex<<std::endl;
-   
-   const reco::JetTracksAssociation::Container jtV = *(jetTracksAtVertex.product());
-   
-  //std::cout<<" Get collection of tracks at vertex :: Point 0 "<<jtV.size()<<std::endl;
-  // std::cout<<" E, eta, phi "<<fJet.energy()<<" "<<fJet.eta()<<" "<<fJet.phi()<<std::endl;  
-
   vector<double> emean_incone;
   vector<double> netracks_incone;
   vector<double> emean_outcone;
@@ -258,29 +251,46 @@ double JetPlusTrackCorrector::correction(const reco::Jet& fJet,
         } // ptbin
     } // etabin
 
-   const reco::TrackRefVector trAtVertex = reco::JetTracksAssociation::getValue(jtV,fJet);
 
-// std::cout<<" Get collection of tracks at vertex :: Point 1 "<<std::endl;
-// Look if jet is associated with tracks. If not, return the response of jet.
+  // ---------- Added by R.B. (begin) ----------
+  static JetTracksAssociationDRVertex vrtx(coneSize);
+  static JetTracksAssociationDRCalo   calo(coneSize);
+  static JetTracksAssociationDR::TrackRefs trks;
+     
+  static uint32_t event = 0;
+  if ( iEvent.id().event() != event ) {
+    event = iEvent.id().event();
 
-   if( trAtVertex.size() == 0 ) {return NewResponse/fJet.energy();}
+    edm::ESHandle<MagneticField> field;
+    theEventSetup.get<IdealMagneticFieldRecord>().get( field );
+    edm::ESHandle<Propagator> propagator;
+    theEventSetup.get<TrackingComponentsRecord>().get( thePropagator, propagator );
+    
+    edm::Handle<reco::TrackCollection> tracks;
+    iEvent.getByLabel( m_tracksSrc, tracks );
+    if ( !tracks.isValid() || tracks.failedToGet() ) {
+      edm::LogError("JEC")
+	<< "[JetPlusTrackCorrector::" << __func__ << "]"
+	<< " Invalid handle to \"reco::TrackCollection\""
+	<< " with InputTag (label:instance:process) \"" 
+	<< m_tracksSrc.label() << ":"
+	<< m_tracksSrc.instance() << ":"
+	<< m_tracksSrc.process() << "\"";
+      return ( NewResponse / fJet.energy() );
+    }
+    
+    JetTracksAssociationDR::createTrackRefs( trks, tracks, trackQuality_ );
+    vrtx.propagateTracks( trks );
+    calo.propagateTracks( trks, *field, *propagator );
+    
+  } 
 
-// Get Jet-track association at Calo
-   edm::Handle<reco::JetTracksAssociation::Container> jetTracksAtCalo;
-   iEvent.getByLabel(m_JetTracksAtCalo,jetTracksAtCalo);
+  reco::TrackRefVector trAtVertex;
+  reco::TrackRefVector trAtCalo;
+  vrtx.associateTracksToJet( trAtVertex, fJet, trks );
+  calo.associateTracksToJet( trAtCalo, fJet, trks );
+  // ---------- Added by R.B. (end) ----------
    
-   // std::cout<<" Get collection of tracks at Calo "<<std::endl;
-   
-   reco::TrackRefVector trAtCalo;
-   
-   if(jetTracksAtCalo.isValid()) { 
-     const reco::JetTracksAssociation::Container jtC = *(jetTracksAtCalo.product());
-     trAtCalo = reco::JetTracksAssociation::getValue(jtC,fJet);
-   }
-
-//   const reco::TrackRefVector trAtCalo = reco::JetTracksAssociation::getValue(jtC,fJet);
-
-
    // tracks in vertex cone and in calo cone 
    reco::TrackRefVector trInCaloInVertex;
    // tracks in calo cone, but out of vertex cone 
