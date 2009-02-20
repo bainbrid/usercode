@@ -1,4 +1,3 @@
-
 #include "SusyAnalysis/PatCrossCleaner/interface/ElectronJetCrossCleaner.h"
 #include "DataFormats/Math/interface/deltaR.h"
 #include "DataFormats/CaloTowers/interface/CaloTowerCollection.h"
@@ -57,7 +56,15 @@ void ElectronJetCrossCleaner::runSusyAnalyzerCleaning(
 
 	if (iClosestJet==Jets.size()) continue;
 
-	double sharedE = SharedEnergy_(Electrons[iElectron],Jets[iClosestJet],constituentsMap);
+	
+	//	double sharedE = SharedEnergy_(Electrons[iElectron],Jets[iClosestJet],constituentsMap);
+	// georgia
+	math::XYZVector sharedVector(0.,0.,0.);
+	SharedEnergy_(Electrons[iElectron],Jets[iClosestJet],constituentsMap, &sharedVector);
+
+	double sharedE = (sharedVector.Mag2());
+	//end georgia
+
 	edm::RefToBase<reco::Candidate> jetRef( Jets.refAt(iClosestJet) );
 	if( sharedE > 0. && isolated )
 	{
@@ -68,16 +75,27 @@ void ElectronJetCrossCleaner::runSusyAnalyzerCleaning(
 	    }
             else
             {
-	        assMap[jetRef].modifiers.push_back(CrossCleanerModifier(electronRef, -sharedE));
-	        LogDebug("ElectronJetCrossCleaner") << "electron/jet overlap.  modifying the jet energy by: "<<-sharedE;
+	      assMap[jetRef].modifiers.push_back(CrossCleanerModifier(electronRef, sharedVector));
+	      //	      assMap[jetRef].modifiers.push_back(CrossCleanerModifier(electronRef, -sharedE)); 
+	      //	        LogDebug("ElectronJetCrossCleaner") << "electron/jet overlap.  modifying the jet energy by: "<<-sharedE;
             }
 	}
 	else if( sharedE > config_.SharedEForNIsoEle && !isolated )
 	{
-	    double energyCorr=Electrons[iElectron].energy()-sharedE;
-	    assMap[electronRef].modifiers.push_back(CrossCleanerModifier(jetRef));
-	    assMap[jetRef].modifiers.push_back(CrossCleanerModifier(electronRef, energyCorr));
-	    LogDebug("ElectronJetCrossCleaner") << "electron/jet overlap. dropping the electron, modifying the jet energy by: "<<energyCorr;
+	  //	    double energyCorr=Electrons[iElectron].energy()-sharedE;
+	  double diffPx = Electrons[iElectron].px() - sharedVector.X();
+	  double diffPy = Electrons[iElectron].py() - sharedVector.Y();
+	  double diffPz = Electrons[iElectron].pz() - sharedVector.Z();
+	  
+	  sharedVector.SetXYZ(-diffPx, -diffPy, -diffPz);
+
+	  double energyCorr = sqrt(sharedVector.Mag2());
+
+	  assMap[electronRef].modifiers.push_back(CrossCleanerModifier(jetRef));
+	  assMap[jetRef].modifiers.push_back(CrossCleanerModifier(electronRef, sharedVector));
+	  //	    assMap[jetRef].modifiers.push_back(CrossCleanerModifier(electronRef, energyCorr));
+	  LogDebug("ElectronJetCrossCleaner") << "electron/jet overlap. dropping the electron, modifying the jet energy by: "<<energyCorr;
+	    //	    std::cout << "electron/jet overlap. dropping the electron, modifying the jet energy by: "<<energyCorr << std::endl;
 	}
 	
         //if (sharedE>0)        
@@ -91,15 +109,18 @@ void ElectronJetCrossCleaner::runSusyAnalyzerCleaning(
 
 
 
-double ElectronJetCrossCleaner::SharedEnergy_( 
+void ElectronJetCrossCleaner::SharedEnergy_( 
              const pat::Electron& emobject,
              const pat::Jet& jet,
-	     const CaloTowerConstituentsMap& constituentsMap ) const
+	     const CaloTowerConstituentsMap& constituentsMap, //) const
+	     math::XYZVector* sharedMomentum ) const //georgia
 {
-  double result = 0.0;
-
+  // double result = 0.0;
   std::map<CaloTowerDetId, double> etowers;
-  
+
+  // georgia
+  vector<float> eleTowerEnergy; vector<float> eleTowerEta; vector<float> eleTowerPhi;
+
   // Electron supercluster and its crystals
   reco::SuperClusterRef sc = emobject.superCluster();
   std::vector<DetId>  scXtals = sc->getHitsByDetId();
@@ -117,6 +138,12 @@ double ElectronJetCrossCleaner::SharedEnergy_(
 	  if( (*tow)->id()==towerDetId)
 	  {
 	      etowers[(*tow)->id()] =  (*tow)->emEnergy();
+	      
+	      /* georgia */
+	      eleTowerEnergy.push_back( (*tow)->emEnergy() ); 
+	      eleTowerEta.push_back( (*tow)->eta() ); 
+	      eleTowerPhi.push_back( (*tow)->phi() ); 
+
 	  }
       }
 
@@ -125,18 +152,47 @@ double ElectronJetCrossCleaner::SharedEnergy_(
   // Or search the other way round
   // (once CaloTowerConstituentsMap::constituetsOf() function works)
 
+  
+  // georgia
+  float sharedEnergy = 0.;
+  float sharedPx = 0.; float sharedPy = 0.; float sharedPz = 0.;
+
+  double result=0.;
+
+  int i=0;
   for(std::map< CaloTowerDetId, double >::const_iterator itMap=etowers.begin(); itMap!=etowers.end(); ++itMap )
   {
-      result+=itMap->second;
+    result+=itMap->second;
+      
+    sharedEnergy += eleTowerEnergy[i];
+    float eleTowerTheta = 2. * atan(exp(-eleTowerEta[i]));
+    if (eleTowerTheta < 0.) {eleTowerTheta += 3.141592654;}
+    float sintheta = sin(eleTowerTheta);
+    sharedPx += eleTowerEnergy[i]*sintheta*cos(eleTowerPhi[i]);
+    sharedPy += eleTowerEnergy[i]*sintheta*sin(eleTowerPhi[i]);
+    sharedPz += eleTowerEnergy[i]*cos(eleTowerTheta);
+
+    i++;
   }
+
+  etowers.clear();
+  eleTowerEnergy.clear(); eleTowerEta.clear(); eleTowerPhi.clear();
+
+  sharedMomentum->SetXYZ(sharedPx,sharedPy,sharedPz);
 
   // Make sure that the shared energy is not larger than the energy of the electron
   // This can happen if there is much EM energy in a tower but the supercluster
   // does actually only contain very few crystal of this tower  
-  if( result > emobject.energy() )
-      return emobject.energy();
-  else
-  return result;
+
+  // double result = ( sharedMomentum.Mag2() );
+
+  if( sharedEnergy > emobject.energy() ) {
+    sharedMomentum->SetXYZ(emobject.px(), emobject.py(), emobject.pz());
+  }
+    //      return emobject.energy();
+  //else
+  // return result;
+
 }
 
 

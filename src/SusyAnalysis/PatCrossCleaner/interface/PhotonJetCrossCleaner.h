@@ -39,9 +39,10 @@ namespace pat {
 
   private:
     ///calculates shared energy between electron & jet: based on SusyAnalyzer
-    double SharedEnergy_( const pat::Photon& photon,
+    void SharedEnergy_( const pat::Photon& photon,
                           const pat::Jet& jet,
-			  const CaloTowerConstituentsMap& constituentsMap ) const;
+			  const CaloTowerConstituentsMap& constituentsMap,
+			math::XYZVector* sharedMomentum ) const; //georgia
     bool isIsolated_(const pat::Photon& photon) const;
     void setIsolationMethod(const std::string isoMethod);
 

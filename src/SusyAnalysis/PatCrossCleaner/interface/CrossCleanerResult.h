@@ -5,6 +5,9 @@
 #include "DataFormats/Common/interface/RefToBase.h"
 #include "DataFormats/PatCandidates/interface/MET.h"
 
+#include <vector>
+#include <cmath> // georgia
+
 namespace edm{
   bool operator< (const edm::RefToBase<reco::Candidate> & r1,
 		  const edm::RefToBase<reco::Candidate> & r2);
@@ -13,14 +16,18 @@ namespace edm{
 struct CrossCleanerModifier{
   //  CrossCleanerModifier(const bool &k, const edm::RefToBase<reco::Candidate>&o,const double& m=0)
   //    : keepKeyObj(k), object(o), modEnergy(m) {}
-  CrossCleanerModifier(const edm::RefToBase<reco::Candidate>&o,const double& m)
+  
+  CrossCleanerModifier(const edm::RefToBase<reco::Candidate>&o,math::XYZVector m) // georgia
+  //  CrossCleanerModifier(const edm::RefToBase<reco::Candidate>&o,const double& m)
     : keepKeyObj(true), object(o), modEnergy(m) {}
   CrossCleanerModifier(const edm::RefToBase<reco::Candidate>&o)
-    : keepKeyObj(false), object(o), modEnergy(0) {}
+    : keepKeyObj(false), object(o), modEnergy(0.,0.,0.) {}
 
-    bool keepKeyObj; // decision to drop or modify, based on this object
-    edm::RefToBase<reco::Candidate> object;
-    double modEnergy;
+  bool keepKeyObj; // decision to drop or modify, based on this object
+  edm::RefToBase<reco::Candidate> object;
+
+  math::XYZVector modEnergy;
+  // double modEnergy;
 };
 
 class CrossCleanerValue { 

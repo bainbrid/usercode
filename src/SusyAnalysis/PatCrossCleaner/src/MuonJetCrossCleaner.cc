@@ -25,6 +25,8 @@ void MuonJetCrossCleaner::clean(
       if (Muons[iMuon].trackIso() < config_.trackIso_max) continue;
 
 	edm::RefToBase<reco::Candidate> muonRef( Muons.refAt(iMuon) );
+
+	math::XYZVector mVector(0.,0.,0.); // georgia
 	for (unsigned int iJet=0; iJet!=Jets.size(); ++iJet)
        	{
 	  double dR = ::deltaR(Muons[iMuon], Jets[iJet] );
@@ -32,12 +34,16 @@ void MuonJetCrossCleaner::clean(
 	    
 	    edm::RefToBase<reco::Candidate> jetRef( Jets.refAt(iJet) );	    
 	    double sharedEnergy = muonRef->energy();
+
+	    mVector.SetXYZ(muonRef->px(), muonRef->py(), muonRef->pz()); // georgia
+
 	    LogDebug("MuonJetCrossCleaner")<<" a muon within dR :"<< dR <<" of a Jet has energy: "<<sharedEnergy
 					   <<"\n modifying the jet energy AND dropping the muon.";
 	    
 	    assMap[muonRef].modifiers.push_back( CrossCleanerModifier(jetRef));
-	    if( config_.modifyJetEnergy )
-		assMap[jetRef].modifiers.push_back( CrossCleanerModifier(muonRef, sharedEnergy));
+	    // assMap[jetRef].modifiers.push_back( CrossCleanerModifier(muonRef, sharedEnergy));
+	    assMap[jetRef].modifiers.push_back( CrossCleanerModifier(muonRef, mVector));
+
 	}
     }
 }    

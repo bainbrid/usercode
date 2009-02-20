@@ -5,7 +5,7 @@
     \class pat::ElectronJetCrossCleaner ElectronJetCrossCleaner.h "SusyAnalysis/PatUtils/ElectronJetCrossCleaner.h"
     \brief cross cleans objets
 
-    \version $Id: ElectronJetCrossCleaner.h,v 1.3 2008/12/15 16:03:02 bmura Exp $
+    \version $Id: ElectronJetCrossCleaner.h,v 1.4 2009/02/10 13:26:14 georgia Exp $
 **/
 
 #include "SusyAnalysis/PatCrossCleaner/interface/CrossCleanerResult.h"
@@ -14,6 +14,8 @@
 #include "DataFormats/PatCandidates/interface/Isolation.h"
 #include <DataFormats/Common/interface/Handle.h>
 #include "Geometry/CaloTopology/interface/CaloTowerConstituentsMap.h"
+
+#include <cmath> // georgia
 
 namespace pat {
 
@@ -60,9 +62,10 @@ namespace pat {
 	   const CaloTowerConstituentsMap& constituentsMap
          ) const;
     ///calculates shared energy between electron & jet
-    double SharedEnergy_( const pat::Electron& electron,
+    void SharedEnergy_( const pat::Electron& electron,
                           const pat::Jet& jet,
-			  const CaloTowerConstituentsMap& constituentsMap ) const;
+			  const CaloTowerConstituentsMap& constituentsMap, 
+			math::XYZVector* sharedMomentum ) const; //georgia
     bool isIsolated_(const pat::Electron&) const;
     void setIsolationMethod(const std::string isoMethod);
 

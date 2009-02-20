@@ -56,7 +56,14 @@ void PhotonJetCrossCleaner::clean(
 	if (iClosestJet==Jets.size()) continue;
 
 	bool isolated = isIsolated_(Photons[iPhoton]);
-	double sharedE = SharedEnergy_(Photons[iPhoton],Jets[iClosestJet],constituentsMap);
+	//	double sharedE = SharedEnergy_(Photons[iPhoton],Jets[iClosestJet],constituentsMap);
+	//georgia
+	math::XYZVector sharedVector(0.,0.,0.);
+	SharedEnergy_(Photons[iPhoton],Jets[iClosestJet],constituentsMap, &sharedVector);
+
+	double sharedE = sqrt(sharedVector.Mag2());
+	//end georgia
+	
 	edm::RefToBase<reco::Candidate> jetRef( Jets.refAt(iClosestJet) );
 	if( sharedE > 0 && isolated )
 	{
@@ -67,30 +74,44 @@ void PhotonJetCrossCleaner::clean(
 	    }
             else
 	    {
-		assMap[jetRef].modifiers.push_back(CrossCleanerModifier(photonRef, -sharedE));
+	      assMap[jetRef].modifiers.push_back(CrossCleanerModifier(photonRef, sharedVector));
+	      //	assMap[jetRef].modifiers.push_back(CrossCleanerModifier(photonRef, -sharedE));
 		LogDebug("PhotonJetCrossCleaner") << "photon/jet overlap, modifying the jet energy by: "<<-sharedE;
 	    }
 	}
 	else if( sharedE > 0 && !isolated )
 	{
-	    double energyCorr=Photons[iPhoton].energy()-sharedE;
+	  //	    double energyCorr=Photons[iPhoton].energy()-sharedE;
+
+	    double diffPx = Photons[iPhoton].px() - sharedVector.X();
+	    double diffPy = Photons[iPhoton].py() - sharedVector.Y();
+	    double diffPz = Photons[iPhoton].pz() - sharedVector.Z();
+
+	    sharedVector.SetXYZ(-diffPx, -diffPy, -diffPz);
+
+	    double energyCorr = sqrt(sharedVector.Mag2());
+
 	    assMap[photonRef].modifiers.push_back(CrossCleanerModifier(jetRef));
-	    assMap[jetRef].modifiers.push_back(CrossCleanerModifier(photonRef, energyCorr));
+	    assMap[jetRef].modifiers.push_back(CrossCleanerModifier(photonRef, sharedVector));
+	    //  assMap[jetRef].modifiers.push_back(CrossCleanerModifier(photonRef, energyCorr));
 	    LogDebug("PhotonJetCrossCleaner") << "photon/jet overlap. dropping the photon, modifying the jet energy by: "<<energyCorr;
 	}
     }
 }
 
 
-double PhotonJetCrossCleaner::SharedEnergy_( 
+void PhotonJetCrossCleaner::SharedEnergy_( 
              const pat::Photon& emobject,
              const pat::Jet& jet,
-	     const CaloTowerConstituentsMap& constituentsMap ) const
+	     const CaloTowerConstituentsMap& constituentsMap,
+	     math::XYZVector* sharedMomentum ) const //georgia
 {
   double result = 0.0;
 
   std::map<CaloTowerDetId, double> etowers;
-  
+  // georgia
+  vector<float> eleTowerEnergy; vector<float> eleTowerEta; vector<float> eleTowerPhi;
+
   // Photon supercluster and its crystals
   reco::SuperClusterRef sc = emobject.superCluster();
   std::vector<DetId>  scXtals = sc->getHitsByDetId();
@@ -108,6 +129,13 @@ double PhotonJetCrossCleaner::SharedEnergy_(
 	  if( (*tow)->id()==towerDetId)
 	  {
 	      etowers[(*tow)->id()] =  (*tow)->emEnergy();
+
+	      /* georgia */
+	      eleTowerEnergy.push_back( (*tow)->emEnergy() ); 
+	      eleTowerEta.push_back( (*tow)->eta() ); 
+	      eleTowerPhi.push_back( (*tow)->phi() ); 
+
+	      
 	  }
       }
 
@@ -115,19 +143,41 @@ double PhotonJetCrossCleaner::SharedEnergy_(
 
   // Or search the other way round
   // (as soon as CaloTowerConstituentsMap::constituetsOf() function works)
+  // georgia
+  float sharedEnergy = 0.;
+  float sharedPx = 0.; float sharedPy = 0.; float sharedPz = 0.;
 
+  int i=0;
   for(std::map< CaloTowerDetId, double >::const_iterator itMap=etowers.begin(); itMap!=etowers.end(); ++itMap )
   {
       result+=itMap->second;
+
+      sharedEnergy += eleTowerEnergy[i];
+      float eleTowerTheta = 2. * atan(exp(-eleTowerEta[i]));
+      if (eleTowerTheta < 0.) {eleTowerTheta += 3.141592654;}
+      float sintheta = sin(eleTowerTheta);
+      sharedPx += eleTowerEnergy[i]*sintheta*cos(eleTowerPhi[i]);
+      sharedPy += eleTowerEnergy[i]*sintheta*sin(eleTowerPhi[i]);
+      sharedPz += eleTowerEnergy[i]*cos(eleTowerTheta);
+
+      i++;
+
   }
+
+  etowers.clear();
+  eleTowerEnergy.clear(); eleTowerEta.clear(); eleTowerPhi.clear();
+
+  sharedMomentum->SetXYZ(sharedPx,sharedPy,sharedPz);
 
   // Make sure that the shared energy is not larger than the energy of the photon
   // This can happen if there is much EM energy in a tower but the supercluster
   // does actually only contain very few crystal of this tower  
-  if( result > emobject.energy() )
-      return emobject.energy();
-  else
-    return result;
+  if( sharedEnergy > emobject.energy() ) {
+    sharedMomentum->SetXYZ(emobject.px(), emobject.py(), emobject.pz());
+  }
+    //      return emobject.energy();
+    // else
+    // return result;
 }
 
 bool PhotonJetCrossCleaner::isIsolated_(const pat::Photon& photon) const
