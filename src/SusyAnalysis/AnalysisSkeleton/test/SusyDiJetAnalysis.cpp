@@ -14,7 +14,7 @@ Implementation:Uses the EventSelector interface for event selection and TFileSer
 //
 // Original Author:  Markus Stoye
 //         Created:  Mon Feb 18 15:40:44 CET 2008
-// $Id: SusyDiJetAnalysis.cpp,v 1.19 2009/02/13 11:09:07 trommers Exp $
+// $Id: SusyDiJetAnalysis.cpp,v 1.1 2009/02/20 12:47:20 bainbrid Exp $
 //
 //
 //#include "SusyAnalysis/EventSelector/interface/BJetEventSelector.h"
@@ -825,7 +825,6 @@ SusyDiJetAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
   mTempTreeNjets = jetHandle->size();
 
   // Add the jets
-  int ii=0;
   int i=0;
   if ( mTempTreeNjets >50 ) mTempTreeNjets = 50;
   for (int k=0;k<mTempTreeNjets;k++){
@@ -927,7 +926,6 @@ SusyDiJetAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 	mTempTreeccJetAssoc_px[i] = -9999;
 	mTempTreeccJetAssoc_py[i] = -9999;
 	mTempTreeccJetAssoc_pz[i] = -9999;
-	ii++; 
       }
       
       i++;
@@ -937,8 +935,6 @@ SusyDiJetAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
   }
   
   mTempTreeNjets = i;
-
-  std::cout << "not matched: " << ii << std::endl;
 
 // Get the hemispheres
   Handle< edm::View<pat::Hemisphere> > hemisphereHandle;
