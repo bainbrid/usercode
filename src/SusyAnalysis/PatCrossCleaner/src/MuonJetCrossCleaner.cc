@@ -42,7 +42,8 @@ void MuonJetCrossCleaner::clean(
 	    
 	    assMap[muonRef].modifiers.push_back( CrossCleanerModifier(jetRef));
 	    // assMap[jetRef].modifiers.push_back( CrossCleanerModifier(muonRef, sharedEnergy));
-	    assMap[jetRef].modifiers.push_back( CrossCleanerModifier(muonRef, mVector));
+	    if( config_.modifyJetEnergy )
+	      assMap[jetRef].modifiers.push_back( CrossCleanerModifier(muonRef, mVector));
 
 	}
     }

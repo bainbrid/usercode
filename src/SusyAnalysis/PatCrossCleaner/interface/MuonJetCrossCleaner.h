@@ -5,7 +5,7 @@
     \class pat::MuonJetCrossCleaner MuonJetCrossCleaner.h "SusyAnalysis/PatUtils/MuonJetCrossCleaner.h"
     \brief cross cleans objets
 
-    \version $Id: MuonJetCrossCleaner.h,v 1.4 2009/02/10 13:26:14 georgia Exp $
+    \version $Id: MuonJetCrossCleaner.h,v 1.2 2009/02/20 16:00:15 bainbrid Exp $
 **/
 
 #include "SusyAnalysis/PatCrossCleaner/interface/CrossCleanerResult.h"
@@ -21,6 +21,7 @@ namespace pat {
     double caloIso_max; ///maximum calorimeter isolation energy in order to consider muon for removal
     double trackIso_max; ///maximum tracker isolation energy in order to consider muon for removal
     std::string muonID; ///any considered muon must fulfill ID requirements
+    bool modifyJetEnergy;
   };
 
 
