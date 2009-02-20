@@ -20,9 +20,10 @@ process.load("Configuration.StandardSequences.MagneticField_cff")
 
 # CaloTowerConstituentsMap needed for Electron/Photon-Jet cleaning
 process.load("Geometry.CMSCommonData.cmsIdealGeometryXML_cfi")
-process.CaloTowerConstituentsMapBuilder = cms.ESProducer("CaloTowerConstituentsMapBuilder",
+process.CaloTowerConstituentsMapBuilder = cms.ESProducer(
+    "CaloTowerConstituentsMapBuilder",
     MapFile = cms.untracked.string('Geometry/CaloTopology/data/CaloTowerEEGeometric.map.gz')
-)
+    )
 
 # Cross-cleaner setup
 process.load("SusyAnalysis.PatCrossCleaner.patCrossCleaner_cfi")
@@ -67,6 +68,7 @@ process.patcrosscleaner.MuonJetCrossCleaning.trackIso_max = 10.0
 process.patcrosscleaner.MuonJetCrossCleaning.MuonID = 'TMLastStationTight'
 
 # clone for JPT corrections
+process.load("JetMETCorrections.JetPlusTrack.L1L3Corrections_JPT_cff")
 process.patcrosscleanerJPT = process.patcrosscleaner.clone()
 process.patcrosscleanerJPT.L1JetCorrector      = 'L1OffsetJetCorrectorZSP'
 process.patcrosscleanerJPT.L2JetCorrector      = 'none'
@@ -86,36 +88,37 @@ process.load("PF.Susy.patLayer1_EventContent_cff")
 #process.load("JetMETCorrections.Configuration.L2L3Corrections_Summer08_cff")
 #process.load("JetMETCorrections.Configuration.L2L3Corrections_Summer08Redigi_cff")
 #process.load("JetMETCorrections.Configuration.L2L3Corrections_Winter09_cff")
-process.load("JetMETCorrections.JetPlusTrack.L1L3Corrections_JPT_cff")
 
 process.options = cms.untracked.PSet(
     wantSummary = cms.untracked.bool(True)
 )
-process.TFileService = cms.Service("TFileService",
+process.TFileService = cms.Service(
+    "TFileService",
     fileName = cms.string('ntuple.root')
-)
+    )
 
 process.Tracer = cms.Service(
     "Tracer",
     sourceSeed = cms.untracked.string("$$")
     )
 
-process.source = cms.Source("PoolSource",
+process.source = cms.Source(
+    "PoolSource",
     fileNames = cms.untracked.vstring(
     'file:pat.root'
     )
-)
+    )
 
 process.maxEvents = cms.untracked.PSet(
     input = cms.untracked.int32(-1)
-)
+    )
 
 #process.genParticles.abortOnUnknownPDGCode = False
 
 process.load("PF.Susy.hemisphere_cfi")
-process.load("JetMETCorrections.JetPlusTrack.dijet_cfi")
 process.load("PF.Susy.pfhemisphere_cfi")
-process.load("JetMETCorrections.JetPlusTrack.pfdijet_cfi")
+process.load("SusyAnalysis.AnalysisSkeleton.dijet_cfi")
+process.load("SusyAnalysis.AnalysisSkeleton.pfdijet_cfi")
 
 process.p = cms.Path(
     process.patcrosscleaner *

@@ -1,13 +1,16 @@
-<export></export>
+<use name=DataFormats/Candidate>
+<use name=DataFormats/Common>
+<use name=DataFormats/HepMCCandidate>
+<use name=DataFormats/PatCandidates>
+<use name=DataFormats/VertexReco>
+<use name=FWCore/Framework>
+<use name=FWCore/MessageLogger>
+<use name=FWCore/ParameterSet>
 <use name=PhysicsTools/UtilAlgos>
+<use name=PhysicsTools/Utilities>
 <use name=SusyAnalysis/EventSelector>
 <use name=root>
-<library name=SusyAnalysisSkeleton file=SusyAnalysisSkeleton.cpp>
-  <flags EDM_PLUGIN=1>
-</library>
-<library name=SusyAnalysisAllHadronic file=SusyAllHadronicAnalysis.cpp>
-  <flags EDM_PLUGIN=1>
-</library>
 <library name=SusyDiJetAnalysis file=SusyDiJetAnalysis.cpp>
   <flags EDM_PLUGIN=1>
 </library>
+
