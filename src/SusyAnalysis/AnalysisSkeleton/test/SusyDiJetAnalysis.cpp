@@ -14,7 +14,7 @@ Implementation:Uses the EventSelector interface for event selection and TFileSer
 //
 // Original Author:  Markus Stoye
 //         Created:  Mon Feb 18 15:40:44 CET 2008
-// $Id: SusyDiJetAnalysis.cpp,v 1.1 2009/02/20 12:47:20 bainbrid Exp $
+// $Id: SusyDiJetAnalysis.cpp,v 1.19 2009/02/13 11:09:07 trommers Exp $
 //
 //
 //#include "SusyAnalysis/EventSelector/interface/BJetEventSelector.h"
@@ -73,8 +73,6 @@ SusyDiJetAnalysis::SusyDiJetAnalysis(const edm::ParameterSet& iConfig):
   muonTag_ = iConfig.getParameter<edm::InputTag>("muonTag");
   tauTag_ = iConfig.getParameter<edm::InputTag>("tauTag");
   vtxTag_ = iConfig.getParameter<edm::InputTag>("vtxTag"); 
-
-  jptTag_ = iConfig.getParameter<edm::InputTag>("jptTag");
 
   ccjetTag_ = iConfig.getParameter<edm::InputTag>("ccjetTag");
   ccmetTag_ = iConfig.getParameter<edm::InputTag>("ccmetTag");
@@ -812,24 +810,19 @@ SusyDiJetAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
     return;
   }
 
-  // get the JPT-corrected pat::Jets
-  edm::Handle< std::vector<pat::Jet> > jptHandle;
-  iEvent.getByLabel(jptTag_, jptHandle);
-  if ( !jptHandle.isValid() ) {
-    edm::LogWarning("SusySelectorExample") << "No JetCorrFactor results for InputTag " << jptTag_;
-    std::cout << "No JetCorrFactor results for InputTag " << jptTag_ << std::endl;
-    return;
-  }
 
   //get number of jets
   mTempTreeNjets = jetHandle->size();
+
+
 
   // Add the jets
   int i=0;
   if ( mTempTreeNjets >50 ) mTempTreeNjets = 50;
   for (int k=0;k<mTempTreeNjets;k++){
-    const pat::Jet& uncorrJet =((*jetHandle)[k].isCaloJet())? (*jetHandle)[k].correctedJet("RAW"): (*jetHandle)[k];
+     const pat::Jet& uncorrJet =((*jetHandle)[k].isCaloJet())? (*jetHandle)[k].correctedJet("RAW"): (*jetHandle)[k];
     if ( uncorrJet.et() > 20. ){
+      // std::cout << " et " <<  uncorrJet.et() << std::endl;
       mTempTreeJetsPt[i] = uncorrJet.pt();
       mTempTreeJetsE[i] = uncorrJet.energy();
       mTempTreeJetsEt[i] = uncorrJet.et();
@@ -843,8 +836,14 @@ SusyDiJetAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
       if (uncorrJet.isPFJet())
 	mTempTreeJetsFem[i] = uncorrJet.neutralEmEnergyFraction()+
 	  uncorrJet.chargedEmEnergyFraction();
-      
-      mTempTreeJetsBTag_TkCountHighEff[i] = uncorrJet.bDiscriminator("trackCountingHighEffBJetTags");
+
+      std::string CorrStep = "ABS";//corrected up to L3 like pat::Jet default
+      const std::string Flavour = "NONE";//L3 is before flavour correction
+      mTempTreeJetMCCorrFactor[i] = (uncorrJet.isCaloJet())? uncorrJet.jetCorrFactor(CorrStep,Flavour):999 ;//full MC correction
+       // std::cout << " corr name " << (*jetHandle)[k].jetCorrName() << " flavour " << (*jetHandle)[k].jetCorrFlavour() << std::endl;
+      mTempTreeJetJPTCorrFactor[i] = -9999; 
+
+       mTempTreeJetsBTag_TkCountHighEff[i] = uncorrJet.bDiscriminator("trackCountingHighEffBJetTags");
       mTempTreeJetsBTag_SimpleSecVtx[i] = uncorrJet.bDiscriminator("simpleSecondaryVertexBJetTags");
       mTempTreeJetsBTag_CombSecVtx[i] = uncorrJet.bDiscriminator("combinedSecondaryVertexBJetTags");
       mTempTreeJetPartonFlavour[i] = uncorrJet.partonFlavour();
@@ -892,49 +891,46 @@ SusyDiJetAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 	mTempTreeJetPartonPhi[i] = -999;
 	mTempTreeJetPartonEta[i] = -999;
       }
-      
-      mTempTreeccJetAssoc[i] = false;
-      
-      // Add the cc jets
+
       int mTempTreeNccjets = ccjetHandle->size();
-      if ( mTempTreeNccjets > 50 ) mTempTreeNccjets = 50;
-      for ( int n = 0; n < mTempTreeNccjets; n++ ) {
-	if ( (*ccjetHandle)[n].originalObjectRef() == (*jetHandle)[k].originalObjectRef() ) {
-	  pat::Jet jet = ((*ccjetHandle)[n].isCaloJet()) ? (*ccjetHandle)[n].correctedJet("RAW") : (*ccjetHandle)[n];
-	  mTempTreeccJetAssoc[i] = true;
-	  mTempTreeccJetAssoc_E[i] = jet.energy();
-	  mTempTreeccJetAssoc_px[i] = jet.px();
-	  mTempTreeccJetAssoc_py[i] = jet.py();
-	  mTempTreeccJetAssoc_pz[i] = jet.pz();
-	  mTempTreeJetMCCorrFactor[i] = (jet.isCaloJet())? jet.jetCorrFactors().scaleDefault(): -1 ;
-
-	  // Add the JPT corrs
-	  int mTempTreeNjptjets = jptHandle->size();
-	  if ( mTempTreeNjptjets > 50 ) mTempTreeNjptjets = 50;
-	  for ( int m = 0; m < mTempTreeNjptjets; m++ ) {
-	    if( (*jptHandle)[m].originalObjectRef() == (*jetHandle)[k].originalObjectRef() ) {
-	      pat::Jet jet = ((*jptHandle)[m].isCaloJet()) ? (*jptHandle)[m].correctedJet("RAW") : (*jptHandle)[m];
-	      mTempTreeJetJPTCorrFactor[i] = (jet.isCaloJet()) ? jet.jetCorrFactors().scaleDefault() : -1 ;
-	    }
-	  }
-	  
-	}
-      }
-      
-      if ( mTempTreeccJetAssoc[i] == false ) {
-	mTempTreeccJetAssoc_E[i] = -9999;
-	mTempTreeccJetAssoc_px[i] = -9999;
-	mTempTreeccJetAssoc_py[i] = -9999;
-	mTempTreeccJetAssoc_pz[i] = -9999;
-      }
-      
-      i++;
-
-    } 
     
-  }
+      mTempTreeccJetAssoc[i] = false;
+
+      // Add the cc jets
+      if ( mTempTreeNccjets > 50 ) mTempTreeNccjets = 50;
+     
+      for (int n=0;n<mTempTreeNccjets;n++){
+
+      	
+	  if((*ccjetHandle)[n].originalObjectRef() == (*jetHandle)[i].originalObjectRef()){
+	    mTempTreeccJetAssoc[i] = true;
+	    mTempTreeccJetAssoc_E[i] = (*ccjetHandle)[n].energy();
+	    mTempTreeccJetAssoc_px[i] = (*ccjetHandle)[n].px();
+	    mTempTreeccJetAssoc_py[i] = (*ccjetHandle)[n].py();
+	    mTempTreeccJetAssoc_pz[i] = (*ccjetHandle)[n].pz();
+	 
+	  }
+	
+      }//end loop over cc Jets
+      if(mTempTreeccJetAssoc[i] == false){
+	  mTempTreeccJetAssoc_E[i] = -9999;
+	  mTempTreeccJetAssoc_px[i] = -9999;
+	  mTempTreeccJetAssoc_py[i] = -9999;
+	  mTempTreeccJetAssoc_pz[i] = -9999;
+
+      }
+
+     
+      i++;
+    }//end asking if jet pt > 20 GeV
+  }//end loop over non-cc jets
   
   mTempTreeNjets = i;
+
+ 
+  
+ 
+  
 
 // Get the hemispheres
   Handle< edm::View<pat::Hemisphere> > hemisphereHandle;

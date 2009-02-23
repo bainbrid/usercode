@@ -473,8 +473,6 @@ private:
   edm::InputTag tauTag_;
   edm::InputTag genTag_;
 
-  edm::InputTag jptTag_;
-
   edm::InputTag ccjetTag_;
   edm::InputTag ccmetTag_;
   edm::InputTag ccelecTag_;
