@@ -23,19 +23,21 @@ from TrackPropagation.SteppingHelixPropagator.SteppingHelixPropagatorAlong_cfi i
 L3JetCorrectorJPT = cms.ESSource(
     "JetPlusTrackCorrectionService",
     label = cms.string('L3AbsoluteJetCorrectorJPT'),
-    # Input files
+    # Look-up tables
     NonEfficiencyFile     = cms.string('CMSSW_167_TrackNonEff'),
     NonEfficiencyFileResp = cms.string('CMSSW_167_TrackLeakage'),
     ResponseFile          = cms.string('CMSSW_167_response'),
-    # Configurables for jet-tracks assoication
-    trackSrc = cms.InputTag("generalTracks"),
-    TrackQuality = cms.string('highPurity'),
+    # Access to tracks and muons
+    trackSrc     = cms.InputTag("generalTracks"),
     UseQuality   = cms.bool(True),
+    TrackQuality = cms.string('highPurity'),
+    muonSrc      = cms.InputTag("globalMuons"),
+    # Jet-tracks association (null InputTags mean use "on-the-fly")
+    JetTrackCollectionAtVertex = cms.InputTag(""), 
+    JetTrackCollectionAtCalo   = cms.InputTag(""),
     Propagator = cms.string('SteppingHelixPropagatorAlong'),
-    coneSize = cms.double(0.5),
-    # Muon collection
-    muonSrc  = cms.InputTag("globalMuons"),
-    # Configuration of algorithm
+    coneSize   = cms.double(0.5),
+    # Other misc algo configuration
     respalgo           = cms.int32(5),
     AddOutOfConeTracks = cms.bool(True)
     )
