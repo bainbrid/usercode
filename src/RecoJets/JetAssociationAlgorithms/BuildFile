@@ -1,12 +1,18 @@
-<use name=DataFormats/Math>
-<use name=DataFormats/JetReco>
-<use name=DataFormats/TrackReco>
 <use name=DataFormats/GeometrySurface>
+<use name=DataFormats/GeometryVector>
+<use name=DataFormats/JetReco>
+<use name=DataFormats/Math>
+<use name=DataFormats/TrackReco>
+<use name=FWCore/MessageLogger>
+<use name=MagneticField/Engine>
 <use name=TrackingTools/GeomPropagators>
 <use name=TrackingTools/TrajectoryParametrization>
 <use name=TrackingTools/TrajectoryState>
-<use name=MagneticField/Engine>
+
 <export>
- <lib name=RecoJetsJetAssociationAlgorithms>
+  <lib name=RecoJetsJetAssociationAlgorithms>
+  <use name=DataFormats/GeometryVector>
   <use name=DataFormats/JetReco>
+  <use name=DataFormats/Math>
+  <use name=DataFormats/TrackReco>
 </export>
