@@ -1,7 +1,7 @@
 // \class JetTracksAssociatorAtCaloFace JetTracksAssociatorAtCaloFace.cc 
 // Associate jet with tracks extrapolated to CALO face
 // Accommodated for Jet Package by: Fedor Ratnikov Sep.7, 2007
-// $Id: JetTracksAssociatorAtCaloFace.h,v 1.1 2007/09/19 18:30:01 fedor Exp $
+// $Id: JetTracksAssociatorAtCaloFace.h,v 1.2 2009/02/23 13:12:13 bainbrid Exp $
 //
 //
 #ifndef JetTracksAssociatorAtCaloFace_h
@@ -24,6 +24,7 @@ class JetTracksAssociatorAtCaloFace : public edm::EDProducer {
    private:
      edm::InputTag mJets;
      edm::InputTag mTracks;
+     int mTrackQuality;
      JetTracksAssociationDRCalo mAssociator;
 };
 
