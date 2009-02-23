@@ -1,15 +1,12 @@
-<use name=DataFormats/Common>
+<flags EDM_PLUGIN=1>
+<use name=boost>
+<use name=RecoJets/JetAssociationAlgorithms>
+<use name=FWCore/Framework>
 <use name=DataFormats/JetReco>
 <use name=DataFormats/TrackReco>
-<use name=FWCore/Framework>
-<use name=FWCore/MessageLogger>
-<use name=FWCore/ParameterSet>
+<use name=DataFormats/Math>
 <use name=MagneticField/Records>
-<use name=RecoJets/JetAssociationAlgorithms>
 <use name=TrackingTools/Records>
-<use name=boost>
-<flags EDM_PLUGIN=1>
-
 <export>
-  <lib name=RecoJetsJetAssociationProducers>
+ <lib name=RecoJetsJetAssociationProducers>
 </export>
