@@ -13,7 +13,7 @@
 //
 // Original Author:  Christian AUTERMANN
 //         Created:  Sat Mar 22 12:58:04 CET 2008
-// $Id: PatCrossCleaner.h,v 1.1 2009/02/20 12:42:08 bainbrid Exp $
+// $Id: PatCrossCleaner.h,v 1.2.2.1 2009/02/20 16:38:27 bainbrid Exp $
 //
 //
 
@@ -117,11 +117,11 @@ class PatCrossCleaner : public edm::EDProducer {
   void applyJEC( pat::Jet&, const edm::Event&, const edm::EventSetup& );
 
   // MET corrections
-  template <class Object> CrossCleanerMETCorrection metCorr( Object&, const Object& );
-  CrossCleanerMETCorrection metCorr( pat::Jet&, const pat::Jet& );
+  template <class Object> CrossCleanerMETCorrection metCorr( const Object&, Object& );
+  CrossCleanerMETCorrection metCorr( const pat::Jet&, pat::Jet& );
   
-  template <class Object> CrossCleanerMETCorrection droppingObject(const Object & o);
-  CrossCleanerMETCorrection droppingObject(const pat::Jet & j);
+  template <class Object> CrossCleanerMETCorrection metCorr( const Object& );
+  CrossCleanerMETCorrection metCorr( const pat::Jet& );
 
       ///Helper function for debugging: print out all objects that should be dropped/corrected
       void printConflicts(CrossCleanerMap& conflicts);
@@ -195,9 +195,9 @@ void PatCrossCleaner::correctObject(pat::Electron & o, CrossCleanerModifier & mo
 }
 
 template <class Object> 
-CrossCleanerMETCorrection PatCrossCleaner::droppingObject(const Object & o) { return CrossCleanerMETCorrection();}
+CrossCleanerMETCorrection PatCrossCleaner::metCorr(const Object & o) { return CrossCleanerMETCorrection();}
 
-CrossCleanerMETCorrection PatCrossCleaner::droppingObject(const pat::Jet & j){
+CrossCleanerMETCorrection PatCrossCleaner::metCorr(const pat::Jet & j){
   return CrossCleanerMETCorrection(j.correctedJet("RAW").px() - j.px(), j.correctedJet("RAW").py() - j.py());
 }
 
@@ -237,17 +237,15 @@ void PatCrossCleaner::putObjects(CrossCleanerResult& result, const edm::View<Obj
     applyJEC( newObject, iEvent, es );
     if ( newObject.energy() < 0.0 ) { keepMe = false; }
     
-    CrossCleanerMETCorrection thisMETcorr = metCorr( newObject, initialO );
-    totalMETcorr+=thisMETcorr;
-    
     if (!keepMe){
       //dropping the object
       cleanObj->pop_back();
       ++_statistics[candRef->pdgId()].second;
-      totalMETcorr+=droppingObject(initialO);
+      totalMETcorr += metCorr( initialO ); //@@ correct for dropped object
     }
     else {
       //keeping the object
+      totalMETcorr += metCorr( initialO, newObject ); //@@ correct for kept object with modified energy  
       droppedObj->pop_back();
       ++_statistics[candRef->pdgId()].first;
     }
@@ -484,11 +482,11 @@ void PatCrossCleaner::applyJEC( pat::Jet& o, const edm::Event& event, const edm:
 }
 
 template <class Object> 
-CrossCleanerMETCorrection PatCrossCleaner::metCorr( Object& o, const Object& orig ) {
+CrossCleanerMETCorrection PatCrossCleaner::metCorr( const Object& orig, Object& o ) {
   return CrossCleanerMETCorrection();
 }
 
-CrossCleanerMETCorrection PatCrossCleaner::metCorr( pat::Jet& o, const pat::Jet& orig ) {
+CrossCleanerMETCorrection PatCrossCleaner::metCorr( const pat::Jet& orig, pat::Jet& o ) {
   
   CrossCleanerMETCorrection metCorr( orig.correctedJet("RAW").px() - orig.px(), 
 				     orig.correctedJet("RAW").py() - orig.py() );
