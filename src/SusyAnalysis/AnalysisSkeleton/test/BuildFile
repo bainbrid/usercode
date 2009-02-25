@@ -10,6 +10,12 @@
 <use name=PhysicsTools/Utilities>
 <use name=SusyAnalysis/EventSelector>
 <use name=root>
+<library name=SusyAnalysisSkeleton file=SusyAnalysisSkeleton.cpp>
+  <flags EDM_PLUGIN=1>
+</library>
+<library name=SusyAnalysisAllHadronic file=SusyAllHadronicAnalysis.cpp>
+  <flags EDM_PLUGIN=1>
+</library>
 <library name=SusyDiJetAnalysis file=SusyDiJetAnalysis.cpp>
   <flags EDM_PLUGIN=1>
 </library>
