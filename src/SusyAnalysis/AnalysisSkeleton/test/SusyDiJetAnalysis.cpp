@@ -14,7 +14,7 @@ Implementation:Uses the EventSelector interface for event selection and TFileSer
 //
 // Original Author:  Markus Stoye
 //         Created:  Mon Feb 18 15:40:44 CET 2008
-// $Id: SusyDiJetAnalysis.cpp,v 1.2 2009/02/20 13:41:51 bainbrid Exp $
+// $Id: SusyDiJetAnalysis.cpp,v 1.3.2.1 2009/02/23 15:15:18 bainbrid Exp $
 //
 //
 //#include "SusyAnalysis/EventSelector/interface/BJetEventSelector.h"
@@ -907,25 +907,25 @@ SusyDiJetAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 	  mTempTreeccJetAssoc_py[i] = jet.py();
 	  mTempTreeccJetAssoc_pz[i] = jet.pz();
 	  mTempTreeJetMCCorrFactor[i] = (jet.isCaloJet())? jet.jetCorrFactors().scaleDefault(): -1 ;
-
-	  // Add the JPT corrs
-	  int mTempTreeNjptjets = jptHandle->size();
-	  if ( mTempTreeNjptjets > 50 ) mTempTreeNjptjets = 50;
-	  for ( int m = 0; m < mTempTreeNjptjets; m++ ) {
-	    if( (*jptHandle)[m].originalObjectRef() == (*jetHandle)[k].originalObjectRef() ) {
-	      pat::Jet jet = ((*jptHandle)[m].isCaloJet()) ? (*jptHandle)[m].correctedJet("RAW") : (*jptHandle)[m];
-	      mTempTreeJetJPTCorrFactor[i] = (jet.isCaloJet()) ? jet.jetCorrFactors().scaleDefault() : -1 ;
-	    }
-	  }
-	  
 	}
       }
       
+      // "Mark" jets that have been removed by CC
       if ( mTempTreeccJetAssoc[i] == false ) {
 	mTempTreeccJetAssoc_E[i] = -9999;
 	mTempTreeccJetAssoc_px[i] = -9999;
 	mTempTreeccJetAssoc_py[i] = -9999;
 	mTempTreeccJetAssoc_pz[i] = -9999;
+      }
+      
+      // Add the JPT corrs
+      int mTempTreeNjptjets = jptHandle->size();
+      if ( mTempTreeNjptjets > 50 ) mTempTreeNjptjets = 50;
+      for ( int m = 0; m < mTempTreeNjptjets; m++ ) {
+	if( (*jptHandle)[m].originalObjectRef() == (*jetHandle)[k].originalObjectRef() ) {
+	  pat::Jet jet = ((*jptHandle)[m].isCaloJet()) ? (*jptHandle)[m].correctedJet("RAW") : (*jptHandle)[m];
+	  mTempTreeJetJPTCorrFactor[i] = (jet.isCaloJet()) ? jet.jetCorrFactors().scaleDefault() : -1 ;
+	}
       }
       
       i++;
