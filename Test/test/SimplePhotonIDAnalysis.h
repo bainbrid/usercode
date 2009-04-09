@@ -26,15 +26,14 @@ private:
   
   // Histograms
   std::map<std::string,TH1D*> histos_; 
-  std::map<std::string,TH2D*> testhistos_; 
+  std::map<std::string,TH2D*> histos2d_; 
 
   // Categories of photons
   std::vector<std::string> labels_;
 
   // InputTags for collections
-  edm::InputTag photonsWithOldID_;
-  edm::InputTag photonsWithNewID_;
-  edm::InputTag jets_;
+  edm::InputTag photons_;
+  edm::InputTag others_;
 
 };
 

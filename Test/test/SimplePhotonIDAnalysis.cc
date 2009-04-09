@@ -16,9 +16,8 @@
 SimplePhotonIDAnalysis::SimplePhotonIDAnalysis( const edm::ParameterSet& pset ) 
   : histos_(),
     labels_(),
-    photonsWithOldID_( pset.getUntrackedParameter<edm::InputTag>("PhotonsWithOldID") ),
-    photonsWithNewID_( pset.getUntrackedParameter<edm::InputTag>("PhotonsWithNewID") ),
-    jets_( pset.getUntrackedParameter<edm::InputTag>("Jets") )
+    photons_( pset.getUntrackedParameter<edm::InputTag>("Photons") ),
+    others_( pset.getUntrackedParameter<edm::InputTag>("OtherPhotons") )
 {
   labels_.push_back("SignalPhotons");
   labels_.push_back("OtherPhotons");
@@ -34,16 +33,16 @@ void SimplePhotonIDAnalysis::analyze( const edm::Event& event,
   std::vector<uint16_t> multiplicity( labels_.size(), 0 );
   
   // Retrieve PAT photon collection from Event
-  edm::Handle<edm::View<pat::Photon> > photonsWithOldID;
-  event.getByLabel( photonsWithOldID_, photonsWithOldID );
+  edm::Handle<edm::View<pat::Photon> > photons;
+  event.getByLabel( photons_, photons );
   
   // Retrieve PAT photonID collection from Event
-  edm::Handle<edm::View<pat::Photon> > photonsWithNewID;
-  event.getByLabel( photonsWithNewID_, photonsWithNewID );
+  edm::Handle<edm::View<pat::Photon> > others;
+  event.getByLabel( others_, others );
   
   // Iterate through PAT photons
-  edm::View<pat::Photon>::const_iterator iphoton = photonsWithOldID->begin(); 
-  edm::View<pat::Photon>::const_iterator jphoton = photonsWithOldID->end(); 
+  edm::View<pat::Photon>::const_iterator iphoton = photons->begin(); 
+  edm::View<pat::Photon>::const_iterator jphoton = photons->end(); 
   for ( ; iphoton != jphoton; ++iphoton ) {
     
     // GMSB PhotonID based on MC truth
@@ -109,29 +108,39 @@ void SimplePhotonIDAnalysis::analyze( const edm::Event& event,
       histos_[name+"_IsoAll"]->Fill( iphoton->caloIso() );
       histos_[name+"_HcalIsoOverEcalIso"]->Fill( iphoton->hcalIso() / iphoton->ecalIso() );
 
-      // Iterate through PAT photonIDs
-      edm::View<pat::Photon>::const_iterator iphotonid = photonsWithNewID->begin(); 
-      edm::View<pat::Photon>::const_iterator jphotonid = photonsWithNewID->end(); 
-      for ( ; iphotonid != jphotonid; ++iphotonid ) {
-	if ( uint32_t( iphoton - photonsWithOldID->begin() ) !=
-	     uint32_t( iphotonid - photonsWithNewID->begin() ) ) { continue; }
-	testhistos_[name+"CompareIDEcalIso"]->Fill( iphoton->isolationEcalRecHit(),
-						    iphotonid->isolationEcalRecHit() );
-	testhistos_[name+"CompareIDHcalIso"]->Fill( iphoton->isolationHcalRecHit(),
-						    iphotonid->isolationHcalRecHit() );
-	testhistos_[name+"CompareIDTrkIso"]->Fill( iphoton->isolationHollowTrkCone(),
-						   iphotonid->isolationHollowTrkCone() );
-	float iii = 0.;
-	if ( iphoton->isTightPhoton() ) { iii = 3.; }
-	else if ( iphoton->isLoosePhoton() ) { iii = 2.; }
-	else if ( iphoton->isLooseEM() ) { iii = 1.; }
-	else { iii = 0.; }
-	float jjj = 0.;
-	if ( iphotonid->isTightPhoton() ) { jjj = 3.; }
-	else if ( iphotonid->isLoosePhoton() ) { jjj = 2.; }
-	else if ( iphotonid->isLooseEM() ) { jjj = 1.; }
-	else { jjj = 0.; }
-	testhistos_[name+"CompareID2D"]->Fill( iii, jjj );
+      // Iterate through OtherPhotonID
+      if ( !others_.label().empty() ) {
+
+	edm::View<pat::Photon>::const_iterator iother = others->begin(); 
+	edm::View<pat::Photon>::const_iterator jother = others->end(); 
+	for ( ; iother != jother; ++iother ) {
+
+	  if ( uint32_t( iphoton - photons->begin() ) !=
+	       uint32_t( iother - others->begin() ) ) { continue; }
+
+	  histos2d_[name+"_CompareEcalIso"]->Fill( iphoton->isolationEcalRecHit(),
+						   iother->isolationEcalRecHit() );
+	  histos2d_[name+"_CompareHcalIso"]->Fill( iphoton->isolationHcalRecHit(),
+						   iother->isolationHcalRecHit() );
+	  histos2d_[name+"_CompareTrkIso"]->Fill( iphoton->isolationHollowTrkCone(),
+						  iother->isolationHollowTrkCone() );
+	  
+	  float iii = 0.;
+	  if ( iphoton->isTightPhoton() ) { iii = 3.; }
+	  else if ( iphoton->isLoosePhoton() ) { iii = 2.; }
+	  else if ( iphoton->isLooseEM() ) { iii = 1.; }
+	  else { iii = 0.; }
+
+	  float jjj = 0.;
+	  if ( iother->isTightPhoton() ) { jjj = 3.; }
+	  else if ( iother->isLoosePhoton() ) { jjj = 2.; }
+	  else if ( iother->isLooseEM() ) { jjj = 1.; }
+	  else { jjj = 0.; }
+
+	  histos_[name+"_OtherPhotonID"]->Fill( jjj );
+	  histos2d_[name+"_ComparePhotonID"]->Fill( iii, jjj );
+	  
+	}
       }
 
     }
@@ -139,7 +148,7 @@ void SimplePhotonIDAnalysis::analyze( const edm::Event& event,
   } // photon loop    
   
   // Photon multiplicities
-  histos_["Multiplicity"]->Fill( photonsWithOldID->size() );
+  histos_["Multiplicity"]->Fill( photons->size() );
   for ( uint16_t ii = 0; ii < labels_.size(); ++ii ) { 
     std::string name = labels_[ii];
     histos_[labels_[ii]+"_Multiplicity"]->Fill( multiplicity[ii] );
@@ -161,11 +170,6 @@ void SimplePhotonIDAnalysis::beginJob( const edm::EventSetup& ) {
 
     TFileDirectory dir = fs->mkdir(name);
 
-    testhistos_[name+"CompareID2D"] = dir.make<TH2D>("PhotonID_2D","PhotonID_2D",4,-0.5,3.5,4,-0.5,3.5);
-    testhistos_[name+"CompareIDEcalIso"] = dir.make<TH2D>("PhotonID_EcalIso","PhotonID_EcalIso",300,0.,300.,300,0.,300.);
-    testhistos_[name+"CompareIDHcalIso"] = dir.make<TH2D>("PhotonID_HcalIso","PhotonID_HcalIso",300,0.,300.,300,0.,300.);
-    testhistos_[name+"CompareIDTrkIso"] = dir.make<TH2D>("PhotonID_TrkIso","PhotonID_TrkIso",300,0.,300.,300,0.,300.);
-    
     histos_[name+"_Multiplicity"] = dir.make<TH1D>("Multiplicity","Multiplicity",21,-0.5,20.5);
     
     // Kinematics
@@ -193,12 +197,19 @@ void SimplePhotonIDAnalysis::beginJob( const edm::EventSetup& ) {
     histos_[name+"_IsoTrk"] = dir.make<TH1D>("IsoTrk",";#sum E_{T} [GeV];",300,0.,300.);
     histos_[name+"_IsoAll"] = dir.make<TH1D>("IsoAll",";#sum E_{T} [GeV];",300,0.,300.);
     histos_[name+"_HcalIsoOverEcalIso"] = dir.make<TH1D>("HcalIsoOverEcalIso",";HCAL/ECAL;",200,0.,2.);
-
+    
     // Photon ID flags
     histos_[name+"_PhotonID"] = dir.make<TH1D>("PhotonID","",5,-0.5,4.5);
-  
+    if ( !others_.label().empty() ) { 
+      histos_[name+"_OtherPhotonID"] = dir.make<TH1D>("OtherPhotonID","",5,-0.5,4.5);
+      histos2d_[name+"_ComparePhotonID"] = dir.make<TH2D>("ComparePhotonID","ComparePhotonID",4,-0.5,3.5,4,-0.5,3.5);
+      histos2d_[name+"_CompareEcalIso"] = dir.make<TH2D>("CompareEcalIso","CompareEcalIso",300,0.,300.,300,0.,300.);
+      histos2d_[name+"_CompareHcalIso"] = dir.make<TH2D>("CompareHcalIso","CompareHcalIso",300,0.,300.,300,0.,300.);
+      histos2d_[name+"_CompareTrkIso"] = dir.make<TH2D>("CompareTrkIso","CompareTrkIso",300,0.,300.,300,0.,300.);
+    }
+    
   } 
-
+  
 }
 
 // -----------------------------------------------------------------------------
@@ -211,27 +222,27 @@ DEFINE_FWK_MODULE(SimplePhotonIDAnalysis);
 //iphoton->ecalIsoDeposit()->begin()->dR();
 
 
-//       if ( iphoton->isLooseEM() ) { testhistos_["PhotonID_Old"]->Fill( iphoton->isolationEcalRecHit(), 1. ); }
-//       if ( iphoton->isLoosePhoton() ) { testhistos_["PhotonID_Old"]->Fill( iphoton->isolationEcalRecHit(), 2. ); }
-//       if ( iphoton->isTightPhoton() ) { testhistos_["PhotonID_Old"]->Fill( iphoton->isolationEcalRecHit(), 3. ); }
+//       if ( iphoton->isLooseEM() ) { histos2d_["PhotonID_Old"]->Fill( iphoton->isolationEcalRecHit(), 1. ); }
+//       if ( iphoton->isLoosePhoton() ) { histos2d_["PhotonID_Old"]->Fill( iphoton->isolationEcalRecHit(), 2. ); }
+//       if ( iphoton->isTightPhoton() ) { histos2d_["PhotonID_Old"]->Fill( iphoton->isolationEcalRecHit(), 3. ); }
 //       if ( !iphoton->isLooseEM() &&
 // 	   !iphoton->isLoosePhoton() &&
-// 	   !iphoton->isTightPhoton() ) { testhistos_["PhotonID_Old"]->Fill( iphoton->isolationEcalRecHit(), 0. ); }
+// 	   !iphoton->isTightPhoton() ) { histos2d_["PhotonID_Old"]->Fill( iphoton->isolationEcalRecHit(), 0. ); }
       
-//       if ( iphotonid->isLooseEM() ) { testhistos_["PhotonID_New"]->Fill( iphotonid->isolationEcalRecHit(), 1. ); }
-//       if ( iphotonid->isLoosePhoton() ) { testhistos_["PhotonID_New"]->Fill( iphotonid->isolationEcalRecHit(), 2. ); }
-//       if ( iphotonid->isTightPhoton() ) { testhistos_["PhotonID_New"]->Fill( iphotonid->isolationEcalRecHit(), 3. ); }
+//       if ( iphotonid->isLooseEM() ) { histos2d_["PhotonID_New"]->Fill( iphotonid->isolationEcalRecHit(), 1. ); }
+//       if ( iphotonid->isLoosePhoton() ) { histos2d_["PhotonID_New"]->Fill( iphotonid->isolationEcalRecHit(), 2. ); }
+//       if ( iphotonid->isTightPhoton() ) { histos2d_["PhotonID_New"]->Fill( iphotonid->isolationEcalRecHit(), 3. ); }
 //       if ( !iphotonid->isLooseEM() &&
 // 	   !iphotonid->isLoosePhoton() &&
-// 	   !iphotonid->isTightPhoton() ) { testhistos_["PhotonID_Old"]->Fill( iphotonid->isolationEcalRecHit(), 0. ); }
+// 	   !iphotonid->isTightPhoton() ) { histos2d_["PhotonID_Old"]->Fill( iphotonid->isolationEcalRecHit(), 0. ); }
 
-    //     // Some selection criteria (based on RECO!)
-    //     if ( !( iphoton->et() > 10. && 
-    // 	    iphoton->eta() > -3.0 &&
-    // 	    iphoton->eta() < 3.0 && 
-    // 	    iphoton->r9() > 0. &&
-    // 	    iphoton->isolationHcalRecHit() / iphoton->isolationEcalRecHit() < 100. )
-    // 	 ) { continue; }
+//     // Some selection criteria (based on RECO!)
+//     if ( !( iphoton->et() > 10. && 
+// 	    iphoton->eta() > -3.0 &&
+// 	    iphoton->eta() < 3.0 && 
+// 	    iphoton->r9() > 0. &&
+// 	    iphoton->isolationHcalRecHit() / iphoton->isolationEcalRecHit() < 100. )
+// 	 ) { continue; }
 
 
 //     if ( iphoton->genPhoton() &&                                // check pointer
