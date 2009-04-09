@@ -1,12 +1,18 @@
-<export></export>
-<library name=PhysicsToolsPatAlgos_testAnalyzers file=private/*.cc,*.cc>
-    <use name=FWCore/Framework>
-    <use name=FWCore/ParameterSet>
-    <use name=DataFormats/BTauReco>
-    <use name=PhysicsTools/PatUtils>
-    <use name=DataFormats/PatCandidates>
-    <use name=PhysicsTools/UtilAlgos>
-    <use name=root>
-    <flags EDM_PLUGIN=1>
+<library name=bainbridTest_SimplePhotonIDAnalysis file=SimplePhotonIDAnalysis.cc>
+  <use name=DataFormats/Common>
+  <use name=DataFormats/PatCandidates>
+  <use name=FWCore/Framework>
+  <use name=FWCore/ParameterSet>
+  <use name=FWCore/ServiceRegistry>
+  <use name=PhysicsTools/UtilAlgos>
+  <use name=root>
+  <flags EDM_PLUGIN=1>
 </library>
 
+<library name=bainbridTest_PATPhotonIDProducer file=PATPhotonIDProducer.cc>
+  <use name=DataFormats/PatCandidates>
+  <use name=FWCore/Framework>
+  <use name=FWCore/ParameterSet>
+  <use name=RecoEgamma/PhotonIdentification>
+  <flags EDM_PLUGIN=1>
+</library>

@@ -15,11 +15,13 @@ class SimplePhotonIDAnalysis : public edm::EDAnalyzer {
 public:
   
   explicit SimplePhotonIDAnalysis( const edm::ParameterSet& );
+
   ~SimplePhotonIDAnalysis() {;}
   
 private:
   
   virtual void beginJob( const edm::EventSetup& );
+
   virtual void analyze( const edm::Event&, const edm::EventSetup& );
   
   // Histograms

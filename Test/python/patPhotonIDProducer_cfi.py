@@ -1,8 +1,6 @@
 import FWCore.ParameterSet.Config as cms
 
-#from RecoEgamma.PhotonIdentification.photonId_cfi import *
-
-selectedLayer1PhotonIDs = cms.EDProducer(
+patPhotonIDProducer = cms.EDProducer(
     "PATPhotonIDProducer",
     PhotonTag = cms.InputTag("selectedLayer1Photons"),
 

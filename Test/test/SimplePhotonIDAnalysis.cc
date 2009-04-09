@@ -1,7 +1,6 @@
 #include "bainbrid/Test/test/SimplePhotonIDAnalysis.h"
-#include "DataFormats/PatCandidates/interface/Jet.h"
-#include "DataFormats/PatCandidates/interface/Photon.h"
 #include "DataFormats/Common/interface/View.h"
+#include "DataFormats/PatCandidates/interface/Photon.h"
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/EventSetup.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"

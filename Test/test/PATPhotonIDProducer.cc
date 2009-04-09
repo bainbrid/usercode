@@ -1,11 +1,11 @@
+#include "bainbrid/Test/test/PATPhotonIDProducer.h"
 #include "DataFormats/PatCandidates/interface/Photon.h"
-#include "DataFormats/Common/interface/View.h"
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/EventSetup.h"
 #include "FWCore/ParameterSet/interface/InputTag.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
-#include "PhysicsTools/PatAlgos/plugins/PATPhotonIDProducer.h"
 #include <memory>
+#include <vector>
 
 // -----------------------------------------------------------------------------
 //

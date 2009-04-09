@@ -1,7 +1,8 @@
-#ifndef PhysicsTools_PatAlgos_PATPhotonIDProducer_h
-#define PhysicsTools_PatAlgos_PATPhotonIDProducer_h
+#ifndef bainbrid_Test_PATPhotonIDProducer_h
+#define bainbrid_Test_PATPhotonIDProducer_h
 
 #include "FWCore/Framework/interface/EDProducer.h"
+#include "FWCore/ParameterSet/interface/InputTag.h"
 #include "RecoEgamma/PhotonIdentification/interface/CutBasedPhotonIDAlgo.h"
 
 namespace pat {
@@ -26,4 +27,4 @@ namespace pat {
   
 }
 
-#endif // PhysicsTools_PatAlgos_PATPhotonIDProducer_h
+#endif // bainbrid_Test_PATPhotonIDProducer_h
