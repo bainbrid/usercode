@@ -33,7 +33,7 @@ process.p = cms.Path(
 
 process.out = cms.OutputModule(
     "PoolOutputModule",
-    fileName = cms.untracked.string('PATLayer1_Output.fromAOD_jetSuite_full.root'),
+    fileName = cms.untracked.string('JptCorrectedJets.root'),
     SelectEvents   = cms.untracked.PSet( SelectEvents = cms.vstring('p') ),
     outputCommands = cms.untracked.vstring('drop *')
     )
