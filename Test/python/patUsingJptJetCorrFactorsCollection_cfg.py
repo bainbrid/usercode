@@ -23,7 +23,7 @@ process.load("PhysicsTools.PatAlgos.patSequences_cff")
 process.load("Configuration.StandardSequences.Geometry_cff")
 process.load("Configuration.StandardSequences.MagneticField_cff")
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
-process.GlobalTag.globaltag = cms.string('STARTUP_V11::All')
+process.GlobalTag.globaltag = cms.string('STARTUP_V9::All')
 
 from PhysicsTools.PatAlgos.tools.jetTools import *
 
