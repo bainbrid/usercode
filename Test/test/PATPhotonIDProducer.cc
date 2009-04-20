@@ -53,7 +53,7 @@ void pat::PATPhotonIDProducer::produce( edm::Event& event,
 				  iphoton->ecalIso(), //@@ take ECAL isolation value from PAT
 				  id->isolationHcalRecHit(),
 				  id->r9(),
-				  id->isEBPo(),
+				  id->isEBPho(),
 				  id->isEEPho(),
 				  id->isEBGap(),
 				  id->isEEGap(),
