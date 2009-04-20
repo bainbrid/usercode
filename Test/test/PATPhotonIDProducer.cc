@@ -47,13 +47,13 @@ void pat::PATPhotonIDProducer::produce( edm::Event& event,
 				  id->isLoosePhoton(),
 				  id->isTightPhoton(),
 				  id->isolationSolidTrkCone(),
-				  id->isolationHollowTrkCone(), // iphoton->trackIso(), //@@ take TRK isolation value from PAT
+				  id->isolationHollowTrkCone(),
 				  id->nTrkSolidCone(),
 				  id->nTrkHollowCone(), 
 				  iphoton->ecalIso(), //@@ take ECAL isolation value from PAT
-				  iphoton->hcalIso(), //@@ take HCAL isolation value from PAT
+				  id->isolationHcalRecHit(),
 				  id->r9(),
-				  id->isEBPho(),
+				  id->isEBPo(),
 				  id->isEEPho(),
 				  id->isEBGap(),
 				  id->isEEGap(),
@@ -63,7 +63,12 @@ void pat::PATPhotonIDProducer::produce( edm::Event& event,
       // Set ID according to thresholds on new ECAL isolation value
       if ( modified_id.isEBPho() ) { algo_.decideEB( modified_id, &*iphoton ); }
       else if ( modified_id.isEEPho() ) { algo_.decideEE( modified_id, &*iphoton ); }
-      else { std::cout << "PROBLEM!" << std::endl; }
+      else { 
+	edm::LogWarning("PATPhotonIDProducer") 
+	  << "[PATPhotonIDProducer::produce]" 
+	  << " Photon in marked neither as being in ECAL Barrel or EndCap!"
+	  << std::endl;
+      }
       
       // Overwrite internal ID with newly constructed one
       iphoton->setPhotonID( modified_id );
