@@ -15,6 +15,7 @@
 //
 SimplePhotonIDAnalysis::SimplePhotonIDAnalysis( const edm::ParameterSet& pset ) 
   : histos_(),
+    histos2d_(),
     labels_(),
     photons_( pset.getUntrackedParameter<edm::InputTag>("Photons") ),
     others_( pset.getUntrackedParameter<edm::InputTag>("OtherPhotons") )
