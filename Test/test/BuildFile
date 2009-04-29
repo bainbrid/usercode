@@ -16,3 +16,15 @@
   <use name=RecoEgamma/PhotonIdentification>
   <flags EDM_PLUGIN=1>
 </library>
+
+<library name=bainbridTest_TestCombination file=TestCombination.cc>
+  <use name=DataFormats/RecoCandidate>
+  <use name=DataFormats/PatCandidates>
+  <use name=FWCore/Framework>
+  <use name=FWCore/ParameterSet>
+  <use name=FWCore/MessageLogger>
+  <use name=FWCore/RegistryService>
+  <use name=PhysicsTools/UtilAlgos>
+  <use name=PhysicsTools/Utilities>
+  <flags EDM_PLUGIN=1>
+</library>
