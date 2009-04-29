@@ -1,15 +1,19 @@
 <library name=bainbridTest_SimplePhotonIDAnalysis file=SimplePhotonIDAnalysis.cc>
   <use name=DataFormats/Common>
+  <use name=DataFormats/HepMCCandidate>
+  <use name=DataFormats/Math>
   <use name=DataFormats/PatCandidates>
   <use name=FWCore/Framework>
   <use name=FWCore/ParameterSet>
   <use name=FWCore/ServiceRegistry>
   <use name=PhysicsTools/UtilAlgos>
+  <use name=boost>
   <use name=root>
   <flags EDM_PLUGIN=1>
 </library>
 
 <library name=bainbridTest_PATPhotonIDProducer file=PATPhotonIDProducer.cc>
+  <use name=DataFormats/Common>
   <use name=DataFormats/PatCandidates>
   <use name=FWCore/Framework>
   <use name=FWCore/ParameterSet>
@@ -23,7 +27,7 @@
   <use name=FWCore/Framework>
   <use name=FWCore/ParameterSet>
   <use name=FWCore/MessageLogger>
-  <use name=FWCore/RegistryService>
+  <use name=FWCore/ServiceRegistry>
   <use name=PhysicsTools/UtilAlgos>
   <use name=PhysicsTools/Utilities>
   <flags EDM_PLUGIN=1>
