@@ -32,3 +32,18 @@
   <use name=PhysicsTools/Utilities>
   <flags EDM_PLUGIN=1>
 </library>
+
+<library name=bainbridTest_JPTCorrector file=JPTCorrector.cc>
+  <use name=DataFormats/Common>
+  <use name=DataFormats/JetReco>
+  <use name=DataFormats/TrackReco>
+  <use name=DataFormats/MuonReco>
+  <use name=FWCore/Framework>
+  <use name=FWCore/ParameterSet>
+  <use name=FWCore/MessageLogger>
+  <use name=JetMETCorrections/Algorithms>
+  <use name=JetMETCorrections/Objects>
+  <use name=MagneticField/Records>
+  <use name=RecoJets/JetAssociationAlgorithms>
+  <use name=TrackingTools/Records>
+</library>
