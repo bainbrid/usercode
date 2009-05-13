@@ -4,7 +4,7 @@ import FWCore.ParameterSet.Config as cms
 
 from TrackPropagation.SteppingHelixPropagator.SteppingHelixPropagatorAlong_cfi import * 
 
-JPTIC5Pset = cms.PSet(
+JPTCorrectorICone5 = cms.PSet(
     # Look-up tables
     NonEfficiencyFile     = cms.string('CMSSW_167_TrackNonEff'),
     NonEfficiencyFileResp = cms.string('CMSSW_167_TrackLeakage'),
