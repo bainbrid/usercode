@@ -5,15 +5,12 @@
 #include "FWCore/ParameterSet/interface/InputTag.h"
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
-#include "JetMETCorrections/Algorithms/interface/SingleParticleJetResponse.h"
 #include "JetMETCorrections/Objects/interface/JetCorrector.h"
 #include "DataFormats/Common/interface/Handle.h"
 #include "DataFormats/JetReco/interface/JetTracksAssociation.h"
 #include "DataFormats/TrackReco/interface/Track.h"
 #include "DataFormats/MuonReco/interface/Muon.h"
 #include "DataFormats/MuonReco/interface/MuonFwd.h"
-
-class SingleParticleJetResponse;
 
 namespace edm {
   class Event;
@@ -73,8 +70,6 @@ private:
   std::string theTrackQuality;
 
   reco::TrackBase::TrackQuality trackQuality_;
-
-  SingleParticleJetResponse * theSingle;
 
 /// Tracking efficiency
   int netabin1,nptbin1;

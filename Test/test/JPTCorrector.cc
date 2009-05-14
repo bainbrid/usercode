@@ -21,6 +21,7 @@
 #include "RecoJets/JetAssociationAlgorithms/interface/JetTracksAssociationDRVertex.h"
 #include "TrackingTools/Records/interface/TrackingComponentsRecord.h"
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
+#include <fstream>
 
 using namespace std;
 
@@ -61,7 +62,6 @@ JPTCorrector::JPTCorrector(const edm::ParameterSet& iConfig)
 	     edm::FileInPath f3(file3);
           //   std::cout<< " Before the set of parameters "<<std::endl;			  
 	     setParameters(f1.fullPath(),f2.fullPath(),f3.fullPath());
-	     theSingle = new SingleParticleJetResponse();
 }
 
 JPTCorrector::~JPTCorrector()
@@ -446,11 +446,6 @@ double JPTCorrector::correction(const reco::Jet& fJet,
        for( reco::TrackRefVector::iterator itV = trInCaloOutOfVertex.begin(); itV != trInCaloOutOfVertex.end(); itV++)
 	 {
 	   double echar=sqrt((**itV).px()*(**itV).px()+(**itV).py()*(**itV).py()+(**itV).pz()*(**itV).pz()+0.14*0.14);
-	   /*
-	     double x = 0.;
-	     vector<double> resp=theSingle->response(echar,x,theResponseAlgo);
-	     NewResponse =  NewResponse - resp.front() - resp.back();
-	   */
 	   for(int i=0; i < netabin1-1; i++)
 	     {
 	       for(int j=0; j < nptbin1-1; j++)
@@ -487,11 +482,6 @@ double JPTCorrector::correction(const reco::Jet& fJet,
 	 
          if(debug) cout<<" New response in Calo in Vertex sum "<<NewResponse<<" "<<echar<<endl;
 
-	 /*
-	 double x = 0.;
-	 vector<double> resp=theSingle->response(echar,x,theResponseAlgo);
-	 NewResponse =  NewResponse - resp.front() - resp.back();
-	 */
 	 //
 	 // Calculate the number of in cone tracks and response subtruction
 	 //
@@ -537,11 +527,6 @@ double JPTCorrector::correction(const reco::Jet& fJet,
 	     int k = nptbin1*etatr + pttr;
 	     if(netracks_incone[k]>0.) {
 	       emean_incone[k] = emean_incone[k]/netracks_incone[k];
-	       /*
-	       double ee = 0.;
-	       vector<double> resp=theSingle->response(emean_incone[k],ee,theResponseAlgo);
-	       corrinef = corrinef + netracks_incone[k]*((1.-trkeff[k])/trkeff[k])*(emean_incone[k] - eleakage[etatr]*(resp.front() + resp.back()));
-	       */
 	       corrinef = corrinef + netracks_incone[k] * ((1.-trkeff[k])/trkeff[k]) * emean_incone[k] * (1.-eleakage[k]*response[k]);
 	       if(debug) cout <<" k eta/pt index = " << k
 			      <<" trkeff[k] = " << trkeff[k]
@@ -639,7 +624,3 @@ double JPTCorrector::correction(const reco::Jet& fJet,
    
    return mScale;
 }
-
-#include "FWCore/Framework/interface/SourceFactory.h"
-#include "JetMETCorrections/Modules/src/JetCorrectionService.icc"
-DEFINE_JET_CORRECTION_SERVICE(JPTCorrector,JPTCorrectionService);
