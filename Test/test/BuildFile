@@ -47,3 +47,27 @@
   <use name=RecoJets/JetAssociationAlgorithms>
   <use name=TrackingTools/Records>
 </library>
+
+<library name=bainbridTest_JPTCorrectionService file=JPTCorrectionService.cc>
+  <use name=FWCore/Framework>
+  <use name=FWCore/ParameterSet>
+  <use name=JetMETCorrections/Objects>
+  <lib name=bainbridTest_JPTCorrector>
+  <use name=boost>
+  <flags EDM_PLUGIN=1>
+</library>
+
+<library name=bainbridTest_EnergyScale file=ObjectMatcher.cc,ObjectMatcherBase.cc,ObjectTags.cc,LorentzVectorPair.cc,EnergyScaleHistogrammer.cc,EnergyScaleHistograms.cc,EnergyScaleAnalyzer.cc,modules.cc>
+  <use name=DataFormats/Common>
+  <use name=DataFormats/JetReco>
+  <use name=DataFormats/PatCandidates>
+  <use name=DataFormats/Provenance>
+  <use name=FWCore/Framework>
+  <use name=FWCore/MessageLogger>
+  <use name=FWCore/ParameterSet>
+  <use name=FWCore/ServiceRegistry>
+  <use name=roothistmatrix>
+  <use name=rootgraphics>
+  <use name=clhep>
+  <flags EDM_PLUGIN=1>
+</library>
