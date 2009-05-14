@@ -12,7 +12,7 @@ namespace stdcomb
     {
   
       bool boolmarked=false;
-      BidIt r_marked;
+      BidIt r_marked=r_end;
   
       BidIt n_it1=n_end;
       --n_it1;
@@ -41,7 +41,7 @@ namespace stdcomb
 	      if(boolmarked==true)
 		{
 		  //for loop to find which marked is in the first sequence
-		  BidIt n_marked;//mark in first sequence
+		  BidIt n_marked=n_end;//mark in first sequence
 		  for (BidIt n_it2=n_begin;n_it2!=n_end;++n_it2)
 		    if(*r_marked==*n_it2) {n_marked=n_it2;break;}
       
