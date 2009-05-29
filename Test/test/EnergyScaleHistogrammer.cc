@@ -34,15 +34,15 @@ EnergyScaleHistogrammer::~EnergyScaleHistogrammer() {
   std::vector<EnergyScaleHistograms*>::iterator jj = histos_.end();
   for ( ; ii != jj; ++ii ) { 
     if ( *ii ) { 
-      (*ii)->write( file_ );
       (*ii)->end( style_ );
+      (*ii)->write( file_ );
       delete *ii; 
     } 
   }
   histos_.clear();
   if ( file_ ) {
-    file_->Close();
     file_->Write();
+    file_->Close();
     delete file_;
   }
 }
