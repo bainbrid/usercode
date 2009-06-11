@@ -5,7 +5,7 @@ import FWCore.ParameterSet.Config as cms
 # 3: PhotonJets,22X,Summer08Redigi(Fall08) 
 Vers = str("1")
 
-Location = str("/home/bainbrid/susy/MISC/")
+Location = str("rfio:/castor/cern.ch/user/b/bainbrid/")
 
 if Vers == str("1") :
     Source  = str("GMSB") # Options: "GMSB", "PhotonJets"
@@ -38,7 +38,7 @@ process.MessageLogger.destinations = cms.untracked.vstring(
     "cerr", "susyPhotonID_" + Name, "info", "warning", "error"
     )
 
-inputFiles = cms.untracked.vstring("file:" + Location + "susyPatLayer1_" + Name + ".root")
+inputFiles = cms.untracked.vstring(Location + "susyPatLayer1_" + Name + ".root")
 process.source = cms.Source(
     "PoolSource",
     fileNames = inputFiles
@@ -111,7 +111,7 @@ process.simplePhotonIDAnalysis.ParticlePdgIds = particlePdgIds
 
 process.TFileService = cms.Service(
     "TFileService",
-    fileName = cms.string("file:" + Location + "susyPhotonID_" + Name + ".root")
+    fileName = cms.string("file:/tmp/" + "susyPhotonID_" + Name + ".root")
     )
 
 process.p = cms.Path(
