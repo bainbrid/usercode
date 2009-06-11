@@ -3,6 +3,7 @@
 
 #include "FWCore/Framework/interface/EDAnalyzer.h"
 #include "FWCore/ParameterSet/interface/InputTag.h"
+#include "boost/cstdint.hpp"
 #include <vector>
 #include <string>
 #include <map>
@@ -20,9 +21,10 @@ public:
   
 private:
   
-  virtual void beginJob( const edm::EventSetup& );
+  void beginJob( const edm::EventSetup& );
+  void endJob();
 
-  virtual void analyze( const edm::Event&, const edm::EventSetup& );
+  void analyze( const edm::Event&, const edm::EventSetup& );
   
   // Histograms
   std::map<std::string,TH1D*> histos_; 
@@ -34,6 +36,24 @@ private:
   // InputTags for collections
   edm::InputTag photons_;
   edm::InputTag others_;
+  edm::InputTag gen_;
+
+  typedef std::map<int32_t,uint32_t> IdMap;
+  typedef std::vector<IdMap> IdMaps;
+  
+  IdMaps genDaughterPdgId_;
+  IdMaps genMotherPdgId_;
+  IdMaps matchedDaughterPdgId_;
+  IdMaps matchedMotherPdgId_;
+
+  std::vector<int32_t> phoIds_;
+  std::vector<int32_t> eleIds_;
+  std::vector<int32_t> allIds_;
+  
+  static int   nbins_;
+  static float lower_;
+  static float upper_;
+  static int32_t invalidId_;
 
 };
 
