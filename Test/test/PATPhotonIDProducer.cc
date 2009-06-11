@@ -1,4 +1,5 @@
 #include "bainbrid/Test/test/PATPhotonIDProducer.h"
+#include "DataFormats/Common/interface/View.h"
 #include "DataFormats/PatCandidates/interface/Photon.h"
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/EventSetup.h"
@@ -11,7 +12,7 @@
 //
 pat::PATPhotonIDProducer::PATPhotonIDProducer( const edm::ParameterSet& pset ) 
   : algo_(),
-    phoLabel_( pset.getParameter<edm::InputTag>("PhotonTag") )
+    phoLabel_( pset.getParameter<edm::InputTag>("Photons") )
 {
   algo_.setup( pset );
   produces< std::vector<pat::Photon> >();
@@ -23,7 +24,7 @@ void pat::PATPhotonIDProducer::produce( edm::Event& event,
 					const edm::EventSetup& setup ) {
 
   // Retrieve photons from Event
-  edm::Handle< std::vector<pat::Photon> > orig_photons;
+  edm::Handle< edm::View<pat::Photon> > orig_photons;
   event.getByLabel( phoLabel_, orig_photons );
   
   // Create copy of photon collection
@@ -88,3 +89,32 @@ void pat::PATPhotonIDProducer::produce( edm::Event& event,
 #include "FWCore/Framework/interface/MakerMacros.h"
 using namespace pat;
 DEFINE_FWK_MODULE(PATPhotonIDProducer);
+
+
+
+
+
+
+
+
+
+
+//   // MC matching
+//   edm::Handle< edm::Association< reco::GenParticleCollection > > gen_matching;
+//   if ( !genMatch_.label().empty() ) { event.getByLabel( genMatch_, gen_matching ); }
+  
+//     // Embed GenParticle
+//     if ( !genMatch_.label().empty() ) {
+//       uint32_t index = iphoton - new_photons->begin();
+//       edm::RefToBase<pat::Photon> photon_ref = orig_photons->refAt(index);
+//       if ( photon_ref.isNonnull() ) { 
+// 	reco::GenParticleRef gen = (*gen_matching)[photon_ref];
+// 	if ( gen.isNonnull() ) { 
+// 	  iphoton->addGenParticleRef(gen);
+// 	  iphoton->embedGenParticle();
+// 	} //else { std::cout << "NULL Ref" << std::endl; }
+//       } //else { std::cout << "NULL RefToBase" << std::endl; }
+//     }
+
+// */
+
