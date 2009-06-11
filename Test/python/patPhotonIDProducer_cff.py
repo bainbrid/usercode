@@ -4,7 +4,7 @@ from RecoEgamma.PhotonIdentification.photonId_cfi import PhotonIDProd
 
 patPhotonIDProducer = cms.EDProducer(
     "PATPhotonIDProducer",
-    PhotonTag = cms.InputTag("selectedLayer1Photons"),
+    Photons  = cms.InputTag("selectedLayer1Photons")
     )
 
 for i in dir(PhotonIDProd):

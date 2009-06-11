@@ -2,7 +2,7 @@ import FWCore.ParameterSet.Config as cms
 
 patPhotonIDProducer = cms.EDProducer(
     "PATPhotonIDProducer",
-    PhotonTag = cms.InputTag("selectedLayer1Photons"),
+    Photons = cms.InputTag("selectedLayer1Photons"),
 
     photonProducer = cms.string('photons'),                              
     photonLabel = cms.string(''),
