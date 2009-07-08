@@ -30,6 +30,24 @@
   <use name=FWCore/ServiceRegistry>
   <use name=PhysicsTools/UtilAlgos>
   <use name=PhysicsTools/Utilities>
+  <Flags CXXFLAGS="-g">
+  <flags EDM_PLUGIN=1>
+</library>
+
+<library name=bainbridTest_TestMerge file=TestMerge.cc>
+  <use name=FWCore/Framework>
+  <use name=FWCore/ParameterSet>
+  <use name=FWCore/MessageLogger>
+  <use name=root>
+  <flags EDM_PLUGIN=1>
+</library>
+
+<library name=bainbridTest_TestEfficiency file=TestEfficiency.cc>
+  <use name=FWCore/Framework>
+  <use name=FWCore/ParameterSet>
+  <use name=FWCore/MessageLogger>
+  <use name=root>
+  <use name=rootgraphics>
   <flags EDM_PLUGIN=1>
 </library>
 
