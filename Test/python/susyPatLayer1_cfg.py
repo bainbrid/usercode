@@ -3,7 +3,7 @@ import FWCore.ParameterSet.Config as cms
 # 1: GMSB,22X,Summer08Redigi 
 # 2: PhotonJets,21X,Summer08Redigi 
 # 3: PhotonJets,22X,Summer08Redigi(Fall08) 
-Vers = str("3")
+Vers = str("1")
 
 if Vers == str("1") :
     Source  = str("GMSB") # Options: "GMSB", "PhotonJets"
@@ -74,7 +74,7 @@ process.source = cms.Source(
     )
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(-1)
+    input = cms.untracked.int32(10)
     )
 
 process.load("SUSYBSMAnalysis.CorrectedECalRecHitProducer.correctedecalrechitproducer_cfi")
@@ -163,4 +163,5 @@ process.output.outputCommands.extend(['keep patPhotons_patPhotonIDProducer_*_*']
 process.output.outputCommands.extend(['keep recoTrackExtras_generalTracks_*_*'])
 process.output.outputCommands.extend(['keep recoSuperClusters_*_*_*'])
 process.output.outputCommands.extend(['keep recoGenParticles_genParticles_*_*'])
+process.output.outputCommands.extend(['keep recoPhotonIDs_PhotonIDProd_PhotonAssociatedID_*'])
 process.e = cms.EndPath(process.output)
