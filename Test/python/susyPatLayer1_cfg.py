@@ -74,7 +74,7 @@ process.source = cms.Source(
     )
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(10)
+    input = cms.untracked.int32(-1)
     )
 
 process.load("SUSYBSMAnalysis.CorrectedECalRecHitProducer.correctedecalrechitproducer_cfi")
@@ -154,14 +154,15 @@ process.load("PhysicsTools.PatAlgos.patLayer0_EventContent_cff")
 process.load("PF.Susy.patLayer1_EventContent_cff")
 process.output = cms.OutputModule(
     "PoolOutputModule",
-    process.patPFLayer1EventContent, 
-    fileName = cms.untracked.string("susyPatLayer1_" + Name + ".root")
+    outputCommands = cms.untracked.vstring("keep *"),
+    #process.patPFLayer1EventContent, 
+    fileName = cms.untracked.string("file:/tmp/" + "susyPatLayer1_" + Name + ".root")
    )
-process.output.outputCommands += process.patLayer0EventContent.outputCommands
+#process.output.outputCommands += process.patLayer0EventContent.outputCommands
 
-process.output.outputCommands.extend(['keep patPhotons_patPhotonIDProducer_*_*'])
-process.output.outputCommands.extend(['keep recoTrackExtras_generalTracks_*_*'])
-process.output.outputCommands.extend(['keep recoSuperClusters_*_*_*'])
-process.output.outputCommands.extend(['keep recoGenParticles_genParticles_*_*'])
-process.output.outputCommands.extend(['keep recoPhotonIDs_PhotonIDProd_PhotonAssociatedID_*'])
+#process.output.outputCommands.extend(['keep patPhotons_patPhotonIDProducer_*_*'])
+#process.output.outputCommands.extend(['keep recoTrackExtras_generalTracks_*_*'])
+#process.output.outputCommands.extend(['keep recoSuperClusters_*_*_*'])
+#process.output.outputCommands.extend(['keep recoGenParticles_genParticles_*_*'])
+#process.output.outputCommands.extend(['keep recoPhotonIDs_PhotonIDProd_PhotonAssociatedID_*'])
 process.e = cms.EndPath(process.output)

@@ -6,6 +6,7 @@ import FWCore.ParameterSet.Config as cms
 Vers = str("1")
 
 Location = str("rfio:/castor/cern.ch/user/b/bainbrid/")
+#Location = str("file:/tmp/")
 
 if Vers == str("1") :
     Source  = str("GMSB") # Options: "GMSB", "PhotonJets"
@@ -45,7 +46,7 @@ process.source = cms.Source(
     )
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(100)
+    input = cms.untracked.int32(10)
     )
 
 photonPdgIds = cms.vint32(22)
@@ -94,6 +95,7 @@ process.matchedParticles = cms.EDFilter(
 from PhysicsTools.PatAlgos.producersLayer1.photonProducer_cfi import allLayer1Photons
 process.matchedLayer1Photons = allLayer1Photons.clone()
 process.matchedLayer1Photons.photonSource = cms.InputTag("allLayer0Photons")
+process.matchedLayer1Photons.addTrigMatch = cms.bool(False)
 process.matchedLayer1Photons.genParticleMatch = cms.VInputTag(
     cms.InputTag("matchedPhotons"),
     cms.InputTag("matchedElectrons"),
@@ -114,7 +116,10 @@ process.TFileService = cms.Service(
     fileName = cms.string("file:/tmp/" + "susyPhotonID_" + Name + ".root")
     )
 
+process.dump = cms.EDAnalyzer("EventContentAnalyzer")
+
 process.p = cms.Path(
+    process.dump *
     process.matchedPhotons *
     process.matchedElectrons *
     process.matchedParticles *
