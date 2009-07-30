@@ -1,43 +1,82 @@
 import FWCore.ParameterSet.Config as cms
 
-# File: JetCorrections.cff
-# Author: O. Kodolova
-# Date: 1/24/07
-#
-# Jet corrections with tracks for the icone5 jets with ZSP corrections.
-# 
+# Jet-Tracks Association
+
 from JetMETCorrections.Configuration.JetCorrectionsRecord_cfi import *
 from RecoJets.Configuration.RecoJetAssociations_cff import *
+from RecoJets.JetAssociationProducers.iterativeCone5JTA_cff import*
+
+# -------------------- Electron ID --------------------
+
+from RecoEgamma.ElectronIdentification.electronIdCutBasedExt_cfi import *
+
+electronIdRobustLoose = eidCutBasedExt.clone()
+electronIdRobustLoose.electronQuality = 'robust'
+
+electronIdRobustTight = eidCutBasedExt.clone()
+electronIdRobustTight.electronQuality = 'robust'
+electronIdRobustTight.robustEleIDCuts.barrel = [0.015, 0.0092, 0.020, 0.0025]
+electronIdRobustTight.robustEleIDCuts.endcap = [0.018, 0.025, 0.020, 0.0040]
+
+electronIdRobustHighEnergy = eidCutBasedExt.clone()
+electronIdRobustHighEnergy.electronQuality = 'robust'
+electronIdRobustHighEnergy.robustEleIDCuts.barrel = [0.050, 0.011, 0.090, 0.005]
+electronIdRobustHighEnergy.robustEleIDCuts.endcap = [0.100, 0.0275, 0.090, 0.007]
+
+electronIdLoose = eidCutBasedExt.clone()
+electronIdLoose.electronQuality = 'loose'
+
+electronIdTight = eidCutBasedExt.clone()
+electronIdTight.electronQuality = 'loose'
+
+electronIdSequence = cms.Sequence(
+    electronIdRobustLoose +
+    electronIdRobustTight +
+    electronIdRobustHighEnergy +
+    electronIdLoose +
+    electronIdTight
+    )
+
+# -------------------- JetTrackAssociation --------------------
+
+JetTracksAssociationAtVertex = iterativeCone5JetTracksAssociatorAtVertex.clone() 
+JetTracksAssociationAtVertex.jets = cms.InputTag("ZSPJetCorJetIcone5")
+
+JetTracksAssociationAtCaloFace = iterativeCone5JetTracksAssociatorAtCaloFace.clone()
+JetTracksAssociationAtCaloFace.jets = cms.InputTag("ZSPJetCorJetIcone5")
+
+JetTracksAssociationExtender = iterativeCone5JetExtender.clone() 
+JetTracksAssociationExtender.jets = cms.InputTag("ZSPJetCorJetIcone5")
+JetTracksAssociationExtender.jet2TracksAtCALO = cms.InputTag("JetTracksAssociationAtCaloFace")
+JetTracksAssociationExtender.jet2TracksAtVX = cms.InputTag("JetTracksAssociationAtVertex")
+
+JetTrackAssociations = cms.Sequence(
+    JetTracksAssociationAtVertex *
+    JetTracksAssociationAtCaloFace *
+    JetTracksAssociationExtender
+    )
+
+# -------------------- JPT Corrections --------------------
 
 from bainbrid.Test.JPTCorrections_cfi import *
 
-JPTZSPCorrectorIcone5 = cms.ESSource(
+JPTCorrectionIC5 = cms.ESSource(
     "JPTCorrectionService",
-    JPTCorrectorICone5,
-    label = cms.string('JPTZSPCorrectorIcone5'),
+    JPTCorrection,
+    label = cms.string('JPTCorrectionIC5'),
     )
 
-JPTZSPCorJetIcone5 = cms.EDProducer("CaloJetCorrectionProducer",
+JPTCorrectorIC5 = cms.EDProducer("CaloJetCorrectionProducer",
     src = cms.InputTag("ZSPJetCorJetIcone5"),
-    correctors = cms.vstring('JPTZSPCorrectorIcone5'),
-    alias = cms.untracked.string('JPTZSPCorJetIcone5')
+    correctors = cms.vstring('JPTCorrectionIC5'),
+    alias = cms.untracked.string('JPTCorrectorIC5')
 )
 
-from RecoJets.JetAssociationProducers.iterativeCone5JTA_cff import*
+# Sequence
 
-ZSPiterativeCone5JetTracksAssociatorAtVertex = iterativeCone5JetTracksAssociatorAtVertex.clone() 
-ZSPiterativeCone5JetTracksAssociatorAtVertex.jets = cms.InputTag("ZSPJetCorJetIcone5")
-
-ZSPiterativeCone5JetTracksAssociatorAtCaloFace = iterativeCone5JetTracksAssociatorAtCaloFace.clone()
-ZSPiterativeCone5JetTracksAssociatorAtCaloFace.jets = cms.InputTag("ZSPJetCorJetIcone5")
-
-ZSPiterativeCone5JetExtender = iterativeCone5JetExtender.clone() 
-ZSPiterativeCone5JetExtender.jets = cms.InputTag("ZSPJetCorJetIcone5")
-ZSPiterativeCone5JetExtender.jet2TracksAtCALO = cms.InputTag("ZSPiterativeCone5JetTracksAssociatorAtCaloFace")
-ZSPiterativeCone5JetExtender.jet2TracksAtVX = cms.InputTag("ZSPiterativeCone5JetTracksAssociatorAtVertex")
-
-
-ZSPrecoJetAssociations = cms.Sequence(ZSPiterativeCone5JetTracksAssociatorAtVertex*ZSPiterativeCone5JetTracksAssociatorAtCaloFace*ZSPiterativeCone5JetExtender)
-
-JPTCorrections = cms.Sequence(ZSPrecoJetAssociations*JPTZSPCorJetIcone5)
+JPTCorrections = cms.Sequence(
+    electronIdSequence *
+    JetTrackAssociations *
+    JPTCorrectorIC5
+    )
 

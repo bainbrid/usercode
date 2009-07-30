@@ -30,7 +30,7 @@
   <use name=FWCore/ServiceRegistry>
   <use name=PhysicsTools/UtilAlgos>
   <use name=PhysicsTools/Utilities>
-  <Flags CXXFLAGS="-g">
+  <flags CXXFLAGS="-O0 -g -DDEBUG">
   <flags EDM_PLUGIN=1>
 </library>
 
@@ -67,6 +67,7 @@
 
 <library name=bainbridTest_JPTCorrector file=JPTCorrector.cc>
   <use name=DataFormats/Common>
+  <use name=DataFormats/EgammaCandidates>
   <use name=DataFormats/JetReco>
   <use name=DataFormats/TrackReco>
   <use name=DataFormats/MuonReco>
@@ -78,6 +79,8 @@
   <use name=MagneticField/Records>
   <use name=RecoJets/JetAssociationAlgorithms>
   <use name=TrackingTools/Records>
+  <use name=boost>
+  <flags CXXFLAGS="-O0 -g -DDEBUG">
 </library>
 
 <library name=bainbridTest_JPTCorrectionService file=JPTCorrectionService.cc>
@@ -86,6 +89,7 @@
   <use name=JetMETCorrections/Objects>
   <lib name=bainbridTest_JPTCorrector>
   <use name=boost>
+  <flags CXXFLAGS="-O0 -g -DDEBUG">
   <flags EDM_PLUGIN=1>
 </library>
 

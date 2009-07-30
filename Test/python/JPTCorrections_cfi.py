@@ -1,25 +1,36 @@
 import FWCore.ParameterSet.Config as cms
 
-# "Generic" configurables used by ESSources/EDProducers in both the JetMET and PAT code 
-
 from TrackPropagation.SteppingHelixPropagator.SteppingHelixPropagatorAlong_cfi import * 
 
-JPTCorrectorICone5 = cms.PSet(
-    # Look-up tables
-    NonEfficiencyFile     = cms.string('CMSSW_167_TrackNonEff'),
-    NonEfficiencyFileResp = cms.string('CMSSW_167_TrackLeakage'),
-    ResponseFile          = cms.string('CMSSW_167_response'),
-    # Access to tracks and muons
-    muonSrc      = cms.InputTag("muons"),
-    trackSrc     = cms.InputTag("generalTracks"),
-    UseQuality   = cms.bool(True),
-    TrackQuality = cms.string('highPurity'),
-    # Jet-tracks association (null values mean use "on-the-fly" mode)
-    JetTrackCollectionAtVertex = cms.InputTag("ZSPiterativeCone5JetTracksAssociatorAtVertex"), 
-    JetTrackCollectionAtCalo   = cms.InputTag("ZSPiterativeCone5JetTracksAssociatorAtCaloFace"),
+JPTCorrection = cms.PSet(
+
+    # Jet-tracks association (null value = "on-the-fly" mode)
+    JetTracksAssociationAtVertex   = cms.InputTag("JetTracksAssociationAtVertex"), 
+    JetTracksAssociationAtCaloFace = cms.InputTag("JetTracksAssociationAtCaloFace"),
+    
+    # Jet-tracks association "on-the-fly" mode
+    Tracks     = cms.InputTag("generalTracks"),
     Propagator = cms.string('SteppingHelixPropagatorAlong'),
-    coneSize   = cms.double(0.5),
-    # Misc configurables
-    respalgo           = cms.int32(5),
+    ConeSize   = cms.double(0.5),
+
+    # Muons
+    Muons = cms.InputTag("muons"),
+    
+    # Electrons
+    UseElectrons = cms.bool(False),
+    Electrons    = cms.InputTag("pixelMatchGsfElectrons"),
+    ElectronIds  = cms.InputTag("electronIdTight"),
+
+    # Use out-of-cone tracks
     AddOutOfConeTracks = cms.bool(True),
+
+    # Filtering tracks using quality
+    UseTrackQuality = cms.bool(True),
+    TrackQuality    = cms.string('highPurity'),
+
+    # Response and efficiency maps
+    ResponseMap   = cms.string("JetMETCorrections/Configuration/data/CMSSW_167_response.txt"),
+    EfficiencyMap = cms.string("JetMETCorrections/Configuration/data/CMSSW_167_TrackNonEff.txt"),
+    LeakageMap    = cms.string("JetMETCorrections/Configuration/data/CMSSW_167_TrackLeakage.txt"),
+
     )
