@@ -72,7 +72,7 @@ JPTCorrectorIC5 = cms.EDProducer("CaloJetCorrectionProducer",
     alias = cms.untracked.string('JPTCorrectorIC5')
 )
 
-# Sequence
+# -------------------- Sequence --------------------
 
 JPTCorrections = cms.Sequence(
     electronIdSequence *

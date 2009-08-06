@@ -4,6 +4,15 @@ from TrackPropagation.SteppingHelixPropagator.SteppingHelixPropagatorAlong_cfi i
 
 JPTCorrection = cms.PSet(
 
+    # General Configuration
+    Verbose              = cms.bool(False),
+    UseInConeTracks      = cms.bool(True),
+    UseOutOfConeTracks   = cms.bool(True),
+    UseOutOfVertexTracks = cms.bool(True),
+    UseMuons             = cms.bool(True),
+    UseElectrons         = cms.bool(True),
+    UseTrackQuality      = cms.bool(True),
+
     # Jet-tracks association (null value = "on-the-fly" mode)
     JetTracksAssociationAtVertex   = cms.InputTag("JetTracksAssociationAtVertex"), 
     JetTracksAssociationAtCaloFace = cms.InputTag("JetTracksAssociationAtCaloFace"),
@@ -17,15 +26,10 @@ JPTCorrection = cms.PSet(
     Muons = cms.InputTag("muons"),
     
     # Electrons
-    UseElectrons = cms.bool(False),
     Electrons    = cms.InputTag("pixelMatchGsfElectrons"),
     ElectronIds  = cms.InputTag("electronIdTight"),
-
-    # Use out-of-cone tracks
-    AddOutOfConeTracks = cms.bool(True),
-
+    
     # Filtering tracks using quality
-    UseTrackQuality = cms.bool(True),
     TrackQuality    = cms.string('highPurity'),
 
     # Response and efficiency maps
