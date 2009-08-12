@@ -1,11 +1,5 @@
 import FWCore.ParameterSet.Config as cms
 
-# Jet-Tracks Association
-
-from JetMETCorrections.Configuration.JetCorrectionsRecord_cfi import *
-from RecoJets.Configuration.RecoJetAssociations_cff import *
-from RecoJets.JetAssociationProducers.iterativeCone5JTA_cff import*
-
 # -------------------- Electron ID --------------------
 
 from RecoEgamma.ElectronIdentification.electronIdCutBasedExt_cfi import *
@@ -38,6 +32,10 @@ electronIdSequence = cms.Sequence(
     )
 
 # -------------------- JetTrackAssociation --------------------
+
+from JetMETCorrections.Configuration.JetCorrectionsRecord_cfi import *
+from RecoJets.Configuration.RecoJetAssociations_cff import *
+from RecoJets.JetAssociationProducers.iterativeCone5JTA_cff import*
 
 JetTracksAssociationAtVertex = iterativeCone5JetTracksAssociatorAtVertex.clone() 
 JetTracksAssociationAtVertex.jets = cms.InputTag("ZSPJetCorJetIcone5")

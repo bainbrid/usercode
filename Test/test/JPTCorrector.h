@@ -3,11 +3,14 @@
 
 #include "DataFormats/Common/interface/Handle.h"
 #include "DataFormats/Common/interface/ValueMap.h"
+#include "DataFormats/Common/interface/View.h"
 #include "DataFormats/EgammaCandidates/interface/GsfElectron.h"
 #include "DataFormats/EgammaCandidates/interface/GsfElectronFwd.h"
 #include "DataFormats/JetReco/interface/JetTracksAssociation.h"
 #include "DataFormats/MuonReco/interface/Muon.h"
 #include "DataFormats/MuonReco/interface/MuonFwd.h"
+#include "DataFormats/PatCandidates/interface/Electron.h"
+#include "DataFormats/PatCandidates/interface/Muon.h"
 #include "DataFormats/TrackReco/interface/Track.h"
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/Frameworkfwd.h"
@@ -50,16 +53,24 @@ class JPTCorrector : public JetCorrector {
   // ---------- Extended interface ----------
 
   // Some useful typedefs
-  typedef reco::MuonCollection Muons;
-  typedef reco::GsfElectronCollection Electrons;
-  typedef edm::ValueMap<float> ElectronIDs;
+  typedef reco::MuonCollection RecoMuons;
+  typedef edm::View<pat::Muon> PatMuons;
+  typedef reco::GsfElectronCollection RecoElectrons;
+  typedef edm::ValueMap<float> RecoElectronIDs;
+  typedef edm::View<pat::Electron> PatElectrons;
 
   /// Associates tracks to jets
-  bool associateTracksToJets( const reco::Jet&, 
-			      const edm::Event&, 
-			      const edm::EventSetup&,
-			      jpt::AssociatedTracks& ) const;
+  bool jetTrackAssociation( const reco::Jet&, 
+			    const edm::Event&, 
+			    const edm::EventSetup&,
+			    jpt::AssociatedTracks& ) const;
 
+  /// Associates tracks to jets "on-the-fly"
+  bool jtaOnTheFly( const reco::Jet&, 
+		    const edm::Event&, 
+		    const edm::EventSetup&,
+		    jpt::AssociatedTracks& ) const;
+  
   /// Categories tracks according to particle type
   void particles( const jpt::AssociatedTracks&,
 		  const edm::Event&, 
@@ -68,26 +79,34 @@ class JPTCorrector : public JetCorrector {
 		  jpt::ParticleTracks& muons, 
 		  jpt::ParticleTracks& electrons ) const;
   
-  /// Matches tracks to muons
+  /// Matches tracks to RECO muons
   bool matching( reco::TrackRefVector::const_iterator,
-		 const edm::Handle<Muons>& ) const;
+		 const edm::Handle<RecoMuons>& ) const;
+
+  /// Matches tracks to PAT muons
+  bool matching( reco::TrackRefVector::const_iterator,
+		 const edm::Handle<PatMuons>& ) const;
   
-  /// Matches tracks to electrons
+  /// Matches tracks to RECO electrons
   bool matching( reco::TrackRefVector::const_iterator,
-		 const edm::Handle<Electrons>&, 
-		 const edm::Handle<ElectronIDs>& ) const;
+		 const edm::Handle<RecoElectrons>&, 
+		 const edm::Handle<RecoElectronIDs>& ) const;
+
+  /// Matches tracks to PAT electrons
+  bool matching( reco::TrackRefVector::const_iterator,
+		 const edm::Handle<PatElectrons>& ) const;
 
   /// Calculates correction to be applied using response function
   double correction( const reco::TrackRefVector&, 
 		     jpt::ParticleResponse&,
-		     bool subtract_response,
-		     bool add_momentum,
+		     bool in_cone_at_vertex,
+		     bool in_cone_at_calo_face,
 		     double mass = 0.14,
 		     double mip = -1. ) const;
   
   /// Calculates correction to be applied using tracking efficiency 
   double correction( jpt::ParticleResponse&,
-		     bool subtract_response ) const;
+		     bool in_cone_at_calo_face ) const;
   
  private:
   
@@ -106,6 +125,8 @@ class JPTCorrector : public JetCorrector {
   bool useOutOfVertexTracks_;
   bool useMuons_;
   bool useElectrons_;
+  bool usePat_;
+  bool allowOnTheFly_;
   bool useTrackQuality_;
   
   // Jet-track association

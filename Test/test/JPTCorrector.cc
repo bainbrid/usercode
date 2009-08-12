@@ -23,6 +23,8 @@ JPTCorrector::JPTCorrector( const edm::ParameterSet& pset )
     useOutOfVertexTracks_( pset.getParameter<bool>("UseOutOfVertexTracks") ),
     useMuons_( pset.getParameter<bool>("UseMuons") ),
     useElectrons_( pset.getParameter<bool>("UseElectrons") ),
+    usePat_( pset.getParameter<bool>("UsePatCollections") ),
+    allowOnTheFly_( pset.getParameter<bool>("AllowOnTheFly") ),
     useTrackQuality_( pset.getParameter<bool>("UseTrackQuality") ),
     jetTracksAtVertex_( pset.getParameter<edm::InputTag>("JetTracksAssociationAtVertex") ),
     jetTracksAtCalo_( pset.getParameter<edm::InputTag>("JetTracksAssociationAtCaloFace") ),
@@ -93,84 +95,80 @@ double JPTCorrector::correction( const reco::Jet& fJet,
   
   // Associate tracks to jet at both the Vertex and CaloFace
   AssociatedTracks associated_tracks;
-  bool ok = associateTracksToJets( fJet, event, setup, associated_tracks ); 
+  bool ok = jetTrackAssociation( fJet, event, setup, associated_tracks ); 
   if ( !ok ) { return ( jet_energy / fJet.energy() ); }
 
-  // Track collections propagated to Vertex and CaloFace for "pions" and muons
+  // Track collections propagated to Vertex and CaloFace for "pions", muons and electrons
   ParticleTracks pions;
   ParticleTracks muons;
   ParticleTracks electrons;
   particles( associated_tracks, event, setup, pions, muons, electrons );
-  
-  // -------------------- In-cone at Vertex and in-cone at CaloFace --------------------
+
+  // -------------------- Pions --------------------
   
   ParticleResponse in_cone;
-  ParticleResponse not_used1;
-  double corr_pions_in_cone = 0.;
-  double corr_muons_in_cone = 0.;
-  double corr_pion_eff_in_cone = 0.;
-  
-  if ( useInConeTracks_ ) {
-
-    // Pions: subtract expected response and add track momentum
-    corr_pions_in_cone = correction( pions.inVertexInCalo_, in_cone, true, true );
-    jet_energy += corr_pions_in_cone;
-    
-    // Muons: subtract expected response and add track momentum
-    corr_muons_in_cone = correction( muons.inVertexInCalo_, not_used1, true, true, 0.105, 2. );
-    jet_energy += corr_muons_in_cone;
-    
-    // Pions: correct for tracking inefficiencies
-    corr_pion_eff_in_cone = correction( in_cone, true );
-    jet_energy += corr_pion_eff_in_cone;
-    
-  }
-    
-  // -------------------- In-cone at Vertex and out-of-cone at CaloFace --------------------
-
   ParticleResponse out_of_cone;
-  ParticleResponse not_used2;
+  ParticleResponse out_of_vertex;
+  double corr_pions_in_cone = 0.;
   double corr_pions_out_of_cone = 0.;
-  double corr_muons_out_of_cone = 0.;
-  double corr_pion_eff_out_of_cone = 0.;
-
-  if ( useOutOfConeTracks_ ) {
-    
-    // Pions: add track momentum 
-    corr_pions_out_of_cone = correction( pions.inVertexOutOfCalo_, out_of_cone, false, true );
-    jet_energy += corr_pions_out_of_cone;
-    
-    // Muons: add track momentum 
-    if ( !pions.inVertexOutOfCalo_.empty() ) { //@@ necesary or bug?
-      corr_muons_out_of_cone = correction( muons.inVertexOutOfCalo_, not_used2, false, true , 0.105, 2. );
-    }
-    jet_energy += corr_muons_out_of_cone;
-    
-    // Pions: correct for tracking inefficiencies
-    corr_pion_eff_out_of_cone = correction( out_of_cone, false );
-    jet_energy += corr_pion_eff_out_of_cone;
-    
+  double corr_pions_out_of_vertex = 0.;
+  
+  if ( useInConeTracks_ ) { 
+    corr_pions_in_cone = correction( pions.inVertexInCalo_, in_cone, true, true ); 
+    jet_energy += corr_pions_in_cone;
   }
   
-  // -------------------- Out-of-cone at Vertex and in-cone at CaloFace --------------------
-
-  ParticleResponse not_used3;
-  ParticleResponse not_used4;
-  double corr_pions_out_of_vertex = 0.;
-  double corr_muons_out_of_vertex = 0.;
+  if ( useOutOfConeTracks_ ) {
+    corr_pions_out_of_cone = correction( pions.inVertexOutOfCalo_, out_of_cone, true, false );
+    jet_energy += corr_pions_out_of_cone;
+  }
 
   if ( useOutOfVertexTracks_ ) {
-    
-    // Pions: subtract expected response
-    corr_pions_out_of_vertex = correction( pions.outOfVertexInCalo_, not_used3, true, false );
+    corr_pions_out_of_vertex = correction( pions.outOfVertexInCalo_, out_of_vertex, false, true );
     jet_energy += corr_pions_out_of_vertex;
-    
-    // Muons: subtract expected response
-    corr_muons_out_of_vertex = correction( muons.outOfVertexInCalo_, not_used4, true, false, 0.105, 2. );
-    jet_energy += corr_muons_out_of_vertex;
-
   }
 
+  // -------------------- Efficiency --------------------
+  
+  double corr_pion_eff_in_cone = 0.;
+  double corr_pion_eff_out_of_cone = 0.;
+  
+  if ( useInConeTracks_ ) { 
+    corr_pion_eff_in_cone = correction( in_cone, true );
+    jet_energy += corr_pion_eff_in_cone;
+  }
+
+  if ( useOutOfConeTracks_ ) {
+    corr_pion_eff_out_of_cone = correction( out_of_cone, false );
+    jet_energy += corr_pion_eff_out_of_cone;
+  }
+  
+  // -------------------- Muons --------------------
+  
+  ParticleResponse not_used1;
+  ParticleResponse not_used2;
+  ParticleResponse not_used3;
+  double corr_muons_in_cone = 0.;
+  double corr_muons_out_of_cone = 0.;
+  double corr_muons_out_of_vertex = 0.;
+  
+  if ( useInConeTracks_ ) { 
+    corr_muons_in_cone = correction( muons.inVertexInCalo_, not_used1, true, true, 0.105, 2. );
+    jet_energy += corr_muons_in_cone;
+  }  
+  
+  if ( useOutOfConeTracks_ ) {
+    if ( !pions.inVertexOutOfCalo_.empty() ) { //@@ necesary or bug?
+      corr_muons_out_of_cone = correction( muons.inVertexOutOfCalo_, not_used2, true, false, 0.105, 2. );
+      jet_energy += corr_muons_out_of_cone;
+    }
+  }    
+  
+  if ( useOutOfVertexTracks_ ) {
+    corr_muons_out_of_vertex = correction( muons.outOfVertexInCalo_, not_used3, false, true, 0.105, 2. );
+    jet_energy += corr_muons_out_of_vertex;
+  }
+  
   // -------------------- Return corrected energy -------------------- 
 
   if ( verbose_ ) {
@@ -179,7 +177,7 @@ double JPTCorrector::correction( const reco::Jet& fJet,
        << "Number of tracks:" << std::endl
        << " In-cone at Vertex   : " << associated_tracks.atVertex_.size() << std::endl
        << " In-cone at CaloFace : " << associated_tracks.atCaloFace_.size() << std::endl
-       << "Individual corrections (and number of tracks):"
+       << "Individual corrections (and number of tracks):" << std::endl
        << " In-cone at Vertex and in-cone at CaloFace (subtract response, add track momentum):" << std::endl  
        << "  Pions      : " << "(" << pions.inVertexInCalo_.size() << ") " << corr_pions_in_cone << std::endl  
        << "  Muons      : " << "(" << muons.inVertexInCalo_.size() << ") " << corr_muons_in_cone << std::endl  
@@ -201,7 +199,10 @@ double JPTCorrector::correction( const reco::Jet& fJet,
     edm::LogVerbatim("JPTCorrector") << ss.str();
   }
 
-  LogTrace("test") <<"TEST mScale= "<<jet_energy / fJet.energy()<<" NewResponse "<<jet_energy<<" Jet energy "<<fJet.energy() << " event " << event.id().event();
+  //   LogTrace("test") << " mScale= " << jet_energy / fJet.energy()
+  // 		   << " NewResponse " << jet_energy 
+  // 		   << " Jet energy " << fJet.energy()
+  // 		   << " event " << event.id().event();
   
   return jet_energy / fJet.energy();
 
@@ -225,31 +226,48 @@ double JPTCorrector::correction( const reco::Particle::LorentzVector& jet ) cons
 
 // -----------------------------------------------------------------------------
 //
-bool JPTCorrector::associateTracksToJets( const reco::Jet& fJet,
-					  const edm::Event& event, 
-					  const edm::EventSetup& setup,
-					  AssociatedTracks& trks ) const {
+bool JPTCorrector::jetTrackAssociation( const reco::Jet& fJet,
+					const edm::Event& event, 
+					const edm::EventSetup& setup,
+					AssociatedTracks& trks ) const {
   
   // Some init
   trks.clear();
   
   // Check whether to retrieve JTA object from Event or construct "on-the-fly"
-  if ( !jetTracksAtVertex_.label().empty() && !jetTracksAtCalo_.label().empty() ) { 
+  if ( !jetTracksAtVertex_.label().empty() && 
+       !jetTracksAtCalo_.label().empty() ) { 
     
     // Get Jet-track association at Vertex
     edm::Handle<reco::JetTracksAssociation::Container> jetTracksAtVertex;
-    event.getByLabel( jetTracksAtVertex_, jetTracksAtVertex );
-
-    // Check if handle is valid 
+    //try { 
+    event.getByLabel( jetTracksAtVertex_, jetTracksAtVertex ); 
+    //}
+//     catch (...) {
+//       if ( verbose_ && edm::isDebugEnabled() ) {
+// 	edm::LogWarning("JPTCorrector")
+// 	  << "[JPTCorrector::" << __func__ << "]"
+// 	  << " Unable to retrieve reco::JetTracksAssociation::Container (for Vertex)"
+// 	  << " with InputTag (label:instance:process) \"" 
+// 	  << muons_.label() << ":"
+// 	  << muons_.instance() << ":"
+// 	  << muons_.process() << "\"" << std::endl
+// 	  << " Attempting to use JTA \"on-the-fly\" mode...";
+//       }	
+//       return jtaOnTheFly( fJet, event, setup, trks );
+//     }
     if ( !jetTracksAtVertex.isValid() || jetTracksAtVertex.failedToGet() ) {
-      edm::LogError("JPTCorrector")
-	<< "[JPTCorrector::" << __func__ << "]"
-	<< " Invalid handle to \"reco::JetTracksAssociation::Container\""
-	<< " with InputTag (label:instance:process) \"" 
-	<< jetTracksAtVertex_.label() << ":"
-	<< jetTracksAtVertex_.instance() << ":"
-	<< jetTracksAtVertex_.process() << "\"";
-      return false;
+      if ( verbose_ && edm::isDebugEnabled() ) {
+	edm::LogWarning("JPTCorrector")
+	  << "[JPTCorrector::" << __func__ << "]"
+	  << " Invalid handle to reco::JetTracksAssociation::Container (for Vertex)"
+	  << " with InputTag (label:instance:process) \"" 
+	  << jetTracksAtVertex_.label() << ":"
+	  << jetTracksAtVertex_.instance() << ":"
+	  << jetTracksAtVertex_.process() << "\"" << std::endl
+	  << " Attempting to use JTA \"on-the-fly\" mode...";
+      }
+      return jtaOnTheFly( fJet, event, setup, trks );
     }
     
     // Retrieve jet-tracks association for given jet
@@ -258,79 +276,103 @@ bool JPTCorrector::associateTracksToJets( const reco::Jet& fJet,
     
     // Check if any tracks are associated to jet at vertex
     if ( trks.atVertex_.empty() ) { return false; }
-  
+
     // Get Jet-track association at Calo
     edm::Handle<reco::JetTracksAssociation::Container> jetTracksAtCalo;
-    event.getByLabel( jetTracksAtCalo_, jetTracksAtCalo );
-  
-
-    // Check if handle is valid 
+    //try { 
+    event.getByLabel( jetTracksAtCalo_, jetTracksAtCalo ); 
+    //}
+//     catch (...) {
+//       if ( verbose_ && edm::isDebugEnabled() ) {
+// 	edm::LogWarning("JPTCorrector")
+// 	  << "[JPTCorrector::" << __func__ << "]"
+// 	  << " Unable to retrieve reco::JetTracksAssociation::Container (for CaloFace)"
+// 	  << " with InputTag (label:instance:process) \"" 
+// 	  << muons_.label() << ":"
+// 	  << muons_.instance() << ":"
+// 	  << muons_.process() << "\"" << std::endl
+// 	  << " Attempting to use JTA \"on-the-fly\" mode...";
+//       }	
+//       return jtaOnTheFly( fJet, event, setup, trks );
+//     }
     if ( !jetTracksAtCalo.isValid() || jetTracksAtCalo.failedToGet() ) {
-      edm::LogError("JPTCorrector")
-	<< "[JPTCorrector::" << __func__ << "]"
-	<< " Invalid handle to \"reco::JetTracksAssociation::Container\""
-	<< " with InputTag (label:instance:process) \"" 
-	<< jetTracksAtCalo_.label() << ":"
-	<< jetTracksAtCalo_.instance() << ":"
-	<< jetTracksAtCalo_.process() << "\"";
-    } else {
-      
-      // Retrieve jet-tracks association for given jet
-      const reco::JetTracksAssociation::Container jtC = *( jetTracksAtCalo.product() );
-      trks.atCaloFace_ = reco::JetTracksAssociation::getValue( jtC, fJet );
-      
+      if ( verbose_ && edm::isDebugEnabled() ) {
+	edm::LogWarning("JPTCorrector")
+	  << "[JPTCorrector::" << __func__ << "]"
+	  << " Invalid handle to reco::JetTracksAssociation::Container (for CaloFace)"
+	  << " with InputTag (label:instance:process) \"" 
+	  << jetTracksAtCalo_.label() << ":"
+	  << jetTracksAtCalo_.instance() << ":"
+	  << jetTracksAtCalo_.process() << "\"" << std::endl
+	  << " Attempting to use JTA \"on-the-fly\" mode...";
+      }
+      return jtaOnTheFly( fJet, event, setup, trks );
     }
     
-  } else {
-
-    // Construct objects that perform association 
-    static JetTracksAssociationDRVertex vrtx(coneSize_);
-    static JetTracksAssociationDRCalo   calo(coneSize_);
-
-    // Container for propagated tracks
-    static JetTracksAssociationDR::TrackRefs propagated;
+    // Retrieve jet-tracks association for given jet
+    const reco::JetTracksAssociation::Container jtC = *( jetTracksAtCalo.product() );
+    trks.atCaloFace_ = reco::JetTracksAssociation::getValue( jtC, fJet );
     
-    // Perform once per event
-    static uint32_t last_event = 0;
-    if ( event.id().event() != last_event ) {
-      last_event = event.id().event();
+    // Successfull
+    return true;
+    
+  } else { return jtaOnTheFly( fJet, event, setup, trks ); }
+  
+}
 
-      // Retrieve magnetic field and track propagator
-      edm::ESHandle<MagneticField> field;
-      setup.get<IdealMagneticFieldRecord>().get( field );
-      edm::ESHandle<Propagator> propagator;
-      setup.get<TrackingComponentsRecord>().get( propagator_, propagator );
+// -----------------------------------------------------------------------------
+//
+bool JPTCorrector::jtaOnTheFly( const reco::Jet& fJet,
+				const edm::Event& event, 
+				const edm::EventSetup& setup,
+				AssociatedTracks& trks ) const {
+  
+  // Construct objects that perform association 
+  static JetTracksAssociationDRVertex vrtx(coneSize_);
+  static JetTracksAssociationDRCalo   calo(coneSize_);
+  
+  // Container for propagated tracks
+  static JetTracksAssociationDR::TrackRefs propagated;
+    
+  // Perform once per event
+  static uint32_t last_event = 0;
+  if ( event.id().event() != last_event ) {
+    last_event = event.id().event();
 
-      // Retrieve global tracks 
-      edm::Handle<reco::TrackCollection> tracks;
-      event.getByLabel( tracks_, tracks );
-      if ( !tracks.isValid() || tracks.failedToGet() ) {
-	edm::LogError("JPTCorrector")
-	  << "[JPTCorrector::" << __func__ << "]"
-	  << " Invalid handle to \"reco::TrackCollection\""
-	  << " with InputTag (label:instance:process) \"" 
-	  << tracks_.label() << ":"
-	  << tracks_.instance() << ":"
-	  << tracks_.process() << "\"";
-	return false;
-      }
+    // Retrieve magnetic field and track propagator
+    edm::ESHandle<MagneticField> field;
+    setup.get<IdealMagneticFieldRecord>().get( field );
+    edm::ESHandle<Propagator> propagator;
+    setup.get<TrackingComponentsRecord>().get( propagator_, propagator );
 
-      // Propagate tracks for to calo face 
-      JetTracksAssociationDR::createTrackRefs( propagated, tracks, trackQuality_ );
-      vrtx.propagateTracks( propagated ); //@@ needed?
-      calo.propagateTracks( propagated, *field, *propagator );
+    // Retrieve global tracks 
+    edm::Handle<reco::TrackCollection> tracks;
+    event.getByLabel( tracks_, tracks );
+    if ( !tracks.isValid() || tracks.failedToGet() ) {
+      edm::LogError("JPTCorrector")
+	<< "[JPTCorrector::" << __func__ << "]"
+	<< " Invalid handle to \"reco::TrackCollection\""
+	<< " with InputTag (label:instance:process) \"" 
+	<< tracks_.label() << ":"
+	<< tracks_.instance() << ":"
+	<< tracks_.process() << "\"";
+      return false;
+    }
+
+    // Propagate tracks for to calo face 
+    JetTracksAssociationDR::createTrackRefs( propagated, tracks, trackQuality_ );
+    vrtx.propagateTracks( propagated ); //@@ needed?
+    calo.propagateTracks( propagated, *field, *propagator );
       
-    } 
+  } 
 
-    // Associate tracks to jets at both vertex and calo face
-    vrtx.associateTracksToJet( trks.atVertex_, fJet, propagated );
-    calo.associateTracksToJet( trks.atCaloFace_, fJet, propagated );
+  // Associate tracks to jets at both vertex and calo face
+  vrtx.associateTracksToJet( trks.atVertex_, fJet, propagated );
+  calo.associateTracksToJet( trks.atCaloFace_, fJet, propagated );
     
-    // Check if any tracks are associated to jet at vertex
-    if ( trks.atVertex_.empty() ) { return false; }
+  // Check if any tracks are associated to jet at vertex
+  if ( trks.atVertex_.empty() ) { return false; }
     
-  }
-
   return true;
   
 }
@@ -348,50 +390,172 @@ void JPTCorrector::particles( const AssociatedTracks& associated_tracks,
   pions.clear(); 
   muons.clear(); 
   electrons.clear(); 
-  
+
   // Get muons
-  edm::Handle<Muons> muon_collection;
+  bool found_reco_muons = true;
+  bool found_pat_muons  = true;
+  edm::Handle<RecoMuons> reco_muons;
+  edm::Handle<PatMuons> pat_muons;
   if ( useMuons_ ) { 
-    event.getByLabel( muons_, muon_collection ); 
-    if ( !muon_collection.isValid() || muon_collection.failedToGet() ) {
-      edm::LogError("JPTCorrector")
-	<< "[JPTCorrector::" << __func__ << "]"
-	<< " Invalid handle to \"reco::MuonCollection\""
-	<< " with InputTag (label:instance:process) \"" 
-	<< muons_.label() << ":"
-	<< muons_.instance() << ":"
-	<< muons_.process() << "\"";
-    } 
-  }
+
+    if ( !usePat_ ) {
+
+      // Get RECO muons
+      //try { 
+      event.getByLabel( muons_, reco_muons ); 
+      //}
+//       catch (...) {
+// 	found_reco_muons = false;
+// 	edm::LogError("JPTCorrector")
+// 	  << "[JPTCorrector::" << __func__ << "]"
+// 	  << " Unable to retrieve reco::GsfMuon collection"
+// 	  << " with InputTag (label:instance:process) \"" 
+// 	  << muons_.label() << ":"
+// 	  << muons_.instance() << ":"
+// 	  << muons_.process() << "\"";
+//       }
+      if ( !reco_muons.isValid() || reco_muons.failedToGet() ) {
+	found_reco_muons = false;
+	edm::LogError("JPTCorrector")
+	  << "[JPTCorrector::" << __func__ << "]"
+	  << " Invalid handle to reco::GsfMuon collection"
+	  << " with InputTag (label:instance:process) \"" 
+	  << muons_.label() << ":"
+	  << muons_.instance() << ":"
+	  << muons_.process() << "\"";
+      }
+
+    } else { 
+      
+      // Get PAT muons
+      //try { 
+      event.getByLabel( muons_, pat_muons ); 
+      //}
+//       catch (...) {
+// 	found_pat_muons = false;
+// 	edm::LogError("JPTCorrector")
+// 	  << "[JPTCorrector::" << __func__ << "]"
+// 	  << " Unable to retrieve pat::Muon collection"
+// 	  << " with InputTag (label:instance:process) \"" 
+// 	  << muons_.label() << ":"
+// 	  << muons_.instance() << ":"
+// 	  << muons_.process() << "\"";
+//       }
+      if ( !pat_muons.isValid() || pat_muons.failedToGet() ) {
+	found_pat_muons = false;
+	edm::LogError("JPTCorrector")
+	  << "[JPTCorrector::" << __func__ << "]"
+	  << " Invalid handle to pat::Muon collection"
+	  << " with InputTag (label:instance:process) \"" 
+	  << muons_.label() << ":"
+	  << muons_.instance() << ":"
+	  << muons_.process() << "\"";
+      } 
+
+    }
+
+  } // useMuons_
   
   // Get electrons
-  edm::Handle<Electrons> electron_collection;
+  bool found_reco_electrons    = true;
+  bool found_reco_electron_ids = true;
+  bool found_pat_electrons     = true;
+  edm::Handle<RecoElectrons> reco_electrons;
+  edm::Handle<RecoElectronIDs> reco_electron_ids;
+  edm::Handle<PatElectrons> pat_electrons;
   if ( useElectrons_ ) { 
-    event.getByLabel( electrons_, electron_collection ); 
-    if ( !electron_collection.isValid() || electron_collection.failedToGet() ) {
-      edm::LogError("JPTCorrector")
-	<< "[JPTCorrector::" << __func__ << "]"
-	<< " Invalid handle to \"reco::GsfElectronCollection\""
-	<< " with InputTag (label:instance:process) \"" 
-	<< electrons_.label() << ":"
-	<< electrons_.instance() << ":"
-	<< electrons_.process() << "\"";
-    } 
-  }
+
+    if ( !usePat_ ) {
+
+      // Get RECO electrons
+      //try { 
+      event.getByLabel( electrons_, reco_electrons ); 
+      //}
+//       catch (...) {
+// 	found_reco_electrons = false;
+// 	edm::LogError("JPTCorrector")
+// 	  << "[JPTCorrector::" << __func__ << "]"
+// 	  << " Unable to retrieve reco::GsfElectron collection"
+// 	  << " with InputTag (label:instance:process) \"" 
+// 	  << electrons_.label() << ":"
+// 	  << electrons_.instance() << ":"
+// 	  << electrons_.process() << "\"";
+//       }
+      if ( !reco_electrons.isValid() || reco_electrons.failedToGet() ) {
+	found_reco_electrons = false;
+	edm::LogError("JPTCorrector")
+	  << "[JPTCorrector::" << __func__ << "]"
+	  << " Invalid handle to reco::GsfElectron collection"
+	  << " with InputTag (label:instance:process) \"" 
+	  << electrons_.label() << ":"
+	  << electrons_.instance() << ":"
+	  << electrons_.process() << "\"";
+      }
+
+      // Get RECO electron IDs
+      //try { 
+      event.getByLabel( electronIds_, reco_electron_ids ); 
+      //}
+//       catch (...) {
+// 	found_reco_electron_ids = false;
+// 	edm::LogError("JPTCorrector")
+// 	  << "[JPTCorrector::" << __func__ << "]"
+// 	  << " Unable to retrieve reco::ElectronIDs collection"
+// 	  << " with InputTag (label:instance:process) \"" 
+// 	  << electronIds_.label() << ":"
+// 	  << electronIds_.instance() << ":"
+// 	  << electronIds_.process() << "\"";
+//       }
+      if ( !reco_electron_ids.isValid() || reco_electron_ids.failedToGet() ) {
+	found_reco_electron_ids = false;
+	edm::LogError("JPTCorrector")
+	  << "[JPTCorrector::" << __func__ << "]"
+	  << " Invalid handle to reco::GsfElectron collection"
+	  << " with InputTag (label:instance:process) \"" 
+	  << electronIds_.label() << ":"
+	  << electronIds_.instance() << ":"
+	  << electronIds_.process() << "\"";
+      }
+
+    } else { 
+      
+      // Get PAT electrons
+      //try { 
+      event.getByLabel( electrons_, pat_electrons ); 
+      //}
+//       catch (...) {
+// 	found_pat_electrons = false;
+// 	edm::LogError("JPTCorrector")
+// 	  << "[JPTCorrector::" << __func__ << "]"
+// 	  << " Unable to retrieve pat::Electron collection"
+// 	  << " with InputTag (label:instance:process) \"" 
+// 	  << electrons_.label() << ":"
+// 	  << electrons_.instance() << ":"
+// 	  << electrons_.process() << "\"";
+//       }
+      if ( !pat_electrons.isValid() || pat_electrons.failedToGet() ) {
+	found_pat_electrons = false;
+	edm::LogError("JPTCorrector")
+	  << "[JPTCorrector::" << __func__ << "]"
+	  << " Invalid handle to pat::Electron collection"
+	  << " with InputTag (label:instance:process) \"" 
+	  << electrons_.label() << ":"
+	  << electrons_.instance() << ":"
+	  << electrons_.process() << "\"";
+      }
+
+    }
+
+  } // useElectrons_
   
-  // Get electron IDs
-  edm::Handle<ElectronIDs> electron_ids;
-  if ( useElectrons_ ) { 
-    event.getByLabel( electronIds_, electron_ids ); 
-    if ( !electron_ids.isValid() || electron_ids.failedToGet() ) {
-      edm::LogError("JPTCorrector")
-	<< "[JPTCorrector::" << __func__ << "]"
-	<< " Invalid handle to \"reco::GsfElectronCollection\""
-	<< " with InputTag (label:instance:process) \"" 
-	<< electronIds_.label() << ":"
-	<< electronIds_.instance() << ":"
-	<< electronIds_.process() << "\"";
-    } 
+  // Check
+  bool found_reco = found_reco_muons && found_reco_electrons && found_reco_electron_ids;
+  bool found_pat  = found_pat_muons && found_pat_electrons;
+  if ( !found_reco && !found_pat ) {
+    edm::LogError("JPTCorrector")
+      << "[JPTCorrector::" << __func__ << "]"
+      << " Unable to access RECO or PAT collections for muons and electrons";
+    return;
   }
   
   // Loop through tracks at "Vertex"
@@ -405,18 +569,26 @@ void JPTCorrector::particles( const AssociatedTracks& associated_tracks,
       reco::TrackRefVector::iterator it = find( associated_tracks.atCaloFace_.begin(),
 						associated_tracks.atCaloFace_.end(),
 						*itrk );
-
-      bool is_muon = useMuons_ ? matching( itrk, muon_collection ) : false;
-      bool is_elec = useElectrons_ ? matching( itrk, electron_collection, electron_ids ) : false;
+      
+      bool is_muon = false;
+      bool is_ele  = false;
+      if ( !usePat_ && found_reco ) { 
+	is_muon = useMuons_     && matching( itrk, reco_muons );
+	is_ele  = useElectrons_ && matching( itrk, reco_electrons, reco_electron_ids );
+      } else if ( usePat_ && found_pat ) { 
+	is_muon = useMuons_     && matching( itrk, pat_muons ); 
+	is_ele  = useElectrons_ && matching( itrk, pat_electrons );
+      }
       
       if ( it != associated_tracks.atCaloFace_.end() ) { 
-	if ( is_muon )      { muons.inVertexInCalo_.push_back(*it); }
-	else if ( is_elec ) { electrons.inVertexInCalo_.push_back(*it); } 
-	else                { pions.inVertexInCalo_.push_back(*it); } 
+	if ( is_muon )     { muons.inVertexInCalo_.push_back(*it); }
+	else if ( is_ele ) { electrons.inVertexInCalo_.push_back(*it); } 
+	else               { pions.inVertexInCalo_.push_back(*it); } 
       } else { 
-	if ( is_muon )      { muons.inVertexOutOfCalo_.push_back(*itrk); }
-	else                { pions.inVertexOutOfCalo_.push_back(*itrk); }
+	if ( is_muon )     { muons.inVertexOutOfCalo_.push_back(*itrk); }
+	else               { pions.inVertexOutOfCalo_.push_back(*itrk); }
       } 
+      
     } 
     
   }
@@ -439,21 +611,28 @@ void JPTCorrector::particles( const AssociatedTracks& associated_tracks,
 	reco::TrackRefVector::iterator im = find( muons.inVertexInCalo_.begin(),
 						  muons.inVertexInCalo_.end(),
 						  *itrk );
-
-	//reco::TrackRefVector::iterator ie = find( electrons.inVertexInCalo_.begin(),
-	//electrons.inVertexInCalo_.end(),
-	//*itrk );
+	
+	reco::TrackRefVector::iterator ie = find( electrons.inVertexInCalo_.begin(),
+						  electrons.inVertexInCalo_.end(),
+						  *itrk );
 	
 	if ( it == pions.inVertexInCalo_.end() && 
-	     im == muons.inVertexInCalo_.end() ) { 
-	  //&& ie == electrons.inVertexInCalo_.end() ) {
+	     im == muons.inVertexInCalo_.end() &&
+	     ie == electrons.inVertexInCalo_.end() ) {
 	  
-	  bool is_muon = useMuons_ ? matching( itrk, muon_collection ) : false;
-	  bool is_elec = false; //@@ This is JW's implementation - needs checking!
+	  bool is_muon = false;
+	  bool is_ele  = false;
+	  if ( !usePat_ && found_reco ) { 
+	    is_muon = useMuons_ && matching( itrk, reco_muons );
+	    is_ele  = false; //useElectrons_ && matching( itrk, reco_electrons, reco_electron_ids );
+	  } else if ( usePat_ && found_pat ) { 
+	    is_muon = useMuons_ && matching( itrk, pat_muons ); 
+	    is_ele  = false; //useElectrons_ && matching( itrk, pat_electrons );
+	  }
 	  
-	  if ( is_muon )      { muons.outOfVertexInCalo_.push_back(*itrk); } 
-	  else if ( is_elec ) { electrons.outOfVertexInCalo_.push_back(*itrk); } 
-	  else                { pions.outOfVertexInCalo_.push_back(*itrk); }
+	  if ( is_muon )     { muons.outOfVertexInCalo_.push_back(*itrk); } 
+	  else if ( is_ele ) { electrons.outOfVertexInCalo_.push_back(*itrk); } 
+	  else               { pions.outOfVertexInCalo_.push_back(*itrk); }
 	  
 	}
       }
@@ -484,12 +663,12 @@ void JPTCorrector::particles( const AssociatedTracks& associated_tracks,
 // -----------------------------------------------------------------------------
 //
 bool JPTCorrector::matching( reco::TrackRefVector::const_iterator itrk, 
-			     const edm::Handle<Muons>& muons ) const {
+			     const edm::Handle<RecoMuons>& muons ) const {
   
   if ( muons->empty() ) { return false; }
 
-  Muons::const_iterator imuon = muons->begin(); 
-  Muons::const_iterator jmuon = muons->end(); 
+  RecoMuons::const_iterator imuon = muons->begin(); 
+  RecoMuons::const_iterator jmuon = muons->end(); 
   for ( ; imuon != jmuon; ++imuon ) {
     
     if ( imuon->innerTrack().isNull() ||
@@ -515,8 +694,39 @@ bool JPTCorrector::matching( reco::TrackRefVector::const_iterator itrk,
 // -----------------------------------------------------------------------------
 //
 bool JPTCorrector::matching( reco::TrackRefVector::const_iterator itrk, 
-			     const edm::Handle<Electrons>& electrons,
-			     const edm::Handle<ElectronIDs>& electron_id ) const {
+			     const edm::Handle<PatMuons>& muons ) const {
+  
+  if ( muons->empty() ) { return false; }
+  
+  PatMuons::const_iterator imuon = muons->begin(); 
+  PatMuons::const_iterator jmuon = muons->end(); 
+  for ( ; imuon != jmuon; ++imuon ) {
+
+    if ( imuon->innerTrack().isNull() ||
+	 !imuon->isGood(reco::Muon::TMLastStationTight) ||
+	 imuon->innerTrack()->pt() < 3.0 ) { continue; }
+    
+    if ( itrk->id() != imuon->innerTrack().id() ) {
+      edm::LogError("JPTCorrector")
+	<< "Product id of the tracks associated to the jet " << itrk->id() 
+	<<" is different from the product id of the inner track used for muons " << imuon->innerTrack().id()
+	<< "!" << std::endl
+	<< "Cannot compare tracks from different collection. Configuration Error!";
+      return false;
+    }
+    
+    if ( *itrk == imuon->innerTrack() ) { return true; }
+  }
+  
+  return false;
+  
+}
+
+// -----------------------------------------------------------------------------
+//
+bool JPTCorrector::matching( reco::TrackRefVector::const_iterator itrk, 
+			     const edm::Handle<RecoElectrons>& electrons,
+			     const edm::Handle<RecoElectronIDs>& electron_ids ) const {
 
   if ( electrons->empty() ) { return false; }
   
@@ -524,14 +734,45 @@ bool JPTCorrector::matching( reco::TrackRefVector::const_iterator itrk,
   double deltaRMIN = 999.;
 	
   uint32_t electron_index = 0;
-  Electrons::const_iterator ielec = electrons->begin(); 
-  Electrons::const_iterator jelec = electrons->end(); 
+  RecoElectrons::const_iterator ielec = electrons->begin(); 
+  RecoElectrons::const_iterator jelec = electrons->end(); 
   for ( ; ielec != jelec; ++ielec ) {
     
-    edm::Ref<Electrons> electron_ref( electrons, electron_index );
+    edm::Ref<RecoElectrons> electron_ref( electrons, electron_index );
     electron_index++;
     
-    if ( (*electron_id)[electron_ref] < 1.e-6 ) { continue; } //@@ Check for null value 
+    if ( (*electron_ids)[electron_ref] < 1.e-6 ) { continue; } //@@ Check for null value 
+    
+    // DR matching b/w electron and track
+    double deltaphi = fabs( ielec->phi() - (*itrk)->momentum().phi() );
+    if ( deltaphi > 6.283185308 ) deltaphi -= 6.283185308;
+    if ( deltaphi > 3.141592654 ) deltaphi = 6.283185308 - deltaphi;
+    deltaR = abs( sqrt( pow( (ielec->eta() - (*itrk)->momentum().eta()), 2 ) + 
+			pow( deltaphi , 2 ) ) ); 
+    if ( deltaR < deltaRMIN ) { deltaRMIN = deltaR; }
+    
+  }
+  
+  if ( deltaR < 0.02 ) return true;
+  else return false;
+  
+}
+
+// -----------------------------------------------------------------------------
+//
+bool JPTCorrector::matching( reco::TrackRefVector::const_iterator itrk, 
+			     const edm::Handle<PatElectrons>& electrons ) const {
+
+  if ( electrons->empty() ) { return false; }
+  
+  double deltaR = 999.;
+  double deltaRMIN = 999.;
+  
+  PatElectrons::const_iterator ielec = electrons->begin(); 
+  PatElectrons::const_iterator jelec = electrons->end(); 
+  for ( ; ielec != jelec; ++ielec ) {
+    
+    if ( ielec->electronID( electronIds_.label() ) < 1.e-6 ) { continue; } //@@ Check for null value 
     
     // DR matching b/w electron and track
     double deltaphi = fabs( ielec->phi() - (*itrk)->momentum().phi() );
@@ -552,8 +793,8 @@ bool JPTCorrector::matching( reco::TrackRefVector::const_iterator itrk,
 //
 double JPTCorrector::correction( const reco::TrackRefVector& tracks, 
 				 ParticleResponse& track_response,
-				 bool subtract_response,
-				 bool add_momentum,
+				 bool in_cone_at_vertex,
+				 bool in_cone_at_calo_face,
 				 double mass, 
 				 double mip ) const { 
 
@@ -562,7 +803,8 @@ double JPTCorrector::correction( const reco::TrackRefVector& tracks,
   
   // Clear and reset the response matrix
   track_response.clear();
-  track_response.resize( response().nEtaBins(), response().nPtBins() );
+  track_response.resize( response().nEtaBins(), 
+			 response().nPtBins() );
 
   // Iterate through tracks
   if ( !tracks.empty() ) {
@@ -571,7 +813,7 @@ double JPTCorrector::correction( const reco::TrackRefVector& tracks,
     for ( ; itrk != jtrk; ++itrk ) {
 
       // Ignore high-pt tracks 
-      if ( subtract_response && //@@ only when in-cone
+      if ( in_cone_at_calo_face && //@@ only when in-cone
 	   mip < 0. &&          //@@ only when not a mip
 	   (*itrk)->pt() >= 50. ) { continue; }
       
@@ -581,12 +823,12 @@ double JPTCorrector::correction( const reco::TrackRefVector& tracks,
 			      (*itrk)->pz() * (*itrk)->pz() + 
 			      mass * mass );
       
-      // Add track momentum (if appropriate)
-      if ( add_momentum ) { correction += momentum; }
+      // Add track momentum (if in-cone at vertex)
+      if ( in_cone_at_vertex ) { correction += momentum; }
 
       // Check if particle is mip or not
       if ( mip > 0. ) { 
-	if ( subtract_response ) { correction -= mip; }
+	if ( in_cone_at_calo_face ) { correction -= mip; }
       } else { 
 	// Find appropriate eta/pt bin for given track
 	for ( uint32_t ieta = 0; ieta < response().nEtaBins()-1; ++ieta ) {
@@ -597,7 +839,7 @@ double JPTCorrector::correction( const reco::TrackRefVector& tracks,
 	      if ( pt > response().pt(ipt) && ( ipt+1 == response().nPtBins() || pt < response().pt(ipt+1) ) ) {
 		
 		// Subtract expected response (if appropriate)
-		if ( subtract_response ) { correction -= ( momentum * response().value( ieta, ipt ) ); } 
+		if ( in_cone_at_calo_face ) { correction -= ( momentum * response().value(ieta,ipt) ); } 
 		
 		// Record track momentum for efficiency correction
 		track_response.addE( ieta, ipt, momentum );
@@ -610,10 +852,16 @@ double JPTCorrector::correction( const reco::TrackRefVector& tracks,
 		  ss << "[JPTCorrector::" << __func__ << "]" << std::endl
 		     << " Track eta / pt    : " << eta << " / " << pt << std::endl
 		     << temp.str() << std::setw(21-temp.str().size()) << " : " 
-		     << response().value( ieta, ipt ) << std::endl
+		     << response().value(ieta,ipt) << std::endl
 		     << " Track momentum    : " << momentum << std::endl
-		     << " Energy subtracted : " << momentum * response().value( ieta, ipt ) << std::endl
+		     << " Energy subtracted : " << momentum * response().value(ieta,ipt) << std::endl
 		     << " Energy correction : " << correction;
+		  // 		  int k = ieta*response().nPtBins()+ipt;
+		  // 		  ss << "        k eta/pT index = " << k
+		  // 		     << " netracks_incone[k] = " << track_response.nTrks( ieta, ipt )
+		  // 		     << " emean_incone[k] = " << track_response.sumE( ieta, ipt )
+		  // 		     << " i,j "<<ieta<<" "<<ipt<<" "<<response().value(ieta,ipt)
+		  // 		     << " echar "<<momentum<<" "<<response().value(ieta,ipt)*momentum;
 		  LogTrace("JPTCorrector") << ss.str();
 		}
 		
@@ -633,7 +881,7 @@ double JPTCorrector::correction( const reco::TrackRefVector& tracks,
 // -----------------------------------------------------------------------------
 //
 double JPTCorrector::correction( ParticleResponse& track_response,
-				 bool subtract_response ) const { 
+				 bool in_cone_at_calo_face ) const { 
   
   // Correction to be applied
   double correction = 0.;
@@ -641,14 +889,13 @@ double JPTCorrector::correction( ParticleResponse& track_response,
   // Iterate through eta/pt bins
   for ( uint32_t ieta = 0; ieta < response().nEtaBins()-1; ++ieta ) {
     for ( uint32_t ipt = 0; ipt < response().nPtBins()-1; ++ipt ) {
-      uint16_t ntrks = track_response.nTrks( ieta, ipt );
+      uint16_t ntrks = track_response.nTrks(ieta,ipt);
       if ( !ntrks ) { continue; }
-      double mean  = track_response.meanE( ieta, ipt );
+      double mean  = track_response.meanE(ieta,ipt);
       double eff   = ( 1. - efficiency().value(ieta,ipt) ) / efficiency().value(ieta,ipt);
-      correction  += ntrks * eff * mean;
-      if ( subtract_response ) { 
-	correction -= ntrks * eff * mean * leakage().value(ieta,ipt) * response().value(ieta,ipt);
-      }
+      double corr  = ntrks * eff * mean;
+      correction  += corr;
+      if ( in_cone_at_calo_face ) { correction -= corr * leakage().value(ieta,ipt) * response().value(ieta,ipt); }
     }
   }
   
