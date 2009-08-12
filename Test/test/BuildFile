@@ -83,6 +83,20 @@
   <use name=boost>
 </library>
 
+<library name=bainbridTest_JPTCorrectionProducer file=JPTCorrectionModules.cc,JPTCorrectionService.cc,JPTCorrectionProducer.cc>
+  <use name=DataFormats/Common>
+  <use name=DataFormats/PatCandidates>
+  <use name=FWCore/Framework>
+  <use name=FWCore/ParameterSet>
+  <use name=FWCore/PluginManager>
+  <use name=JetMETCorrections/Objects>
+  <use name=PhysicsTools/Utilities>
+  <lib name=bainbridTest_JPTCorrector>
+  <use name=boost>
+  <flags CXXFLAGS="-O0 -g -DDEBUG">
+  <flags EDM_PLUGIN=1>
+</library>
+
 <library name=bainbridTest_JPTCorrFactorsProducer file=JPTCorrFactorsProducer.cc>
   <use name=DataFormats/CaloTowers>
   <use name=DataFormats/Common>
