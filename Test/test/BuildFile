@@ -69,8 +69,9 @@
   <use name=DataFormats/Common>
   <use name=DataFormats/EgammaCandidates>
   <use name=DataFormats/JetReco>
-  <use name=DataFormats/TrackReco>
   <use name=DataFormats/MuonReco>
+  <use name=DataFormats/PatCandidates>
+  <use name=DataFormats/TrackReco>
   <use name=FWCore/Framework>
   <use name=FWCore/ParameterSet>
   <use name=FWCore/MessageLogger>
@@ -80,15 +81,25 @@
   <use name=RecoJets/JetAssociationAlgorithms>
   <use name=TrackingTools/Records>
   <use name=boost>
-  <flags CXXFLAGS="-O0 -g -DDEBUG">
 </library>
 
-<library name=bainbridTest_JPTCorrectionService file=JPTCorrectionService.cc>
+<library name=bainbridTest_JPTCorrFactorsProducer file=JPTCorrFactorsProducer.cc>
+  <use name=DataFormats/CaloTowers>
+  <use name=DataFormats/Common>
+  <use name=DataFormats/PatCandidates>
   <use name=FWCore/Framework>
   <use name=FWCore/ParameterSet>
-  <use name=JetMETCorrections/Objects>
-  <lib name=bainbridTest_JPTCorrector>
-  <use name=boost>
+  <use name=FWCore/MessageLogger>
+  <flags CXXFLAGS="-O0 -g -DDEBUG">
+  <flags EDM_PLUGIN=1>
+</library>
+
+<library name=bainbridTest_RawPATJetProducer file=RawPATJetProducer.cc>
+  <use name=DataFormats/PatCandidates>
+  <use name=FWCore/Framework>
+  <use name=FWCore/ParameterSet>
+  <use name=FWCore/MessageLogger>
+  <use name=PhysicsTools/Utilities>
   <flags CXXFLAGS="-O0 -g -DDEBUG">
   <flags EDM_PLUGIN=1>
 </library>
