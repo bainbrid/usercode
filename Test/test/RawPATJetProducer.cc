@@ -42,5 +42,7 @@ void RawPATJetProducer::produce( edm::Event& event, const edm::EventSetup& setup
 
 }
 
+// -----------------------------------------------------------------------------
+//
 #include "FWCore/Framework/interface/MakerMacros.h"
 DEFINE_FWK_MODULE(RawPATJetProducer);

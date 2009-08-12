@@ -65,6 +65,16 @@
   <flags EDM_PLUGIN=1>
 </library>
 
+<library name=bainbridTest_RawPATJetProducer file=RawPATJetProducer.cc>
+  <use name=DataFormats/PatCandidates>
+  <use name=FWCore/Framework>
+  <use name=FWCore/ParameterSet>
+  <use name=FWCore/MessageLogger>
+  <use name=PhysicsTools/Utilities>
+  <flags CXXFLAGS="-O0 -g -DDEBUG">
+  <flags EDM_PLUGIN=1>
+</library>
+
 <library name=bainbridTest_JPTCorrector file=JPTCorrector.cc>
   <use name=DataFormats/Common>
   <use name=DataFormats/EgammaCandidates>
@@ -104,16 +114,6 @@
   <use name=FWCore/Framework>
   <use name=FWCore/ParameterSet>
   <use name=FWCore/MessageLogger>
-  <flags CXXFLAGS="-O0 -g -DDEBUG">
-  <flags EDM_PLUGIN=1>
-</library>
-
-<library name=bainbridTest_RawPATJetProducer file=RawPATJetProducer.cc>
-  <use name=DataFormats/PatCandidates>
-  <use name=FWCore/Framework>
-  <use name=FWCore/ParameterSet>
-  <use name=FWCore/MessageLogger>
-  <use name=PhysicsTools/Utilities>
   <flags CXXFLAGS="-O0 -g -DDEBUG">
   <flags EDM_PLUGIN=1>
 </library>
