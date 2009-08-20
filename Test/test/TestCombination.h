@@ -22,6 +22,8 @@ class TestCombination : public edm::EDAnalyzer {
  private:
 
   typedef reco::LeafCandidate Candidate;
+  typedef Candidate::LorentzVector LorentzV;
+
 
   // Some init
   void beginJob( const edm::EventSetup& );
@@ -69,14 +71,11 @@ class TestCombination : public edm::EDAnalyzer {
 
   TH1D* histo( const std::string& histogram_name );
   TH2D* histo2d( const std::string& histogram_name );
+  
+  double Et( const LorentzV& );
+  LorentzV t4Mom( const LorentzV& );
 
  private:
-  
-  typedef Candidate::LorentzVector LorentzV;
-
-  double Et( const LorentzV& );
-
-  LorentzV t4Mom( const LorentzV& );
 
   // Maximum number of objects handled
   int maximum_;
