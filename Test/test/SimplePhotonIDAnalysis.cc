@@ -53,248 +53,248 @@ SimplePhotonIDAnalysis::SimplePhotonIDAnalysis( const edm::ParameterSet& pset )
 void SimplePhotonIDAnalysis::analyze( const edm::Event& event, 
 				      const edm::EventSetup& setup ) {
   
-  // Photon counter
-  std::vector<uint16_t> multiplicity_reco( labels_.size(), 0 );
-  std::vector<uint16_t> multiplicity_truth( labels_.size(), 0 );
-  uint16_t              multiplicity_reco_all  = 0;
-  uint16_t              multiplicity_truth_all = 0;
+//   // Photon counter
+//   std::vector<uint16_t> multiplicity_reco( labels_.size(), 0 );
+//   std::vector<uint16_t> multiplicity_truth( labels_.size(), 0 );
+//   uint16_t              multiplicity_reco_all  = 0;
+//   uint16_t              multiplicity_truth_all = 0;
   
-  // Retrieve MC matching maps for photons, electrons, all particles
-  edm::Handle< edm::Association<reco::GenParticleCollection> > matched_photons;
-  event.getByLabel( "matchedPhotons", matched_photons );
-  edm::Handle< edm::Association<reco::GenParticleCollection> > matched_electrons;
-  event.getByLabel( "matchedElectrons", matched_electrons );
-  edm::Handle< edm::Association<reco::GenParticleCollection> > matched_particles;
-  event.getByLabel( "matchedParticles", matched_particles );
+//   // Retrieve MC matching maps for photons, electrons, all particles
+//   edm::Handle< edm::Association<reco::GenParticleCollection> > matched_photons;
+//   event.getByLabel( "matchedPhotons", matched_photons );
+//   edm::Handle< edm::Association<reco::GenParticleCollection> > matched_electrons;
+//   event.getByLabel( "matchedElectrons", matched_electrons );
+//   edm::Handle< edm::Association<reco::GenParticleCollection> > matched_particles;
+//   event.getByLabel( "matchedParticles", matched_particles );
   
-  // Retrieve PAT photon collection from Event
-  edm::Handle< edm::View<pat::Photon> > photons;
-  event.getByLabel( photons_, photons );
+//   // Retrieve PAT photon collection from Event
+//   edm::Handle< edm::View<pat::Photon> > photons;
+//   event.getByLabel( photons_, photons );
   
-  // Retrieve PAT PhotonID collection from Event
-  edm::Handle< edm::View<pat::Photon> > others;
-  event.getByLabel( others_, others );
+//   // Retrieve PAT PhotonID collection from Event
+//   edm::Handle< edm::View<pat::Photon> > others;
+//   event.getByLabel( others_, others );
   
-  // Retrieve GenParticle collection from Event
-  edm::Handle< edm::View<reco::GenParticle> > gen;
-  event.getByLabel( gen_, gen );
+//   // Retrieve GenParticle collection from Event
+//   edm::Handle< edm::View<reco::GenParticle> > gen;
+//   event.getByLabel( gen_, gen );
   
-  // Iterate though categories
-  for ( uint16_t ii = 0; ii < labels_.size(); ++ii ) {
+//   // Iterate though categories
+//   for ( uint16_t ii = 0; ii < labels_.size(); ++ii ) {
     
-    std::string name = labels_[ii];
+//     std::string name = labels_[ii];
 
-    // Iterate though GenParticles
-    edm::View<reco::GenParticle>::const_iterator igen = gen->begin(); 
-    edm::View<reco::GenParticle>::const_iterator jgen = gen->end(); 
-    for ( ; igen != jgen; ++igen ) {
+//     // Iterate though GenParticles
+//     edm::View<reco::GenParticle>::const_iterator igen = gen->begin(); 
+//     edm::View<reco::GenParticle>::const_iterator jgen = gen->end(); 
+//     for ( ; igen != jgen; ++igen ) {
 
-      int32_t gen_daughter_id = invalidId_;
-      int32_t gen_mother_id   = invalidId_;
+//       int32_t gen_daughter_id = invalidId_;
+//       int32_t gen_mother_id   = invalidId_;
       
-      gen_daughter_id = igen->pdgId(); 
-      const reco::Candidate* mother = igen->mother();
-      if ( mother && igen->pdgId() == igen->mother()->pdgId() ) { mother = mother->mother(); }
-      if ( mother ) { gen_mother_id = mother->pdgId(); }
+//       gen_daughter_id = igen->pdgId(); 
+//       const reco::Candidate* mother = igen->mother();
+//       if ( mother && igen->pdgId() == igen->mother()->pdgId() ) { mother = mother->mother(); }
+//       if ( mother ) { gen_mother_id = mother->pdgId(); }
 
-      bool pho = phoIds_.empty() || find( phoIds_.begin(), phoIds_.end(), labs(gen_daughter_id) ) != phoIds_.end();
-      bool ele = eleIds_.empty() || find( eleIds_.begin(), eleIds_.end(), labs(gen_daughter_id) ) != eleIds_.end();
-      bool all = allIds_.empty() || find( allIds_.begin(), allIds_.end(), labs(gen_daughter_id) ) != allIds_.end();
+//       bool pho = phoIds_.empty() || find( phoIds_.begin(), phoIds_.end(), labs(gen_daughter_id) ) != phoIds_.end();
+//       bool ele = eleIds_.empty() || find( eleIds_.begin(), eleIds_.end(), labs(gen_daughter_id) ) != eleIds_.end();
+//       bool all = allIds_.empty() || find( allIds_.begin(), allIds_.end(), labs(gen_daughter_id) ) != allIds_.end();
       
-      if ( ii == 0 && pho ) { multiplicity_truth_all++; }
+//       if ( ii == 0 && pho ) { multiplicity_truth_all++; }
       
-      if ( !( ( ii == 0 && pho && gen_mother_id == 1000022 ) || //@@ SignalPhotons
-	      ( ii == 1 && pho && gen_mother_id != 1000022 ) || //@@ BkgdPhotons
-	      ( ii == 2 && ele ) ||                             //@@ ElectronFakes
-	      ( ii == 3 && all && !pho && !ele ) ||             //@@ NonElectronicFakes
-	      ( ii == 4 && gen_daughter_id == invalidId_ )      //@@ Unmatched
-	      ) ) { continue; } 
+//       if ( !( ( ii == 0 && pho && gen_mother_id == 1000022 ) || //@@ SignalPhotons
+// 	      ( ii == 1 && pho && gen_mother_id != 1000022 ) || //@@ BkgdPhotons
+// 	      ( ii == 2 && ele ) ||                             //@@ ElectronFakes
+// 	      ( ii == 3 && all && !pho && !ele ) ||             //@@ NonElectronicFakes
+// 	      ( ii == 4 && gen_daughter_id == invalidId_ )      //@@ Unmatched
+// 	      ) ) { continue; } 
       
-      genDaughterPdgId_[ii][gen_daughter_id]++; 
-      genMotherPdgId_[ii][gen_mother_id]++;
+//       genDaughterPdgId_[ii][gen_daughter_id]++; 
+//       genMotherPdgId_[ii][gen_mother_id]++;
       
-      multiplicity_truth[ii]++;
-      histos_[name+"_GenPhotons"]->Fill( igen->et() ); 
+//       multiplicity_truth[ii]++;
+//       histos_[name+"_GenPhotons"]->Fill( igen->et() ); 
       
-    }
+//     }
     
-    // Iterate through PAT photons
-    edm::View<pat::Photon>::const_iterator iphoton = photons->begin(); 
-    edm::View<pat::Photon>::const_iterator jphoton = photons->end(); 
-    for ( ; iphoton != jphoton; ++iphoton ) {
+//     // Iterate through PAT photons
+//     edm::View<pat::Photon>::const_iterator iphoton = photons->begin(); 
+//     edm::View<pat::Photon>::const_iterator jphoton = photons->end(); 
+//     for ( ; iphoton != jphoton; ++iphoton ) {
 
-      float et = iphoton->et();
+//       float et = iphoton->et();
       
-      reco::Candidate* candidate = 0;
-      int32_t daughter_id = invalidId_;
-      int32_t mother_id   = invalidId_;
-      std::vector<reco::GenParticleRef> gen_particles = iphoton->genParticleRefs();
-      std::vector<reco::GenParticleRef>::const_iterator igen = gen_particles.begin();
-      std::vector<reco::GenParticleRef>::const_iterator jgen = gen_particles.end();
-      for ( ; igen != jgen; ++igen ) {
-	if ( igen->isNonnull() ) { 
-	  reco::GenParticle* part = const_cast<reco::GenParticle*>( &(**igen) );
- 	  reco::Candidate* cand = dynamic_cast<reco::Candidate*>( part );
- 	  if ( cand ) {
-	    candidate = cand;
-	    daughter_id = cand->pdgId();
-	    const reco::Candidate* mother = cand->mother();
-	    if ( mother && cand->pdgId() == cand->mother()->pdgId() ) { mother = mother->mother(); }
-	    if ( mother ) { mother_id = mother->pdgId(); }
-	    et = cand->et();
-	    break;
-	  }
-	}
-      }
+//       reco::Candidate* candidate = 0;
+//       int32_t daughter_id = invalidId_;
+//       int32_t mother_id   = invalidId_;
+//       std::vector<reco::GenParticleRef> gen_particles = iphoton->genParticleRefs();
+//       std::vector<reco::GenParticleRef>::const_iterator igen = gen_particles.begin();
+//       std::vector<reco::GenParticleRef>::const_iterator jgen = gen_particles.end();
+//       for ( ; igen != jgen; ++igen ) {
+// 	if ( igen->isNonnull() ) { 
+// 	  reco::GenParticle* part = const_cast<reco::GenParticle*>( &(**igen) );
+//  	  reco::Candidate* cand = dynamic_cast<reco::Candidate*>( part );
+//  	  if ( cand ) {
+// 	    candidate = cand;
+// 	    daughter_id = cand->pdgId();
+// 	    const reco::Candidate* mother = cand->mother();
+// 	    if ( mother && cand->pdgId() == cand->mother()->pdgId() ) { mother = mother->mother(); }
+// 	    if ( mother ) { mother_id = mother->pdgId(); }
+// 	    et = cand->et();
+// 	    break;
+// 	  }
+// 	}
+//       }
       
-      // Some selection
-      if ( fabs( iphoton->eta() ) > 2. ) { continue; }
-      //if ( et < 100. ) { continue; }
+//       // Some selection
+//       if ( fabs( iphoton->eta() ) > 2. ) { continue; }
+//       //if ( et < 100. ) { continue; }
 
-      // Totals
-      histos_[name+"_TotalEMObjects"]->Fill( et ); 
-      if ( iphoton->isTightPhoton() ) { histos_[name+"_TotalTightPhotons"]->Fill( et ); }
-      if ( iphoton->isLoosePhoton() ) { histos_[name+"_TotalLoosePhotons"]->Fill( et ); }
-      if ( iphoton->isLooseEM() )     { histos_[name+"_TotalLooseEMObjects"]->Fill( et ); }
+//       // Totals
+//       histos_[name+"_TotalEMObjects"]->Fill( et ); 
+//       if ( iphoton->isTightPhoton() ) { histos_[name+"_TotalTightPhotons"]->Fill( et ); }
+//       if ( iphoton->isLoosePhoton() ) { histos_[name+"_TotalLoosePhotons"]->Fill( et ); }
+//       if ( iphoton->isLooseEM() )     { histos_[name+"_TotalLooseEMObjects"]->Fill( et ); }
 
-      if ( ii == 0 ) { multiplicity_truth_all++; }
+//       if ( ii == 0 ) { multiplicity_truth_all++; }
 
-      bool pho = phoIds_.empty() || find( phoIds_.begin(), phoIds_.end(), labs(daughter_id) ) != phoIds_.end();
-      bool ele = eleIds_.empty() || find( eleIds_.begin(), eleIds_.end(), labs(daughter_id) ) != eleIds_.end();
-      bool all = allIds_.empty() || find( allIds_.begin(), allIds_.end(), labs(daughter_id) ) != allIds_.end();
+//       bool pho = phoIds_.empty() || find( phoIds_.begin(), phoIds_.end(), labs(daughter_id) ) != phoIds_.end();
+//       bool ele = eleIds_.empty() || find( eleIds_.begin(), eleIds_.end(), labs(daughter_id) ) != eleIds_.end();
+//       bool all = allIds_.empty() || find( allIds_.begin(), allIds_.end(), labs(daughter_id) ) != allIds_.end();
 
-      // DeltaR and DeltaPt plots for matched photons, electrons and all particles (done once only)
-      if ( ii == 0 && candidate ) { 
-	if ( pho ) { 
-	  float dr = deltaR<pat::Photon,reco::Candidate>( *iphoton, *candidate );
-	  float pt = candidate->pt() != 0. ? fabs( ( iphoton->pt() - candidate->pt() ) / candidate->pt() ) : -1;
-	  histos_["DeltaR_Photons"]->Fill( dr ); 
-	  histos_["DeltaPt_Photons"]->Fill( pt ); 
-	  histos2d_["DeltaRPt_Photons"]->Fill( dr, pt );
-	} 
-	if ( ele ) { 
-	  histos_["DeltaR_Electrons"]->Fill( deltaR<pat::Photon,reco::Candidate>( *iphoton, *candidate ) ); 
-	  histos_["DeltaPt_Electrons"]->Fill( fabs( iphoton->pt() - candidate->pt() ) ); 
-	  histos2d_["DeltaRPt_Electrons"]->Fill( deltaR<pat::Photon,reco::Candidate>( *iphoton, *candidate ),
-					       fabs( iphoton->pt() - candidate->pt() ) ); 
-	}
-	if ( all ) { 
-	  histos_["DeltaR_Particles"]->Fill( deltaR<pat::Photon,reco::Candidate>( *iphoton, *candidate ) ); 
-	  histos_["DeltaPt_Particles"]->Fill( fabs( iphoton->pt() - candidate->pt() ) ); 
-	  histos2d_["DeltaRPt_Particles"]->Fill( deltaR<pat::Photon,reco::Candidate>( *iphoton, *candidate ),
-						 fabs( iphoton->pt() - candidate->pt() ) ); 
-	}
-      }
+//       // DeltaR and DeltaPt plots for matched photons, electrons and all particles (done once only)
+//       if ( ii == 0 && candidate ) { 
+// 	if ( pho ) { 
+// 	  float dr = deltaR<pat::Photon,reco::Candidate>( *iphoton, *candidate );
+// 	  float pt = candidate->pt() != 0. ? fabs( ( iphoton->pt() - candidate->pt() ) / candidate->pt() ) : -1;
+// 	  histos_["DeltaR_Photons"]->Fill( dr ); 
+// 	  histos_["DeltaPt_Photons"]->Fill( pt ); 
+// 	  histos2d_["DeltaRPt_Photons"]->Fill( dr, pt );
+// 	} 
+// 	if ( ele ) { 
+// 	  histos_["DeltaR_Electrons"]->Fill( deltaR<pat::Photon,reco::Candidate>( *iphoton, *candidate ) ); 
+// 	  histos_["DeltaPt_Electrons"]->Fill( fabs( iphoton->pt() - candidate->pt() ) ); 
+// 	  histos2d_["DeltaRPt_Electrons"]->Fill( deltaR<pat::Photon,reco::Candidate>( *iphoton, *candidate ),
+// 					       fabs( iphoton->pt() - candidate->pt() ) ); 
+// 	}
+// 	if ( all ) { 
+// 	  histos_["DeltaR_Particles"]->Fill( deltaR<pat::Photon,reco::Candidate>( *iphoton, *candidate ) ); 
+// 	  histos_["DeltaPt_Particles"]->Fill( fabs( iphoton->pt() - candidate->pt() ) ); 
+// 	  histos2d_["DeltaRPt_Particles"]->Fill( deltaR<pat::Photon,reco::Candidate>( *iphoton, *candidate ),
+// 						 fabs( iphoton->pt() - candidate->pt() ) ); 
+// 	}
+//       }
       
-      if ( !( ( ii == 0 && pho && mother_id == 1000022 ) || //@@ SignalPhotons
-	      ( ii == 1 && pho && mother_id != 1000022 ) || //@@ BkgdPhotons
-	      ( ii == 2 && ele ) ||                         //@@ ElectronFakes
-	      ( ii == 3 && all && !pho && !ele ) ||         //@@ NonElectronicFakes
-	      ( ii == 4 && daughter_id == invalidId_ )      //@@ Unmatched
-	      ) ) { continue; } 
+//       if ( !( ( ii == 0 && pho && mother_id == 1000022 ) || //@@ SignalPhotons
+// 	      ( ii == 1 && pho && mother_id != 1000022 ) || //@@ BkgdPhotons
+// 	      ( ii == 2 && ele ) ||                         //@@ ElectronFakes
+// 	      ( ii == 3 && all && !pho && !ele ) ||         //@@ NonElectronicFakes
+// 	      ( ii == 4 && daughter_id == invalidId_ )      //@@ Unmatched
+// 	      ) ) { continue; } 
       
-      matchedDaughterPdgId_[ii][daughter_id]++; 
-      matchedMotherPdgId_[ii][mother_id]++; 
+//       matchedDaughterPdgId_[ii][daughter_id]++; 
+//       matchedMotherPdgId_[ii][mother_id]++; 
 
-      multiplicity_reco[ii]++; // Multiplicity
+//       multiplicity_reco[ii]++; // Multiplicity
       
-      // Matched
-      histos_[name+"_MatchedEMObjects"]->Fill( et ); 
-      if ( iphoton->isTightPhoton() ) { histos_[name+"_MatchedTightPhotons"]->Fill( et ); }
-      if ( iphoton->isLoosePhoton() ) { histos_[name+"_MatchedLoosePhotons"]->Fill( et ); }
-      if ( iphoton->isLooseEM() )     { histos_[name+"_MatchedLooseEMObjects"]->Fill( et ); }
+//       // Matched
+//       histos_[name+"_MatchedEMObjects"]->Fill( et ); 
+//       if ( iphoton->isTightPhoton() ) { histos_[name+"_MatchedTightPhotons"]->Fill( et ); }
+//       if ( iphoton->isLoosePhoton() ) { histos_[name+"_MatchedLoosePhotons"]->Fill( et ); }
+//       if ( iphoton->isLooseEM() )     { histos_[name+"_MatchedLooseEMObjects"]->Fill( et ); }
 
-      // Efficiency
-      histos_[name+"_EfficiencyEMObjects"]->Fill( et ); 
-      if ( iphoton->isTightPhoton() ) { histos_[name+"_EfficiencyTightPhotons"]->Fill( et ); }
-      if ( iphoton->isLoosePhoton() ) { histos_[name+"_EfficiencyLoosePhotons"]->Fill( et ); }
-      if ( iphoton->isLooseEM() )     { histos_[name+"_EfficiencyLooseEMObjects"]->Fill( et ); }
+//       // Efficiency
+//       histos_[name+"_EfficiencyEMObjects"]->Fill( et ); 
+//       if ( iphoton->isTightPhoton() ) { histos_[name+"_EfficiencyTightPhotons"]->Fill( et ); }
+//       if ( iphoton->isLoosePhoton() ) { histos_[name+"_EfficiencyLoosePhotons"]->Fill( et ); }
+//       if ( iphoton->isLooseEM() )     { histos_[name+"_EfficiencyLooseEMObjects"]->Fill( et ); }
       
-      // PDG ids
-      //histos_[name+"_PdgId"]->Fill( daughter_id );
-      //histos_[name+"_MotherPdgId"]->Fill( mother_id );
+//       // PDG ids
+//       //histos_[name+"_PdgId"]->Fill( daughter_id );
+//       //histos_[name+"_MotherPdgId"]->Fill( mother_id );
       
-      // Kinematics
-      histos_[name+"_Energy"]->Fill( iphoton->energy() );
-      histos_[name+"_Et"]->Fill( iphoton->et() );
-      histos_[name+"_Eta"]->Fill( iphoton->eta() );
+//       // Kinematics
+//       histos_[name+"_Energy"]->Fill( iphoton->energy() );
+//       histos_[name+"_Et"]->Fill( iphoton->et() );
+//       histos_[name+"_Eta"]->Fill( iphoton->eta() );
       
-      // Track isolation from RECO
-      histos_[name+"_NTrkSolid"]->Fill( iphoton->nTrkSolidCone() );
-      histos_[name+"_NTrkHollow"]->Fill( iphoton->nTrkHollowCone() );
-      histos_[name+"_IsoSolidTrk"]->Fill( iphoton->isolationSolidTrkCone() );
-      histos_[name+"_IsoHollowTrk"]->Fill( iphoton->isolationHollowTrkCone() );
+//       // Track isolation from RECO
+//       histos_[name+"_NTrkSolid"]->Fill( iphoton->nTrkSolidCone() );
+//       histos_[name+"_NTrkHollow"]->Fill( iphoton->nTrkHollowCone() );
+//       histos_[name+"_IsoSolidTrk"]->Fill( iphoton->isolationSolidTrkCone() );
+//       histos_[name+"_IsoHollowTrk"]->Fill( iphoton->isolationHollowTrkCone() );
       
-      // ECAL/HCAL isolation from RECO
-      histos_[name+"_IsoEcalRecHit"]->Fill( iphoton->isolationEcalRecHit() );
-      histos_[name+"_IsoHcalRecHit"]->Fill( iphoton->isolationHcalRecHit() );
-      histos_[name+"_HadronicOverEm"]->Fill( iphoton->hadronicOverEm() );
-      if ( fabs( iphoton->isolationEcalRecHit() ) > 0. ) {
-	histos_[name+"_IsoHcalRecHitOverIsoEcalRecHit"]->Fill( iphoton->isolationHcalRecHit() / 
-							       iphoton->isolationEcalRecHit() );
-      }
-      histos_[name+"_R9"]->Fill( iphoton->r9() );
+//       // ECAL/HCAL isolation from RECO
+//       histos_[name+"_IsoEcalRecHit"]->Fill( iphoton->isolationEcalRecHit() );
+//       histos_[name+"_IsoHcalRecHit"]->Fill( iphoton->isolationHcalRecHit() );
+//       histos_[name+"_HadronicOverEm"]->Fill( iphoton->hadronicOverEm() );
+//       if ( fabs( iphoton->isolationEcalRecHit() ) > 0. ) {
+// 	histos_[name+"_IsoHcalRecHitOverIsoEcalRecHit"]->Fill( iphoton->isolationHcalRecHit() / 
+// 							       iphoton->isolationEcalRecHit() );
+//       }
+//       histos_[name+"_R9"]->Fill( iphoton->r9() );
       
-      // Isolation from PAT
-      histos_[name+"_IsoEcal"]->Fill( iphoton->ecalIso() );
-      histos_[name+"_IsoHcal"]->Fill( iphoton->hcalIso() );
-      histos_[name+"_IsoTrk"]->Fill( iphoton->trackIso() );
-      histos_[name+"_IsoAll"]->Fill( iphoton->caloIso() );
-      histos_[name+"_HcalIsoOverEcalIso"]->Fill( iphoton->hcalIso() / iphoton->ecalIso() );
+//       // Isolation from PAT
+//       histos_[name+"_IsoEcal"]->Fill( iphoton->ecalIso() );
+//       histos_[name+"_IsoHcal"]->Fill( iphoton->hcalIso() );
+//       histos_[name+"_IsoTrk"]->Fill( iphoton->trackIso() );
+//       histos_[name+"_IsoAll"]->Fill( iphoton->caloIso() );
+//       histos_[name+"_HcalIsoOverEcalIso"]->Fill( iphoton->hcalIso() / iphoton->ecalIso() );
       
-      // Photon ID flags
-      histos_[name+"_PhotonID"]->Fill( 0. );
-      if ( iphoton->isLooseEM() )     { histos_[name+"_PhotonID"]->Fill( 1. ); }
-      if ( iphoton->isLoosePhoton() ) { histos_[name+"_PhotonID"]->Fill( 2. ); }
-      if ( iphoton->isTightPhoton() ) { histos_[name+"_PhotonID"]->Fill( 3. ); }
-      if ( !iphoton->isLooseEM() &&
-	   !iphoton->isLoosePhoton() &&
-	   !iphoton->isTightPhoton() ) { histos_[name+"_PhotonID"]->Fill( 4. ); }
+//       // Photon ID flags
+//       histos_[name+"_PhotonID"]->Fill( 0. );
+//       if ( iphoton->isLooseEM() )     { histos_[name+"_PhotonID"]->Fill( 1. ); }
+//       if ( iphoton->isLoosePhoton() ) { histos_[name+"_PhotonID"]->Fill( 2. ); }
+//       if ( iphoton->isTightPhoton() ) { histos_[name+"_PhotonID"]->Fill( 3. ); }
+//       if ( !iphoton->isLooseEM() &&
+// 	   !iphoton->isLoosePhoton() &&
+// 	   !iphoton->isTightPhoton() ) { histos_[name+"_PhotonID"]->Fill( 4. ); }
       
-      // Iterate through OtherPhotonID
-      if ( !others_.label().empty() ) {
+//       // Iterate through OtherPhotonID
+//       if ( !others_.label().empty() ) {
 
-	edm::View<pat::Photon>::const_iterator iother = others->begin(); 
-	edm::View<pat::Photon>::const_iterator jother = others->end(); 
-	for ( ; iother != jother; ++iother ) {
+// 	edm::View<pat::Photon>::const_iterator iother = others->begin(); 
+// 	edm::View<pat::Photon>::const_iterator jother = others->end(); 
+// 	for ( ; iother != jother; ++iother ) {
 
-	  if ( uint32_t( iphoton - photons->begin() ) !=
-	       uint32_t( iother - others->begin() ) ) { continue; }
+// 	  if ( uint32_t( iphoton - photons->begin() ) !=
+// 	       uint32_t( iother - others->begin() ) ) { continue; }
 
-	  histos2d_[name+"_CompareEcalIso"]->Fill( iphoton->isolationEcalRecHit(),
-						   iother->isolationEcalRecHit() );
-	  histos2d_[name+"_CompareHcalIso"]->Fill( iphoton->isolationHcalRecHit(),
-						   iother->isolationHcalRecHit() );
-	  histos2d_[name+"_CompareTrkIso"]->Fill( iphoton->isolationHollowTrkCone(),
-						  iother->isolationHollowTrkCone() );
+// 	  histos2d_[name+"_CompareEcalIso"]->Fill( iphoton->isolationEcalRecHit(),
+// 						   iother->isolationEcalRecHit() );
+// 	  histos2d_[name+"_CompareHcalIso"]->Fill( iphoton->isolationHcalRecHit(),
+// 						   iother->isolationHcalRecHit() );
+// 	  histos2d_[name+"_CompareTrkIso"]->Fill( iphoton->isolationHollowTrkCone(),
+// 						  iother->isolationHollowTrkCone() );
 	  
-	  float iii = 0.;
-	  if ( iphoton->isTightPhoton() ) { iii = 3.; }
-	  else if ( iphoton->isLoosePhoton() ) { iii = 2.; }
-	  else if ( iphoton->isLooseEM() ) { iii = 1.; }
-	  else { iii = 0.; }
+// 	  float iii = 0.;
+// 	  if ( iphoton->isTightPhoton() ) { iii = 3.; }
+// 	  else if ( iphoton->isLoosePhoton() ) { iii = 2.; }
+// 	  else if ( iphoton->isLooseEM() ) { iii = 1.; }
+// 	  else { iii = 0.; }
 
-	  float jjj = 0.;
-	  if ( iother->isTightPhoton() ) { jjj = 3.; }
-	  else if ( iother->isLoosePhoton() ) { jjj = 2.; }
-	  else if ( iother->isLooseEM() ) { jjj = 1.; }
-	  else { jjj = 0.; }
+// 	  float jjj = 0.;
+// 	  if ( iother->isTightPhoton() ) { jjj = 3.; }
+// 	  else if ( iother->isLoosePhoton() ) { jjj = 2.; }
+// 	  else if ( iother->isLooseEM() ) { jjj = 1.; }
+// 	  else { jjj = 0.; }
 
-	  histos_[name+"_OtherPhotonID"]->Fill( jjj );
-	  histos2d_[name+"_ComparePhotonID"]->Fill( iii, jjj );
+// 	  histos_[name+"_OtherPhotonID"]->Fill( jjj );
+// 	  histos2d_[name+"_ComparePhotonID"]->Fill( iii, jjj );
 	  
-	}
-      }
+// 	}
+//       }
 
-    } // photon loop
+//     } // photon loop
 
-    histos_[name+"_Multiplicity_Reco"]->Fill( multiplicity_reco[ii] );
-    histos_[name+"_Multiplicity_Truth"]->Fill( multiplicity_truth[ii] );
+//     histos_[name+"_Multiplicity_Reco"]->Fill( multiplicity_reco[ii] );
+//     histos_[name+"_Multiplicity_Truth"]->Fill( multiplicity_truth[ii] );
     
-  } // category loop
+//   } // category loop
   
-  histos_["AllPhotons_Multiplicity_Reco"]->Fill( multiplicity_reco_all );
-  histos_["AllPhotons_Multiplicity_Truth"]->Fill( multiplicity_truth_all );
+//   histos_["AllPhotons_Multiplicity_Reco"]->Fill( multiplicity_reco_all );
+//   histos_["AllPhotons_Multiplicity_Truth"]->Fill( multiplicity_truth_all );
   
 }
 
