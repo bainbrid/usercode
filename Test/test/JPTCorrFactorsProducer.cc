@@ -82,7 +82,9 @@ void JPTCorrFactorsProducer::produce( edm::Event& event, const edm::EventSetup& 
       if ( !matched[index] ) {
 	if ( matchJetsByCaloTowers( *ii, *iii ) ) {
 	  if ( ii->pt() > 0. ) { l3 = iii->pt() / ii->pt(); }
-	  corrs.push_back( pat::JetCorrFactors( l1,
+	  std::string name = "JPT";
+	  corrs.push_back( pat::JetCorrFactors( name,
+						l1,
 						l2,
 						l3, //@@
 						l4,

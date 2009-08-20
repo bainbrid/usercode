@@ -6,12 +6,12 @@
 #include "DataFormats/PatCandidates/interface/Muon.h"
 #include "DataFormats/PatCandidates/interface/Photon.h"
 #include "DataFormats/PatCandidates/interface/MET.h"
+#include "CommonTools/Utils/interface/EtComparator.h"
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/EventSetup.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
-#include "PhysicsTools/Utilities/interface/EtComparator.h"
 #include "PhysicsTools/UtilAlgos/interface/TFileService.h"
 #include "Combination.h"
 #include "TH1D.h"
@@ -84,7 +84,7 @@ void TestCombination::analyze( const edm::Event& iEvent,
 //       edm::View<reco::GenParticle>::const_iterator igen = gen->begin(); 
 //       edm::View<reco::GenParticle>::const_iterator jgen = gen->end(); 
 //       for ( ; igen != jgen; ++igen ) {
-// 	const reco::Candidate* mother = igen->mother();
+// 	const Candidate* mother = igen->mother();
 // 	if ( mother && igen->pdgId() == igen->mother()->pdgId() ) { mother = mother->mother(); }
 // 	if ( mother && mother->pdgId() == 1000022 ) { 
 // 	  histos_["GenPhotons_Et"]->Fill( igen->et() ); 
@@ -96,19 +96,19 @@ void TestCombination::analyze( const edm::Event& iEvent,
     // -------------------- Retrieve objects and event selection --------------------
 
     // Get photons
-    std::vector<reco::Particle> photons;
+    std::vector<Candidate> photons;
     if ( getPhotons( iEvent, photons ) ) { return; }
 
     // Get jets
-    std::vector<reco::Particle> jets;
+    std::vector<Candidate> jets;
     if ( getJets( iEvent, jets ) ) { return; }
     
     // Get muons
-    std::vector<reco::Particle> muons;
+    std::vector<Candidate> muons;
     if ( getMuons( iEvent, muons ) ) { return; }
 
     // Get electrons
-    std::vector<reco::Particle> electrons;
+    std::vector<Candidate> electrons;
     if ( getElectrons( iEvent, electrons ) ) { return; }
 
     // -------------------- Apply pre-selection --------------------
@@ -132,7 +132,7 @@ void TestCombination::analyze( const edm::Event& iEvent,
 
     // -------------------- "Common objects" --------------------
     
-    std::vector<reco::Particle> objects;
+    std::vector<Candidate> objects;
     if ( !photons.empty() ) { objects.insert( objects.end(), photons.begin(), photons.end() ); }
     if ( !jets.empty() ) { objects.insert( objects.end(), jets.begin(), jets.end() ); }
     if ( edm::isDebugEnabled() ) { edm::LogVerbatim("TEST") << "Number of Objects: " << objects.size(); }
@@ -145,9 +145,9 @@ void TestCombination::analyze( const edm::Event& iEvent,
     
     // -------------------- Order by Et --------------------
     
-    sort( objects.begin(), objects.end(), GreaterByEt<reco::Particle>() );
-    sort( photons.begin(), photons.end(), GreaterByEt<reco::Particle>() );
-    sort( jets.begin(), jets.end(), GreaterByEt<reco::Particle>() );
+    sort( objects.begin(), objects.end(), GreaterByEt<Candidate>() );
+    sort( photons.begin(), photons.end(), GreaterByEt<Candidate>() );
+    sort( jets.begin(), jets.end(), GreaterByEt<Candidate>() );
 
     // -------------------- Minimum number of objects --------------------
 
@@ -172,9 +172,9 @@ void TestCombination::analyze( const edm::Event& iEvent,
     // -------------------- Get MET --------------------
 
     double primary_met = -1.;
-    LorentzVector lv_primary_met;
-    std::vector<reco::Particle>::const_iterator iobj = objects.begin();
-    std::vector<reco::Particle>::const_iterator jobj = objects.end();
+    LorentzV lv_primary_met;
+    std::vector<Candidate>::const_iterator iobj = objects.begin();
+    std::vector<Candidate>::const_iterator jobj = objects.end();
     for ( ; iobj != jobj; ++iobj ) { lv_primary_met += iobj->p4(); }
     lv_primary_met.SetPx( -1.*lv_primary_met.Px() );
     lv_primary_met.SetPy( -1.*lv_primary_met.Py() );
@@ -182,7 +182,7 @@ void TestCombination::analyze( const edm::Event& iEvent,
     primary_met = sqrt( lv_primary_met.Perp2() );
     
     double calo_met = -1.;
-    LorentzVector lv_calo_met;
+    LorentzV lv_calo_met;
     if ( !met_.label().empty() ) {
       edm::Handle< std::vector<pat::MET> > handle;
       iEvent.getByLabel(met_,handle);
@@ -202,7 +202,7 @@ void TestCombination::analyze( const edm::Event& iEvent,
     }
 
     double cc_met = -1.;
-    LorentzVector lv_cc_met;
+    LorentzV lv_cc_met;
     if ( !ccMet_.label().empty() ) {
       edm::Handle< std::vector<pat::MET> > handle;
       iEvent.getByLabel(ccMet_,handle);
@@ -222,7 +222,7 @@ void TestCombination::analyze( const edm::Event& iEvent,
     }
 
     double gen_met = -1.;
-    LorentzVector lv_gen_met;
+    LorentzV lv_gen_met;
     if ( !genMet_.label().empty() ) {
       edm::Handle< std::vector<reco::GenMET> > handle;
       iEvent.getByLabel(genMet_,handle);
@@ -255,17 +255,17 @@ void TestCombination::analyze( const edm::Event& iEvent,
       histo("GenMET")->Fill( gen_met ); 
       
       {
-	double delta_phi = reco::deltaPhi<LorentzVector,LorentzVector>( lv_primary_met, lv_gen_met );
+	double delta_phi = reco::deltaPhi<LorentzV,LorentzV>( lv_primary_met, lv_gen_met );
 	histo("DPHI_PrimaryMET_GenMET")->Fill( delta_phi ); 
       }
 
       {
-	double delta_phi = reco::deltaPhi<LorentzVector,LorentzVector>( lv_calo_met, lv_gen_met );
+	double delta_phi = reco::deltaPhi<LorentzV,LorentzV>( lv_calo_met, lv_gen_met );
 	histo("DPHI_CaloMET_GenMET")->Fill( delta_phi ); 
       }
 
       {
-	double delta_phi = reco::deltaPhi<LorentzVector,LorentzVector>( lv_cc_met, lv_gen_met );
+	double delta_phi = reco::deltaPhi<LorentzV,LorentzV>( lv_cc_met, lv_gen_met );
 	histo("DPHI_CcMET_GenMET")->Fill( delta_phi ); 
       }
       
@@ -353,8 +353,8 @@ void TestCombination::analyze( const edm::Event& iEvent,
       double mt  = MT( objects );
       double ht_mht = HT_MHT( objects );
       
-      std::vector<reco::Particle> jet1;
-      std::vector<reco::Particle> jet2;
+      std::vector<Candidate> jet1;
+      std::vector<Candidate> jet2;
       double min_dht = minDHT( objects, jet1, jet2 );
       
       histo2d("MHT/HT_Vs_DHT/HT")->Fill( min_dht / ht, mht / ht ); 
@@ -400,8 +400,8 @@ void TestCombination::analyze( const edm::Event& iEvent,
       mt = mt < 0. ? -1.*sqrt(-1.*mt) : sqrt(mt);
       double ht_mht = ht - mht;
 
-      std::vector<reco::Particle> jet1;
-      std::vector<reco::Particle> jet2;
+      std::vector<Candidate> jet1;
+      std::vector<Candidate> jet2;
       double min_dht = minDHT( objects, jet1, jet2 );
 
       histo("BiasedHT")->Fill( ht ); 
@@ -439,12 +439,12 @@ void TestCombination::analyze( const edm::Event& iEvent,
 
     {
 
-      LorentzVector lv_obj;
-      std::vector<reco::Particle>::const_iterator iobj = objects.begin();
-      std::vector<reco::Particle>::const_iterator jobj = objects.end();
+      LorentzV lv_obj;
+      std::vector<Candidate>::const_iterator iobj = objects.begin();
+      std::vector<Candidate>::const_iterator jobj = objects.end();
       for ( ; iobj != jobj; ++iobj ) { lv_obj += iobj->p4(); }
       
-      LorentzVector lv_recoil( lv_obj );
+      LorentzV lv_recoil( lv_obj );
       lv_recoil.SetPx( -1.*lv_recoil.Px() );
       lv_recoil.SetPy( -1.*lv_recoil.Py() );
       lv_recoil.SetPz( -1.*lv_recoil.Pz() );
@@ -456,7 +456,7 @@ void TestCombination::analyze( const edm::Event& iEvent,
 	iobj = objects.begin();
 	jobj = objects.end();
 	for ( ; iobj != jobj; ++iobj ) { 
-	  double delta_phi = reco::deltaPhi<LorentzVector,LorentzVector>( iobj->p4(), lv_recoil );
+	  double delta_phi = reco::deltaPhi( iobj->p4().phi(), lv_recoil.phi() );
 	  if ( fabs(delta_phi) < fabs(min_delta_phi) ) { min_delta_phi = delta_phi; }
 	}
 	
@@ -472,8 +472,8 @@ void TestCombination::analyze( const edm::Event& iEvent,
 	iobj = objects.begin();
 	jobj = objects.end();
 	for ( ; iobj != jobj; ++iobj ) { 
-	  LorentzVector biased_recoil = lv_recoil + iobj->p4();
-	  double delta_phi = reco::deltaPhi<LorentzVector,LorentzVector>( biased_recoil, lv_recoil );
+	  LorentzV biased_recoil = lv_recoil + iobj->p4();
+	  double delta_phi = reco::deltaPhi<LorentzV,LorentzV>( biased_recoil, lv_recoil );
 	  if ( fabs(delta_phi) < fabs(min_delta_phi) ) { min_delta_phi = delta_phi; }
 	}
 	
@@ -493,8 +493,8 @@ void TestCombination::analyze( const edm::Event& iEvent,
       double mt  = ht*ht - mht*mht; 
       mt = mt < 0. ? -1.*sqrt(-1.*mt) : sqrt(mt);
       double ht_mht = ht - mht;
-      std::vector<reco::Particle> jet1;
-      std::vector<reco::Particle> jet2;
+      std::vector<Candidate> jet1;
+      std::vector<Candidate> jet2;
       double dht = recoilDHT( photons, jets, jet1, jet2 );
 	
       histo2d("DHT_Vs_NJets")->Fill( jets.size(), dht ); 
@@ -503,7 +503,7 @@ void TestCombination::analyze( const edm::Event& iEvent,
       histo2d("DHT_Vs_MHT")->Fill( mht, dht ); 
       histo2d("DHT_Vs_MHT/HT")->Fill( mht / ht, dht ); 
       histo2d("DHT/MHT_Vs_HT")->Fill( ht, dht / mht ); 
-      //double delta_phi = reco::deltaPhi<LorentzVector,LorentzVector>(lv_jet,lv_recoil);
+      //double delta_phi = reco::deltaPhi<LorentzV,LorentzV>(lv_jet,lv_recoil);
       //histo2d("DPHI_Vs_MHT/HT")->Fill( mht / ht, delta_phi ); 
 	
       double recoil_alpha_t = alphaT( fabs(dht), ht, mt );
@@ -523,31 +523,31 @@ void TestCombination::analyze( const edm::Event& iEvent,
     if ( photons.size() >= 2 ) {
       
       // Photon system
-      LorentzVector lv_pho;
-      std::vector<reco::Particle>::const_iterator ipho = photons.begin();
-      std::vector<reco::Particle>::const_iterator jpho = photons.begin() + 2; 
+      LorentzV lv_pho;
+      std::vector<Candidate>::const_iterator ipho = photons.begin();
+      std::vector<Candidate>::const_iterator jpho = photons.begin() + 2; 
       for ( ; ipho != jpho; ++ipho ) { lv_pho += ipho->p4(); }
       
       // "Recoil" axis
-      LorentzVector lv_recoil( lv_pho );
+      LorentzV lv_recoil( lv_pho );
       lv_recoil.SetPx( -1.*lv_recoil.Px() );
       lv_recoil.SetPy( -1.*lv_recoil.Py() );
       lv_recoil.SetPz( -1.*lv_recoil.Pz() );
       
       // MHT from complete system
-      LorentzVector lv_obj;
-      std::vector<reco::Particle>::const_iterator iobj = objects.begin();
-      std::vector<reco::Particle>::const_iterator jobj = objects.end();
+      LorentzV lv_obj;
+      std::vector<Candidate>::const_iterator iobj = objects.begin();
+      std::vector<Candidate>::const_iterator jobj = objects.end();
       for ( ; iobj != jobj; ++iobj ) { lv_obj += iobj->p4(); }
-      LorentzVector lv_mht( lv_obj );
+      LorentzV lv_mht( lv_obj );
       lv_mht.SetPx( -1.*lv_obj.Px() );
       lv_mht.SetPy( -1.*lv_obj.Py() );
       lv_mht.SetPz( -1.*lv_obj.Pz() );
       
       // Projection of MHT onto recoil axis
-      LorentzVector::Scalar dot_product_recoil = lv_recoil.Dot( lv_recoil );
-      LorentzVector::Scalar dot_product_mht = lv_mht.Dot( lv_recoil );
-      LorentzVector lv_proj = lv_recoil * ( dot_product_mht / dot_product_recoil );
+      LorentzV::Scalar dot_product_recoil = lv_recoil.Dot( lv_recoil );
+      LorentzV::Scalar dot_product_mht = lv_mht.Dot( lv_recoil );
+      LorentzV lv_proj = lv_recoil * ( dot_product_mht / dot_product_recoil );
 
       double ht  = lv_obj.Et();
       double mht = MHT( objects );
@@ -583,8 +583,8 @@ void TestCombination::analyze( const edm::Event& iEvent,
       double mt  = ht*ht - mht*mht; 
       mt = mt < 0. ? -1.*sqrt(-1.*mt) : sqrt(mt);
       double ht_mht = ht - mht;
-      std::vector<reco::Particle> jet1;
-      std::vector<reco::Particle> jet2;
+      std::vector<Candidate> jet1;
+      std::vector<Candidate> jet2;
       double super_min_dht = minSuperDHT( objects, jet1, jet2 );
       
       double super_alpha_t = alphaT( super_min_dht, ht, mt );
@@ -602,8 +602,8 @@ void TestCombination::analyze( const edm::Event& iEvent,
 	<< std::endl;
 
       uint16_t cntr = 0;
-      std::vector<reco::Particle>::const_iterator ii = jet1.begin();
-      std::vector<reco::Particle>::const_iterator jj = jet1.end();
+      std::vector<Candidate>::const_iterator ii = jet1.begin();
+      std::vector<Candidate>::const_iterator jj = jet1.end();
       for ( ; ii != jj; ++ii ) { if ( ii->pdgId() == 22 ) { cntr++; } }
       
       histo("SuperAlphaT_NPhotons")->Fill( cntr ); 
@@ -622,18 +622,18 @@ void TestCombination::analyze( const edm::Event& iEvent,
 
     {    
       
-      std::vector<reco::Particle> jet1;
-      std::vector<reco::Particle> jet2;
+      std::vector<Candidate> jet1;
+      std::vector<Candidate> jet2;
       double min_dht = minDHT( objects, jet1, jet2 );
       
       std::vector<int> phot1;
-      std::vector<reco::Particle>::const_iterator ii1 = jet1.begin();
-      std::vector<reco::Particle>::const_iterator jj1 = jet1.end();
+      std::vector<Candidate>::const_iterator ii1 = jet1.begin();
+      std::vector<Candidate>::const_iterator jj1 = jet1.end();
       for ( ; ii1 != jj1; ++ii1 ) { if ( ii1->pdgId() == 22 ) { phot1.push_back( ii1 - jet1.begin() ); } }
     
       std::vector<int> phot2;
-      std::vector<reco::Particle>::const_iterator ii2 = jet2.begin();
-      std::vector<reco::Particle>::const_iterator jj2 = jet2.end();
+      std::vector<Candidate>::const_iterator ii2 = jet2.begin();
+      std::vector<Candidate>::const_iterator jj2 = jet2.end();
       for ( ; ii2 != jj2; ++ii2 ) { if ( ii2->pdgId() == 22 ) { phot2.push_back( ii2 - jet2.begin() ); } }
   
       histo2d("PseudoDijets_NObjects")->Fill( jet1.size(), jet2.size() ); 
@@ -649,7 +649,7 @@ void TestCombination::analyze( const edm::Event& iEvent,
 	  for ( ; iii2 != jjj2; ++iii2 ) {
 	    histo2d("PseudoDijets_PhotonEt")->Fill( jet1[*iii1].et(), jet2[*iii2].et() ); 
 	    double photon_et = jet1[*iii1].et() < jet2[*iii2].et() ? jet1[*iii1].et() : jet2[*iii2].et();
-	    double delta_phi = reco::deltaPhi<reco::Particle,reco::Particle>( jet1[*iii1], jet2[*iii2] );
+	    double delta_phi = reco::deltaPhi<Candidate,Candidate>( jet1[*iii1], jet2[*iii2] );
 	    histo2d("PseudoDijets_DeltaPhi_Vs_PhotonEt")->Fill( photon_et, delta_phi ); 
 	    histo2d("PseudoDijets_DeltaPhi_Vs_NObjects")->Fill( objects.size(), delta_phi ); 
 	  }
@@ -664,8 +664,8 @@ void TestCombination::analyze( const edm::Event& iEvent,
 
 	{
 	  ss << "Input objects: id/pdg: ";
-	  std::vector<reco::Particle>::const_iterator ii = objects.begin();
-	  std::vector<reco::Particle>::const_iterator jj = objects.end();
+	  std::vector<Candidate>::const_iterator ii = objects.begin();
+	  std::vector<Candidate>::const_iterator jj = objects.end();
 	  for ( ; ii != jj; ++ii  ) { 
 	    ss << ii->pdgId() << "/" << ii->pt() << ", "; 
 	  }
@@ -674,8 +674,8 @@ void TestCombination::analyze( const edm::Event& iEvent,
 
 	{
 	  ss << "Pseudo-jet #1: id/pdg: ";
-	  std::vector<reco::Particle>::const_iterator ii = jet1.begin();
-	  std::vector<reco::Particle>::const_iterator jj = jet1.end();
+	  std::vector<Candidate>::const_iterator ii = jet1.begin();
+	  std::vector<Candidate>::const_iterator jj = jet1.end();
 	  for ( ; ii != jj; ++ii  ) { 
 	    ss << ii->pdgId() << "/" << ii->pt() << ", "; 
 	  }
@@ -684,8 +684,8 @@ void TestCombination::analyze( const edm::Event& iEvent,
 
 	{
 	  ss << "Pseudo-jet #2: id/pdg: ";
-	  std::vector<reco::Particle>::const_iterator ii = jet2.begin();
-	  std::vector<reco::Particle>::const_iterator jj = jet2.end();
+	  std::vector<Candidate>::const_iterator ii = jet2.begin();
+	  std::vector<Candidate>::const_iterator jj = jet2.end();
 	  for ( ; ii != jj; ++ii  ) { 
 	    ss << ii->pdgId() << "/" << ii->pt() << ", "; 
 	  }
@@ -700,12 +700,12 @@ void TestCombination::analyze( const edm::Event& iEvent,
 
   } else { // -------------------- Test --------------------
 
-    std::vector<reco::Particle> input;
+    std::vector<Candidate> input;
     for ( uint16_t ii = 1; ii <= (iEvent.id().event()-1)%test_; ++ii ) {
-      input.push_back( reco::Particle( 0, reco::Particle::LorentzVector( 1./ii, 0, 0, ii ) ) );
+      input.push_back( Candidate( 0, LorentzV( 1./ii, 0, 0, ii ) ) );
     }
-    std::vector<reco::Particle> jet1;
-    std::vector<reco::Particle> jet2;
+    std::vector<Candidate> jet1;
+    std::vector<Candidate> jet2;
     double min_dht = minDHT( input, jet1, jet2 );
     
     // -------------------- Debug --------------------
@@ -716,8 +716,8 @@ void TestCombination::analyze( const edm::Event& iEvent,
 
       {
 	ss << "Input objects: pdg/pt: ";
-	std::vector<reco::Particle>::const_iterator ii = input.begin();
-	std::vector<reco::Particle>::const_iterator jj = input.end();
+	std::vector<Candidate>::const_iterator ii = input.begin();
+	std::vector<Candidate>::const_iterator jj = input.end();
 	for ( ; ii != jj; ++ii  ) { 
 	  ss << ii->pdgId() << "/" << ii->pt() << ", "; 
 	}
@@ -726,8 +726,8 @@ void TestCombination::analyze( const edm::Event& iEvent,
 
       {
 	ss << "Pseudo-jet #1: pdg/pt: ";
-	std::vector<reco::Particle>::const_iterator ii = jet1.begin();
-	std::vector<reco::Particle>::const_iterator jj = jet1.end();
+	std::vector<Candidate>::const_iterator ii = jet1.begin();
+	std::vector<Candidate>::const_iterator jj = jet1.end();
 	for ( ; ii != jj; ++ii  ) { 
 	  ss << ii->pdgId() << "/" << ii->pt() << ", "; 
 	}
@@ -736,8 +736,8 @@ void TestCombination::analyze( const edm::Event& iEvent,
 
       {
 	ss << "Pseudo-jet #2: pdg/pt: ";
-	std::vector<reco::Particle>::const_iterator ii = jet2.begin();
-	std::vector<reco::Particle>::const_iterator jj = jet2.end();
+	std::vector<Candidate>::const_iterator ii = jet2.begin();
+	std::vector<Candidate>::const_iterator jj = jet2.end();
 	for ( ; ii != jj; ++ii  ) { 
 	  ss << ii->pdgId() << "/" << ii->pt() << ", "; 
 	}
@@ -1070,7 +1070,7 @@ void TestCombination::beginJob( const edm::EventSetup& ) {
 // -----------------------------------------------------------------------------
 //
 bool TestCombination::getPhotons( const edm::Event& iEvent,
-				  std::vector<reco::Particle>& photons,
+				  std::vector<Candidate>& photons,
 				  double threshold ) {
   
   photons.clear();
@@ -1120,7 +1120,7 @@ bool TestCombination::getPhotons( const edm::Event& iEvent,
 // -----------------------------------------------------------------------------
 //
 bool TestCombination::getJets( const edm::Event& iEvent,
-			       std::vector<reco::Particle>& jets,
+			       std::vector<Candidate>& jets,
 			       double threshold ) {
   
   jets.clear();
@@ -1171,7 +1171,7 @@ bool TestCombination::getJets( const edm::Event& iEvent,
 // -----------------------------------------------------------------------------
 //
 bool TestCombination::getMuons( const edm::Event& iEvent,
-				std::vector<reco::Particle>& muons ) {
+				std::vector<Candidate>& muons ) {
   
   muons.clear();
   
@@ -1205,7 +1205,7 @@ bool TestCombination::getMuons( const edm::Event& iEvent,
 // -----------------------------------------------------------------------------
 //
 bool TestCombination::getElectrons( const edm::Event& iEvent,
-				    std::vector<reco::Particle>& electrons ) {
+				    std::vector<Candidate>& electrons ) {
   
   electrons.clear();
   
@@ -1238,12 +1238,12 @@ bool TestCombination::getElectrons( const edm::Event& iEvent,
 
 // -----------------------------------------------------------------------------
 //
-double TestCombination::HT( const std::vector<reco::Particle>& input ) {
-  LorentzVector lv;
+double TestCombination::HT( const std::vector<Candidate>& input ) {
+  LorentzV lv;
   double ht = 0.;
   double et = 0.;
-  std::vector<reco::Particle>::const_iterator ii = input.begin();
-  std::vector<reco::Particle>::const_iterator jj = input.end();
+  std::vector<Candidate>::const_iterator ii = input.begin();
+  std::vector<Candidate>::const_iterator jj = input.end();
   for ( ; ii != jj; ++ii ) { 
     lv += ii->p4();
     et += ii->p4().Et(); 
@@ -1258,12 +1258,12 @@ double TestCombination::HT( const std::vector<reco::Particle>& input ) {
 
 // -----------------------------------------------------------------------------
 //
-double TestCombination::MHT( const std::vector<reco::Particle>& input ) {
-  LorentzVector lv_obj;
-  std::vector<reco::Particle>::const_iterator iobj = input.begin();
-  std::vector<reco::Particle>::const_iterator jobj = input.end();
+double TestCombination::MHT( const std::vector<Candidate>& input ) {
+  LorentzV lv_obj;
+  std::vector<Candidate>::const_iterator iobj = input.begin();
+  std::vector<Candidate>::const_iterator jobj = input.end();
   for ( ; iobj != jobj; ++iobj ) { lv_obj += iobj->p4(); }
-  LorentzVector lv_mht( lv_obj );
+  LorentzV lv_mht( lv_obj );
   lv_mht.SetPx( -1.*lv_obj.Px() );
   lv_mht.SetPy( -1.*lv_obj.Py() );
   lv_mht.SetPz( -1.*lv_obj.Pz() );
@@ -1272,7 +1272,7 @@ double TestCombination::MHT( const std::vector<reco::Particle>& input ) {
 
 // -----------------------------------------------------------------------------
 //
-double TestCombination::MT( const std::vector<reco::Particle>& input ) {
+double TestCombination::MT( const std::vector<Candidate>& input ) {
   double ht  = HT( input );
   double mht = MHT( input );
   double mt  = ht*ht - mht*mht;
@@ -1281,7 +1281,7 @@ double TestCombination::MT( const std::vector<reco::Particle>& input ) {
 
 // -----------------------------------------------------------------------------
 //
-double TestCombination::HT_MHT( const std::vector<reco::Particle>& input ) {
+double TestCombination::HT_MHT( const std::vector<Candidate>& input ) {
   double ht  = HT( input );
   double mht = MHT( input );
   double ht_mht = ht - mht;
@@ -1290,9 +1290,9 @@ double TestCombination::HT_MHT( const std::vector<reco::Particle>& input ) {
 
 // -----------------------------------------------------------------------------
 //
-double TestCombination::minDHT( const std::vector<reco::Particle>& objects, 
-				std::vector<reco::Particle>& jet1, 
-				std::vector<reco::Particle>& jet2  ) {
+double TestCombination::minDHT( const std::vector<Candidate>& objects, 
+				std::vector<Candidate>& jet1, 
+				std::vector<Candidate>& jet2  ) {
   
   // Maximum number of objects handled
   static const uint8_t max_size = 50;
@@ -1421,10 +1421,10 @@ double TestCombination::minDHT( const std::vector<reco::Particle>& objects,
 
 // -----------------------------------------------------------------------------
 //
-double TestCombination::recoilDHT( const std::vector<reco::Particle>& photons, 
-				   const std::vector<reco::Particle>& jets, 
-				   std::vector<reco::Particle>& jet1, 
-				   std::vector<reco::Particle>& jet2 ) {
+double TestCombination::recoilDHT( const std::vector<Candidate>& photons, 
+				   const std::vector<Candidate>& jets, 
+				   std::vector<Candidate>& jet1, 
+				   std::vector<Candidate>& jet2 ) {
 
   std::stringstream ss;
   ss << " TEST " << endl;
@@ -1441,9 +1441,9 @@ double TestCombination::recoilDHT( const std::vector<reco::Particle>& photons,
     
     // Photon system
     double et_pho = 0.;
-    LorentzVector lv_pho;
-    std::vector<reco::Particle>::const_iterator ipho = photons.begin();
-    std::vector<reco::Particle>::const_iterator jpho = photons.begin() + 2; 
+    LorentzV lv_pho;
+    std::vector<Candidate>::const_iterator ipho = photons.begin();
+    std::vector<Candidate>::const_iterator jpho = photons.begin() + 2; 
     ss << " photons: " << endl;
     for ( ; ipho != jpho; ++ipho ) { 
       std::stringstream sss; sss << ipho->p4(); 
@@ -1454,41 +1454,41 @@ double TestCombination::recoilDHT( const std::vector<reco::Particle>& photons,
     ss << endl;
     
     // "Recoil" axis
-    LorentzVector lv_recoil( lv_pho );
+    LorentzV lv_recoil( lv_pho );
     lv_recoil.SetPx( -1.*lv_recoil.Px() );
     lv_recoil.SetPy( -1.*lv_recoil.Py() );
     lv_recoil.SetPz( -1.*lv_recoil.Pz() );
     
     // Self dot product of recoil 4-momentum
-    LorentzVector::Scalar self_product = lv_recoil.Dot( lv_recoil );
+    LorentzV::Scalar self_product = lv_recoil.Dot( lv_recoil );
     
     // Jet system
     double et_jet = 0.;
-    LorentzVector lv_jet;
-    std::vector<reco::Particle>::const_iterator ijet = jets.begin();
-    std::vector<reco::Particle>::const_iterator jjet = jets.end();
+    LorentzV lv_jet;
+    std::vector<Candidate>::const_iterator ijet = jets.begin();
+    std::vector<Candidate>::const_iterator jjet = jets.end();
     ss << " jets: " << endl;
     for ( ; ijet != jjet; ++ijet ) { 
       std::stringstream sss; sss << ijet->p4(); 
       ss << " #" << uint32_t(ijet-jets.begin()) << " " << sss.str().substr(sss.str().find_first_of("(")+1,sss.str().find_first_of(")")-1) << endl;
       lv_jet += ijet->p4(); 
-      LorentzVector::Scalar dot_product = ijet->p4().Dot( lv_recoil );
-      LorentzVector lv_proj = lv_recoil * ( dot_product / self_product );
+      LorentzV::Scalar dot_product = ijet->p4().Dot( lv_recoil );
+      LorentzV lv_proj = lv_recoil * ( dot_product / self_product );
       et_jet += Et( lv_proj );
     }
     ss << endl;
     
     // Add "other" lower-Et photons to jet system
     if ( photons.size() > 2 ) {
-      std::vector<reco::Particle>::const_iterator iother = photons.begin() + 2;
-      std::vector<reco::Particle>::const_iterator jother = photons.end();
+      std::vector<Candidate>::const_iterator iother = photons.begin() + 2;
+      std::vector<Candidate>::const_iterator jother = photons.end();
       ss << " other photons: " << endl;
       for ( ; iother < jother; ++iother ) { 
 	std::stringstream sss; sss << iother->p4(); 
 	ss << " #" << uint32_t(iother-(photons.begin()+2)) << " " << sss.str().substr(sss.str().find_first_of("(")+1,sss.str().find_first_of(")")-1) << endl;
 	lv_jet += iother->p4(); 
-	LorentzVector::Scalar dot_product = iother->p4().Dot( lv_recoil );
-	LorentzVector lv_proj = lv_recoil * ( dot_product / self_product );
+	LorentzV::Scalar dot_product = iother->p4().Dot( lv_recoil );
+	LorentzV lv_proj = lv_recoil * ( dot_product / self_product );
 	et_jet += Et( lv_proj );
 // 	ss << " projection: " << endl;
 // 	ss << lv_proj.Px() << " " 
@@ -1507,7 +1507,7 @@ double TestCombination::recoilDHT( const std::vector<reco::Particle>& photons,
     histo2d("HT_Photons_Vs_Jets")->Fill( HT( jets ), HT( photons ) ); 
     
     // MHT from complete system
-    LorentzVector lv_mht;
+    LorentzV lv_mht;
     lv_mht = lv_pho + lv_jet;
     lv_mht.SetPx( -1.*lv_mht.Px() );
     lv_mht.SetPy( -1.*lv_mht.Py() );
@@ -1536,19 +1536,19 @@ double TestCombination::recoilDHT( const std::vector<reco::Particle>& photons,
     // DPHI b/w two systems
     {
       //double pi = 4. * atan(1.);
-      double delta_phi = reco::deltaPhi<LorentzVector,LorentzVector>( lv_pho, lv_jet );
+      double delta_phi = reco::deltaPhi( lv_pho.phi(), lv_jet.phi() );
       histo("DPHI_BetweenJetAndPhotonSystems")->Fill( fabs(delta_phi) ); 
     }
       
     // DPHI b/w jet system and recoil axis
     {
-      double delta_phi = reco::deltaPhi<LorentzVector,LorentzVector>( lv_jet, lv_recoil );
+      double delta_phi = reco::deltaPhi( lv_jet.phi(), lv_recoil.phi() );
       histo("DPHI_BetweenJetSystemAndRecoilAxis")->Fill( fabs(delta_phi) ); 
     }
 
     // DPHI b/w MHT and recoil axis
     {
-      double delta_phi = reco::deltaPhi<LorentzVector,LorentzVector>( lv_recoil, lv_mht );
+      double delta_phi = reco::deltaPhi( lv_recoil.phi(), lv_mht.phi() );
       histo("DPHI_BetweenMhtAndRecoilAxis")->Fill( fabs(delta_phi) ); 
     }
 
@@ -1567,9 +1567,9 @@ double TestCombination::recoilDHT( const std::vector<reco::Particle>& photons,
 
 // -----------------------------------------------------------------------------
 //
-double TestCombination::minSuperDHT( const std::vector<reco::Particle>& objects, 
-				     std::vector<reco::Particle>& jet1, 
-				     std::vector<reco::Particle>& jet2 ) {
+double TestCombination::minSuperDHT( const std::vector<Candidate>& objects, 
+				     std::vector<Candidate>& jet1, 
+				     std::vector<Candidate>& jet2 ) {
   
   // Maximum number of objects handled
   static const uint8_t max_size = 50;
@@ -1646,9 +1646,9 @@ double TestCombination::minSuperDHT( const std::vector<reco::Particle>& objects,
     // Iterate through combinations
     do { 
 
-      // Indices of jets assigned to first pseudo-jet and LorentzVector sum
+      // Indices of jets assigned to first pseudo-jet and LorentzV sum
       double et1 = 0.;
-      LorentzVector lv1;
+      LorentzV lv1;
       std::vector<uint8_t> tmp1;
       tmp1.reserve(size2+1);
       for ( uint8_t ii = 0; ii < size2; ++ii ) { 
@@ -1659,25 +1659,25 @@ double TestCombination::minSuperDHT( const std::vector<reco::Particle>& objects,
       }
 
       // "Recoil" axis
-      LorentzVector lv_recoil( lv1 );
+      LorentzV lv_recoil( lv1 );
       lv_recoil.SetPx( -1.*lv_recoil.Px() );
       lv_recoil.SetPy( -1.*lv_recoil.Py() );
       lv_recoil.SetPz( -1.*lv_recoil.Pz() );
 
       // Self dot product of recoil 4-momentum
-      LorentzVector::Scalar self_product = lv_recoil.Dot( lv_recoil );
+      LorentzV::Scalar self_product = lv_recoil.Dot( lv_recoil );
       
-      // Indices of jets assigned to second pseudo-jet and LorentzVector sum
+      // Indices of jets assigned to second pseudo-jet and LorentzV sum
       double et2 = 0.;
-      LorentzVector lv2;
+      LorentzV lv2;
       std::vector<uint8_t> tmp2;
       tmp2.reserve(size1+1);
       for ( uint8_t ii = 0; ii < size1; ++ii ) { 
 	if ( std::find( tmp1.begin(), tmp1.end(), ii ) == tmp1.end() ) { 
 	  tmp2.push_back(ii); 
 	  lv2 += objects[ii].p4();
-	  LorentzVector::Scalar dot_product = objects[ii].p4().Dot( lv_recoil );
-	  LorentzVector lv_proj = lv_recoil * ( dot_product / self_product );
+	  LorentzV::Scalar dot_product = objects[ii].p4().Dot( lv_recoil );
+	  LorentzV lv_proj = lv_recoil * ( dot_product / self_product );
 	  et1 += Et( lv_proj );
 	}
       }
@@ -1733,9 +1733,9 @@ double TestCombination::minSuperDHT( const std::vector<reco::Particle>& objects,
 
 // -----------------------------------------------------------------------------
 //
-double TestCombination::superDPHI( const std::vector<reco::Particle>& objects, 
-				   std::vector<reco::Particle>& jet1, 
-				   std::vector<reco::Particle>& jet2 ) {
+double TestCombination::superDPHI( const std::vector<Candidate>& objects, 
+				   std::vector<Candidate>& jet1, 
+				   std::vector<Candidate>& jet2 ) {
   
   // Maximum number of objects handled
   static const uint8_t max_size = 50;
@@ -1811,8 +1811,8 @@ double TestCombination::superDPHI( const std::vector<reco::Particle>& objects,
     // Iterate through combinations
     do { 
 
-      // Indices of jets assigned to first pseudo-jet and LorentzVector sum
-      LorentzVector lv1;
+      // Indices of jets assigned to first pseudo-jet and LorentzV sum
+      LorentzV lv1;
       std::vector<uint8_t> tmp1;
       tmp1.reserve(size2+1);
       for ( uint8_t ii = 0; ii < size2; ++ii ) { 
@@ -1821,8 +1821,8 @@ double TestCombination::superDPHI( const std::vector<reco::Particle>& objects,
 	lv1 += objects[index].p4();
       }
       
-      // Indices of jets assigned to second pseudo-jet and LorentzVector sum
-      LorentzVector lv2;
+      // Indices of jets assigned to second pseudo-jet and LorentzV sum
+      LorentzV lv2;
       std::vector<uint8_t> tmp2;
       tmp2.reserve(size1+1);
       for ( uint8_t ii = 0; ii < size1; ++ii ) { 
@@ -1847,7 +1847,7 @@ double TestCombination::superDPHI( const std::vector<reco::Particle>& objects,
       }
 
       // Calculate missing HT
-      LorentzVector lv_mht;
+      LorentzV lv_mht;
       lv_mht = lv1 + lv2;
       lv_mht.SetPx( -1.*lv_mht.Px() );
       lv_mht.SetPy( -1.*lv_mht.Py() );
@@ -1855,13 +1855,13 @@ double TestCombination::superDPHI( const std::vector<reco::Particle>& objects,
 
       // Calculate delta phi b/w MHT and pseudo-jet #1
       { 
-	double delta_phi = reco::deltaPhi<LorentzVector,LorentzVector>( lv_mht, lv1 );
+	double delta_phi = reco::deltaPhi<LorentzV,LorentzV>( lv_mht, lv1 );
 	if ( fabs(delta_phi) < fabs(min_delta_phi) ) { min_delta_phi = delta_phi; }
       }
 
       // Calculate delta phi b/w MHT and pseudo-jet #2
       {
-	double delta_phi = reco::deltaPhi<LorentzVector,LorentzVector>( lv_mht, lv2 );
+	double delta_phi = reco::deltaPhi<LorentzV,LorentzV>( lv_mht, lv2 );
 	if ( fabs(delta_phi) < fabs(min_delta_phi) ) { min_delta_phi = delta_phi; }
       }
 
@@ -1891,9 +1891,9 @@ double TestCombination::superDPHI( const std::vector<reco::Particle>& objects,
 
 // -----------------------------------------------------------------------------
 //
-double TestCombination::alphaT( const std::vector<reco::Particle>& objects,
-				std::vector<reco::Particle>& jet1, 
-				std::vector<reco::Particle>& jet2 ) {
+double TestCombination::alphaT( const std::vector<Candidate>& objects,
+				std::vector<Candidate>& jet1, 
+				std::vector<Candidate>& jet2 ) {
   jet1.clear();
   jet2.clear();
   double min_dht = minDHT( objects, jet1, jet2 );
@@ -1945,19 +1945,19 @@ DEFINE_FWK_MODULE(TestCombination);
 
 //       // DPHI b/w two systems
 //       {
-// 	double delta_phi = reco::deltaPhi<LorentzVector,LorentzVector>( lv_pho, lv_jet );
+// 	double delta_phi = reco::deltaPhi<LorentzV,LorentzV>( lv_pho, lv_jet );
 // 	histo("DPHI_BetweenJetAndPhotonSystems")->Fill( fabs(delta_phi) ); 
 //       }
       
 //       // DPHI b/w jet system and recoil axis
 //       {
-// 	double delta_phi = reco::deltaPhi<LorentzVector,LorentzVector>(lv_jet,lv_recoil);
+// 	double delta_phi = reco::deltaPhi<LorentzV,LorentzV>(lv_jet,lv_recoil);
 // 	histo("DPHI_BetweenJetSystemAndRecoilAxis")->Fill( fabs(delta_phi) ); 
 //       }
 
 //       // DPHI b/w MHT and recoil axis
 //       {
-// 	double delta_phi = reco::deltaPhi<LorentzVector,LorentzVector>(lv_mht,lv_recoil);
+// 	double delta_phi = reco::deltaPhi<LorentzV,LorentzV>(lv_mht,lv_recoil);
 // 	histo("DPHI_BetweenMhtAndRecoilAxis")->Fill( fabs(delta_phi) ); 
 //       }
 
@@ -1983,7 +1983,7 @@ DEFINE_FWK_MODULE(TestCombination);
 //       std::vector<int>::const_iterator iii1 = phot1.begin();
 //       std::vector<int>::const_iterator jjj1 = phot1.end();
 //       for ( ; iii1 != jjj1; ++iii1 ) {
-// 	reco::Candidate* candidate = 0;
+// 	Candidate* candidate = 0;
 // 	int32_t invalid_id = static_cast<int32_t>(1e8+0.5);
 // 	int32_t daughter_id = invalid_id;
 // 	int32_t mother_id   = invalid_id;
@@ -1993,11 +1993,11 @@ DEFINE_FWK_MODULE(TestCombination);
 // 	for ( ; igen != jgen; ++igen ) {
 // 	  if ( igen->isNonnull() ) { 
 // 	    reco::GenParticle* part = const_cast<reco::GenParticle*>( &(**igen) );
-// 	    reco::Candidate* cand = dynamic_cast<reco::Candidate*>( part );
+// 	    Candidate* cand = dynamic_cast<Candidate*>( part );
 // 	    if ( cand ) {
 // 	      candidate = cand;
 // 	      daughter_id = cand->pdgId();
-// 	      const reco::Candidate* mother = cand->mother();
+// 	      const Candidate* mother = cand->mother();
 // 	      if ( mother && cand->pdgId() == cand->mother()->pdgId() ) { mother = mother->mother(); }
 // 	      if ( mother ) { mother_id = mother->pdgId(); }
 // 	      break;
@@ -2012,7 +2012,7 @@ DEFINE_FWK_MODULE(TestCombination);
 //       std::vector<int>::const_iterator iii2 = phot2.begin();
 //       std::vector<int>::const_iterator jjj2 = phot2.end();
 //       for ( ; iii2 != jjj2; ++iii2 ) {
-// 	reco::Candidate* candidate = 0;
+// 	Candidate* candidate = 0;
 // 	int32_t invalid_id = static_cast<int32_t>(1e8+0.5);
 // 	int32_t daughter_id = invalid_id;
 // 	int32_t mother_id   = invalid_id;
@@ -2022,11 +2022,11 @@ DEFINE_FWK_MODULE(TestCombination);
 // 	for ( ; igen != jgen; ++igen ) {
 // 	  if ( igen->isNonnull() ) { 
 // 	    reco::GenParticle* part = const_cast<reco::GenParticle*>( &(**igen) );
-// 	    reco::Candidate* cand = dynamic_cast<reco::Candidate*>( part );
+// 	    Candidate* cand = dynamic_cast<Candidate*>( part );
 // 	    if ( cand ) {
 // 	      candidate = cand;
 // 	      daughter_id = cand->pdgId();
-// 	      const reco::Candidate* mother = cand->mother();
+// 	      const Candidate* mother = cand->mother();
 // 	      if ( mother && cand->pdgId() == cand->mother()->pdgId() ) { mother = mother->mother(); }
 // 	      if ( mother ) { mother_id = mother->pdgId(); }
 // 	      break;
@@ -2041,9 +2041,9 @@ DEFINE_FWK_MODULE(TestCombination);
 
 // // -----------------------------------------------------------------------------
 // //
-// double TestCombination::constructPseudoJets( const std::vector<reco::Particle>& objects, 
-// 					    std::vector<reco::Particle>& pseudo_jet1, 
-// 					    std::vector<reco::Particle>& pseudo_jet2  ) {
+// double TestCombination::constructPseudoJets( const std::vector<Candidate>& objects, 
+// 					    std::vector<Candidate>& pseudo_jet1, 
+// 					    std::vector<Candidate>& pseudo_jet2  ) {
   
 //   // Build combinations
 //   std::vector< std::vector<uint8_t> > combination1;
@@ -2063,11 +2063,11 @@ DEFINE_FWK_MODULE(TestCombination);
 
 // // -----------------------------------------------------------------------------
 // // 
-// double TestCombination::minDeltaet( const std::vector<reco::Particle>& objects, 
+// double TestCombination::minDeltaet( const std::vector<Candidate>& objects, 
 // 				   const std::vector< std::vector<uint8_t> >& combo1, 
 // 				   const std::vector< std::vector<uint8_t> >& combo2,
-// 				   std::vector<reco::Particle>& pseudo1, 
-// 				   std::vector<reco::Particle>& pseudo2 ) {
+// 				   std::vector<Candidate>& pseudo1, 
+// 				   std::vector<Candidate>& pseudo2 ) {
   
 //   pseudo1.clear();
 //   pseudo2.clear();
@@ -2262,29 +2262,29 @@ DEFINE_FWK_MODULE(TestCombination);
 
 
 
-//       typedef reco::Particle::LorentzVector LorentzVector;
+//       typedef Candidate::LorentzV LorentzV;
       
-//       LorentzVector lv_pho;
-//       std::vector<reco::Particle>::const_iterator ipho = photons.begin();
-//       std::vector<reco::Particle>::const_iterator jpho = photons.end();
+//       LorentzV lv_pho;
+//       std::vector<Candidate>::const_iterator ipho = photons.begin();
+//       std::vector<Candidate>::const_iterator jpho = photons.end();
 //       for ( ; ipho != jpho; ++ipho ) { lv_pho += ipho->p4(); }
-//       reco::Particle pho( 22, lv_pho );
+//       Candidate pho( 22, lv_pho );
       
-//       LorentzVector lv_jet;
-//       std::vector<reco::Particle>::const_iterator ijet = jets.begin();
-//       std::vector<reco::Particle>::const_iterator jjet = jets.end();
+//       LorentzV lv_jet;
+//       std::vector<Candidate>::const_iterator ijet = jets.begin();
+//       std::vector<Candidate>::const_iterator jjet = jets.end();
 //       for ( ; ijet != jjet; ++ijet ) { lv_jet += ijet->p4(); }
-//       reco::Particle jet( 0, lv_jet );
+//       Candidate jet( 0, lv_jet );
 
-//       LorentzVector lv_all;
-//       std::vector<reco::Particle>::const_iterator iall = objects.begin();
-//       std::vector<reco::Particle>::const_iterator jall = objects.end();
+//       LorentzV lv_all;
+//       std::vector<Candidate>::const_iterator iall = objects.begin();
+//       std::vector<Candidate>::const_iterator jall = objects.end();
 //       for ( ; iall != jall; ++iall ) { lv_all += iall->p4(); }
-//       reco::Particle all( 0, lv_all );
+//       Candidate all( 0, lv_all );
 
 //       {
 // 	histo2d("PhiPhotons_Vs_PhiJets")->Fill( lv_jet.phi(), lv_pho.phi() ); 
-// 	double delta_phi = reco::deltaPhi<reco::Particle,reco::Particle>( pho, jet );
+// 	double delta_phi = reco::deltaPhi<Candidate,Candidate>( pho, jet );
 // 	histo("DPHI_PhotonsJets")->Fill( delta_phi ); 
 
 // 	histo2d("EtPhotons_Vs_EtJets")->Fill( lv_jet.Et(), lv_pho.Et() ); 
@@ -2296,7 +2296,7 @@ DEFINE_FWK_MODULE(TestCombination);
 
 //       {
 // 	histo2d("PhiPhotons_Vs_PhiObjects")->Fill( lv_all.phi(), lv_pho.phi() ); 
-// 	double delta_phi = reco::deltaPhi<reco::Particle,reco::Particle>( pho, all );
+// 	double delta_phi = reco::deltaPhi<Candidate,Candidate>( pho, all );
 // 	histo("DPHI_PhotonsObjects")->Fill( delta_phi ); 
 
 // 	histo2d("EtPhotons_Vs_EtObjects")->Fill( lv_all.Et(), lv_pho.Et() ); 
@@ -2308,25 +2308,25 @@ DEFINE_FWK_MODULE(TestCombination);
 
 //       {
 
-// 	//LorentzVector recoil( -1.*lv_pho.Px(), -1.*lv_pho.Py(), -1.*lv_pho.Pz(), lv_pho.E() );
-// 	LorentzVector recoil( lv_pho );
+// 	//LorentzV recoil( -1.*lv_pho.Px(), -1.*lv_pho.Py(), -1.*lv_pho.Pz(), lv_pho.E() );
+// 	LorentzV recoil( lv_pho );
 // 	recoil.SetPx( -1.*lv_pho.Px() );
 // 	recoil.SetPy( -1.*lv_pho.Py() );
 // 	recoil.SetPz( -1.*lv_pho.Pz() );
-// 	LorentzVector::Scalar mag2 = lv_pho.Dot(lv_pho);
+// 	LorentzV::Scalar mag2 = lv_pho.Dot(lv_pho);
 	
-// 	LorentzVector::Scalar dot_product_all = recoil.Dot(lv_all);
-// 	LorentzVector::Scalar dot_product_jet = recoil.Dot(lv_jet);
+// 	LorentzV::Scalar dot_product_all = recoil.Dot(lv_all);
+// 	LorentzV::Scalar dot_product_jet = recoil.Dot(lv_jet);
 	
 // 	histo("DotProduct_All")->Fill( dot_product_all ); 
 // 	histo("DotProduct_Jets")->Fill( dot_product_jet ); 
 // 	histo("DotProduct_Magnitude2")->Fill( mag2 ); 
 
-// 	LorentzVector proj_all = recoil * ( dot_product_all / mag2 );
-// 	LorentzVector proj_jet = recoil * ( dot_product_jet / mag2 );
+// 	LorentzV proj_all = recoil * ( dot_product_all / mag2 );
+// 	LorentzV proj_jet = recoil * ( dot_product_jet / mag2 );
 	
-// 	double delta_phi_all = reco::deltaPhi<LorentzVector,LorentzVector>(lv_all,recoil);
-// 	double delta_phi_jet = reco::deltaPhi<LorentzVector,LorentzVector>(lv_jet,recoil);
+// 	double delta_phi_all = reco::deltaPhi<LorentzV,LorentzV>(lv_all,recoil);
+// 	double delta_phi_jet = reco::deltaPhi<LorentzV,LorentzV>(lv_jet,recoil);
 	
 // 	histo("DeltaEt_All")->Fill( proj_all.Et() - recoil.Et() ); 
 // 	histo("DeltaEt_Jets")->Fill( proj_jet.Et() - recoil.Et() ); 

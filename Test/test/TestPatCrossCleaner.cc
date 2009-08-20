@@ -173,7 +173,8 @@ void TestPatCrossCleaner::analyze( const edm::Event& iEvent,
 	      reco::GenParticle* gen_particle = const_cast<reco::GenParticle*>( &(*gen_jet_ref) );
 	      reco::Candidate* gen_candidate = dynamic_cast<reco::Candidate*>( gen_particle );
 	      if ( gen_particle ) {
-		dr1 = reco::deltaR<pat::Jet,reco::Particle>( *ii, *gen_candidate );
+		dr1 = reco::deltaR( ii->p4().eta(), gen_candidate->p4().eta(), 
+				    ii->p4().phi(), gen_candidate->p4().phi() );
 		et1 = fabs( ii->et() - gen_candidate->et() ) / gen_candidate->et();
 	      }
 	    } 
@@ -190,14 +191,15 @@ void TestPatCrossCleaner::analyze( const edm::Event& iEvent,
 	    if ( photon_ref.isNonnull() ) { 
 	      reco::GenParticleRef gen_photon_ref = (*photon_matched_dropped_photons)[photon_ref];
 	      if ( gen_jet_ref.isNonnull() && gen_photon_ref.isNonnull() && gen_photon_ref == gen_jet_ref ) { 
-		float dr2 = reco::deltaR<pat::Photon,pat::Jet>( *iii, *ii );
+		float dr2 = reco::deltaR( iii->p4().eta(), ii->p4().eta(), 
+					  iii->p4().phi(), ii->p4().phi() );
 		float et2 = fabs( iii->et() - ii->et() ) / ii->et();
 		histo("CCJets_MatchedRecoPhoton_DeltaR")->Fill( dr2 ); 
 		histo("CCJets_MatchedRecoPhoton_DeltaEt")->Fill( et2 ); 
-		if      ( iii->isTightPhoton() ) { histo("CCJets_MatchedRecoPhoton_PhotonID")->Fill( 3. ); }
-		else if ( iii->isLoosePhoton() ) { histo("CCJets_MatchedRecoPhoton_PhotonID")->Fill( 2. ); }
-		else if ( iii->isLooseEM() )     { histo("CCJets_MatchedRecoPhoton_PhotonID")->Fill( 1. ); }
-		else                             { histo("CCJets_MatchedRecoPhoton_PhotonID")->Fill( 0. ); }
+// 		if      ( iii->isTightPhoton() ) { histo("CCJets_MatchedRecoPhoton_PhotonID")->Fill( 3. ); }
+// 		else if ( iii->isLoosePhoton() ) { histo("CCJets_MatchedRecoPhoton_PhotonID")->Fill( 2. ); }
+// 		else if ( iii->isLooseEM() )     { histo("CCJets_MatchedRecoPhoton_PhotonID")->Fill( 1. ); }
+// 		else                             { histo("CCJets_MatchedRecoPhoton_PhotonID")->Fill( 0. ); }
 	      }
 	    }
 	  }
@@ -215,7 +217,8 @@ void TestPatCrossCleaner::analyze( const edm::Event& iEvent,
 	    if ( gen_ref.isNonnull() ) { 
 	      reco::GenParticle* gen_particle = const_cast<reco::GenParticle*>( &(*gen_ref) );
 	      reco::Candidate* gen_candidate = dynamic_cast<reco::Candidate*>( gen_particle );
-	      dr = reco::deltaR<pat::Jet,reco::Particle>( *ii, *gen_candidate );
+	      dr = reco::deltaR( ii->p4().eta(), gen_candidate->p4().eta(),
+				 ii->p4().phi(), gen_candidate->p4().phi() );
 	      et = fabs( ii->et() - gen_candidate->et() ) / gen_candidate->et();
 	    } 
 	  } 
@@ -234,7 +237,8 @@ void TestPatCrossCleaner::analyze( const edm::Event& iEvent,
 	    if ( gen_ref.isNonnull() ) { 
 	      reco::GenParticle* gen_particle = const_cast<reco::GenParticle*>( &(*gen_ref) );
 	      reco::Candidate* gen_candidate = dynamic_cast<reco::Candidate*>( gen_particle );
-	      dr = reco::deltaR<pat::Jet,reco::Particle>( *ii, *gen_candidate );
+	      dr = reco::deltaR( ii->p4().eta(), gen_candidate->p4().eta(),
+				 ii->p4().phi(), gen_candidate->p4().phi() );
 	      et = fabs( ii->et() - gen_candidate->et() ) / gen_candidate->et();
 	    } 
 	  } 
@@ -271,7 +275,8 @@ void TestPatCrossCleaner::analyze( const edm::Event& iEvent,
 	    if ( gen_jet_ref.isNonnull() ) { 
 	      reco::GenParticle* gen_particle = const_cast<reco::GenParticle*>( &(*gen_jet_ref) );
 	      reco::Candidate* gen_candidate = dynamic_cast<reco::Candidate*>( gen_particle );
-	      dr1 = reco::deltaR<pat::Jet,reco::Particle>( *ii, *gen_candidate );
+	      dr1 = reco::deltaR( ii->p4().eta(), gen_candidate->p4().eta(),
+				  ii->p4().phi(), gen_candidate->p4().phi() );
 	      et1 = fabs( ii->et() - gen_candidate->et() ) / gen_candidate->et();
 	    } 
 	  }
@@ -287,14 +292,15 @@ void TestPatCrossCleaner::analyze( const edm::Event& iEvent,
 	    if ( photon_ref.isNonnull() ) { 
 	      reco::GenParticleRef gen_photon_ref = (*photon_matched_cc_photons)[photon_ref];
 	      if ( gen_photon_ref == gen_jet_ref ) { 
-		float dr2 = reco::deltaR<pat::Photon,pat::Jet>( *iii, *ii );
+		float dr2 = reco::deltaR( iii->p4().eta(), ii->p4().eta(),
+					  iii->p4().phi(), ii->p4().phi() );
 		float et2 = fabs( iii->et() - ii->et() ) / ii->et();
 		histo("DroppedJets_MatchedRecoPhoton_DeltaR")->Fill( dr2 ); 
 		histo("DroppedJets_MatchedRecoPhoton_DeltaEt")->Fill( et2 ); 
-		if      ( iii->isTightPhoton() ) { histo("DroppedJets_MatchedRecoPhoton_PhotonID")->Fill( 3. ); }
-		else if ( iii->isLoosePhoton() ) { histo("DroppedJets_MatchedRecoPhoton_PhotonID")->Fill( 2. ); }
-		else if ( iii->isLooseEM() )     { histo("DroppedJets_MatchedRecoPhoton_PhotonID")->Fill( 1. ); }
-		else                             { histo("DroppedJets_MatchedRecoPhoton_PhotonID")->Fill( 0. ); }
+// 		if      ( iii->isTightPhoton() ) { histo("DroppedJets_MatchedRecoPhoton_PhotonID")->Fill( 3. ); }
+// 		else if ( iii->isLoosePhoton() ) { histo("DroppedJets_MatchedRecoPhoton_PhotonID")->Fill( 2. ); }
+// 		else if ( iii->isLooseEM() )     { histo("DroppedJets_MatchedRecoPhoton_PhotonID")->Fill( 1. ); }
+// 		else                             { histo("DroppedJets_MatchedRecoPhoton_PhotonID")->Fill( 0. ); }
 	      }
 	    }
 	  }
@@ -312,7 +318,8 @@ void TestPatCrossCleaner::analyze( const edm::Event& iEvent,
 	    if ( gen_jet_ref.isNonnull() ) { 
 	      reco::GenParticle* gen_particle = const_cast<reco::GenParticle*>( &(*gen_jet_ref) );
 	      reco::Candidate* gen_candidate = dynamic_cast<reco::Candidate*>( gen_particle );
-	      dr = reco::deltaR<pat::Jet,reco::Particle>( *ii, *gen_candidate );
+	      dr = reco::deltaR( ii->p4().eta(), gen_candidate->p4().eta(),
+				 ii->p4().phi(), gen_candidate->p4().phi() );
 	      et = fabs( ii->et() - gen_candidate->et() ) / gen_candidate->et();
 	    } 
 	  }
@@ -332,7 +339,8 @@ void TestPatCrossCleaner::analyze( const edm::Event& iEvent,
 	      reco::GenParticle* gen_particle = const_cast<reco::GenParticle*>( &(*gen_jet_ref) );
 	      reco::Candidate* gen_candidate = dynamic_cast<reco::Candidate*>( gen_particle );
 	      if ( gen_candidate ) {
-		dr = reco::deltaR<pat::Jet,reco::Particle>( *ii, *gen_candidate );
+		dr = reco::deltaR( ii->p4().eta(), gen_candidate->p4().eta(),
+				   ii->p4().phi(), gen_candidate->p4().phi() );
 		et = fabs( ii->et() - gen_candidate->et() ) / gen_candidate->et();
 	      }
 	    } 

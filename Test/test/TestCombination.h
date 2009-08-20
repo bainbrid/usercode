@@ -1,7 +1,7 @@
 #ifndef bainbrid_Test_TestCombination_h
 #define bainbrid_Test_TestCombination_h
 
-#include "DataFormats/Candidate/interface/Particle.h"
+#include "DataFormats/Candidate/interface/LeafCandidate.h"
 #include "FWCore/Framework/interface/EDAnalyzer.h"
 #include "FWCore/ParameterSet/interface/InputTag.h"
 #include <vector>
@@ -21,6 +21,8 @@ class TestCombination : public edm::EDAnalyzer {
   
  private:
 
+  typedef reco::LeafCandidate Candidate;
+
   // Some init
   void beginJob( const edm::EventSetup& );
 
@@ -28,53 +30,53 @@ class TestCombination : public edm::EDAnalyzer {
   void analyze( const edm::Event&, const edm::EventSetup& );
 
   // Calculate minimum difference in Et from all pseudo-dijet combinations
-  double minDHT( const std::vector<reco::Particle>&,
-		 std::vector<reco::Particle>&, 
-		 std::vector<reco::Particle>& );
+  double minDHT( const std::vector<Candidate>&,
+		 std::vector<Candidate>&, 
+		 std::vector<Candidate>& );
 
-  double recoilDHT( const std::vector<reco::Particle>& photons,
-		    const std::vector<reco::Particle>& jets,
-		    std::vector<reco::Particle>&, 
-		    std::vector<reco::Particle>& );
+  double recoilDHT( const std::vector<Candidate>& photons,
+		    const std::vector<Candidate>& jets,
+		    std::vector<Candidate>&, 
+		    std::vector<Candidate>& );
   
-  double minSuperDHT( const std::vector<reco::Particle>&,
-		      std::vector<reco::Particle>&, 
-		      std::vector<reco::Particle>& );
+  double minSuperDHT( const std::vector<Candidate>&,
+		      std::vector<Candidate>&, 
+		      std::vector<Candidate>& );
   
-  double superDPHI( const std::vector<reco::Particle>&,
-		    std::vector<reco::Particle>&, 
-		    std::vector<reco::Particle>& );
+  double superDPHI( const std::vector<Candidate>&,
+		    std::vector<Candidate>&, 
+		    std::vector<Candidate>& );
   
-  double HT( const std::vector<reco::Particle>& );
+  double HT( const std::vector<Candidate>& );
   
-  double MHT( const std::vector<reco::Particle>& );
+  double MHT( const std::vector<Candidate>& );
   
-  double MT( const std::vector<reco::Particle>& );
+  double MT( const std::vector<Candidate>& );
   
-  double HT_MHT( const std::vector<reco::Particle>& );
+  double HT_MHT( const std::vector<Candidate>& );
   
   double alphaT( double minDeltaEt, double sumEt, double massT );
   
-  double alphaT( const std::vector<reco::Particle>&,
-		 std::vector<reco::Particle>&, 
-		 std::vector<reco::Particle>& );
+  double alphaT( const std::vector<Candidate>&,
+		 std::vector<Candidate>&, 
+		 std::vector<Candidate>& );
   
   // Retrieve objects
-  bool getPhotons( const edm::Event&, std::vector<reco::Particle>&, double threshold = -1. );
-  bool getJets( const edm::Event&, std::vector<reco::Particle>&, double threshold = -1. );
-  bool getMuons( const edm::Event&, std::vector<reco::Particle>& );
-  bool getElectrons( const edm::Event&, std::vector<reco::Particle>& );
+  bool getPhotons( const edm::Event&, std::vector<Candidate>&, double threshold = -1. );
+  bool getJets( const edm::Event&, std::vector<Candidate>&, double threshold = -1. );
+  bool getMuons( const edm::Event&, std::vector<Candidate>& );
+  bool getElectrons( const edm::Event&, std::vector<Candidate>& );
 
   TH1D* histo( const std::string& histogram_name );
   TH2D* histo2d( const std::string& histogram_name );
 
  private:
+  
+  typedef Candidate::LorentzVector LorentzV;
 
-  typedef reco::Particle::LorentzVector LorentzVector;
+  double Et( const LorentzV& );
 
-  double Et( const LorentzVector& );
-
-  LorentzVector t4Mom( const LorentzVector& );
+  LorentzV t4Mom( const LorentzV& );
 
   // Maximum number of objects handled
   int maximum_;
@@ -118,14 +120,14 @@ class TestCombination : public edm::EDAnalyzer {
   
 };
 
-inline double TestCombination::Et( const LorentzVector& input ) {
+inline double TestCombination::Et( const LorentzV& input ) {
   double et = input.E() * input.E() - input.Pz() * input.Pz();
   et = et < 0. ? -1.*sqrt(-1.*et) : sqrt(et);
   return et;
 }
 
-inline TestCombination::LorentzVector TestCombination::t4Mom( const LorentzVector& input ) {
-  return LorentzVector( input.Px(), input.Py(), 0., Et(input) );
+inline TestCombination::LorentzV TestCombination::t4Mom( const LorentzV& input ) {
+  return LorentzV( input.Px(), input.Py(), 0., Et(input) );
 }
 
 #endif // bainbrid_Test_TestCombination_h
@@ -151,11 +153,11 @@ inline TestCombination::LorentzVector TestCombination::t4Mom( const LorentzVecto
 /* 		     std::vector< std::vector<uint8_t> >&  ); */
   
 /*   // Finds object combination with minimum deltaPt */
-/*   double minDeltaPt( const std::vector<reco::Particle>&,  */
+/*   double minDeltaPt( const std::vector<Candidate>&,  */
 /* 		    const std::vector< std::vector<uint8_t> >&,  */
 /* 		    const std::vector< std::vector<uint8_t> >&, */
-/* 		    std::vector<reco::Particle>&,  */
-/* 		    std::vector<reco::Particle>& ); */
+/* 		    std::vector<Candidate>&,  */
+/* 		    std::vector<Candidate>& ); */
   
 /* inline int TestCombination::factorial( int n ) { */
 /*   int fact = 1; */
