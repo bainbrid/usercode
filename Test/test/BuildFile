@@ -23,6 +23,7 @@
 
 <library name=bainbridTest_TestCombination file=TestCombination.cc>
   <use name=DataFormats/Candidate>
+  <use name=DataFormats/Math>
   <use name=DataFormats/PatCandidates>
   <use name=CommonTools/Utils>
   <use name=FWCore/Framework>
@@ -94,13 +95,13 @@
 </library>
 
 <library name=bainbridTest_JPTCorrectionProducer file=JPTCorrectionModules.cc,JPTCorrectionService.cc,JPTCorrectionProducer.cc>
+  <use name=CommonTools/Utils>
   <use name=DataFormats/Common>
   <use name=DataFormats/PatCandidates>
   <use name=FWCore/Framework>
   <use name=FWCore/ParameterSet>
   <use name=FWCore/PluginManager>
   <use name=JetMETCorrections/Objects>
-  <use name=PhysicsTools/Utilities>
   <lib name=bainbridTest_JPTCorrector>
   <use name=boost>
   <flags CXXFLAGS="-O0 -g -DDEBUG">
@@ -130,5 +131,29 @@
   <use name=roothistmatrix>
   <use name=rootgraphics>
   <use name=clhep>
+  <flags EDM_PLUGIN=1>
+</library>
+
+<library name=bainbridTest_MHT file=MHT.cc>
+  <use name=CommonTools/Utils>
+  <use name=DataFormats/Candidate>
+  <use name=DataFormats/Math>
+  <use name=DataFormats/PatCandidates>
+  <use name=DataFormats/RecoCandidate>
+  <use name=FWCore/Framework>
+  <use name=FWCore/ParameterSet>
+  <use name=FWCore/MessageLogger>
+  <use name=FWCore/ServiceRegistry>
+  <use name=PhysicsTools/UtilAlgos>
+  <flags CXXFLAGS="-O0 -g -DDEBUG">
+  <flags EDM_PLUGIN=1>
+</library>
+
+<library name=bainbridTest_LorentzVectorNtuplizer file=LorentzVectorNtuplizer.cc>
+  <use name=CommonTools/UtilAlgos>
+  <use name=DataFormats/Candidate>
+  <use name=DataFormats/Common>
+  <use name=FWCore/Framework>
+  <flags CXXFLAGS="-O0 -g -DDEBUG">
   <flags EDM_PLUGIN=1>
 </library>
