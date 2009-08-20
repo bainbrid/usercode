@@ -9,13 +9,13 @@ electronIdRobustLoose.electronQuality = 'robust'
 
 electronIdRobustTight = eidCutBasedExt.clone()
 electronIdRobustTight.electronQuality = 'robust'
-electronIdRobustTight.robustEleIDCuts.barrel = [0.015, 0.0092, 0.020, 0.0025]
-electronIdRobustTight.robustEleIDCuts.endcap = [0.018, 0.025, 0.020, 0.0040]
+electronIdRobustTight.robusttightEleIDCuts.barrel = [0.015, 0.0092, 0.020, 0.0025]
+electronIdRobustTight.robusttightEleIDCuts.endcap = [0.018, 0.025, 0.020, 0.0040]
 
 electronIdRobustHighEnergy = eidCutBasedExt.clone()
 electronIdRobustHighEnergy.electronQuality = 'robust'
-electronIdRobustHighEnergy.robustEleIDCuts.barrel = [0.050, 0.011, 0.090, 0.005]
-electronIdRobustHighEnergy.robustEleIDCuts.endcap = [0.100, 0.0275, 0.090, 0.007]
+electronIdRobustHighEnergy.robusthighenergyEleIDCuts.barrel = [0.050, 0.011, 0.090, 0.005]
+electronIdRobustHighEnergy.robusthighenergyEleIDCuts.endcap = [0.100, 0.0275, 0.090, 0.007]
 
 electronIdLoose = eidCutBasedExt.clone()
 electronIdLoose.electronQuality = 'loose'
