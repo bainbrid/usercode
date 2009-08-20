@@ -1,6 +1,7 @@
 #include "bainbrid/Test/test/JPTCorrector.h"
 #include "DataFormats/Common/interface/Handle.h"
 #include "DataFormats/Common/interface/View.h"
+#include "DataFormats/MuonReco/interface/MuonSelectors.h"
 #include "FWCore/Framework/interface/ESHandle.h"
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
 #include "MagneticField/Records/interface/IdealMagneticFieldRecord.h" 
@@ -672,7 +673,7 @@ bool JPTCorrector::matching( reco::TrackRefVector::const_iterator itrk,
   for ( ; imuon != jmuon; ++imuon ) {
     
     if ( imuon->innerTrack().isNull() ||
-	 !imuon->isGood(reco::Muon::TMLastStationTight) ||
+	 !muon::isGoodMuon(*imuon,muon::TMLastStationTight) ||
 	 imuon->innerTrack()->pt() < 3.0 ) { continue; }
     
     if ( itrk->id() != imuon->innerTrack().id() ) {
@@ -703,7 +704,7 @@ bool JPTCorrector::matching( reco::TrackRefVector::const_iterator itrk,
   for ( ; imuon != jmuon; ++imuon ) {
 
     if ( imuon->innerTrack().isNull() ||
-	 !imuon->isGood(reco::Muon::TMLastStationTight) ||
+	 !muon::isGoodMuon(*imuon,muon::TMLastStationTight) ||
 	 imuon->innerTrack()->pt() < 3.0 ) { continue; }
     
     if ( itrk->id() != imuon->innerTrack().id() ) {
