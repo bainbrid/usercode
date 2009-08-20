@@ -1,6 +1,7 @@
 #ifndef bainbrid_Test_JPTCorrectionProducer_h
 #define bainbrid_Test_JPTCorrectionProducer_h
 
+#include "CommonTools/Utils/interface/PtComparator.h"
 #include "DataFormats/Common/interface/EDProduct.h"
 #include "DataFormats/Common/interface/Handle.h"
 #include "DataFormats/PatCandidates/interface/Jet.h"
@@ -12,7 +13,6 @@
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "JetMETCorrections/Objects/interface/JetCorrectionsRecord.h"
 #include "JetMETCorrections/Objects/interface/JetCorrector.h"
-#include "PhysicsTools/Utilities/interface/PtComparator.h"
 #include <string>
 #include <vector>
 
