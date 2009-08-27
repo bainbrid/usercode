@@ -4,31 +4,31 @@ import FWCore.ParameterSet.Config as cms
 
 from RecoEgamma.ElectronIdentification.electronIdCutBasedExt_cfi import *
 
-electronIdRobustLoose = eidCutBasedExt.clone()
-electronIdRobustLoose.electronQuality = 'robust'
+eidRobustLoose = eidCutBasedExt.clone()
+eidRobustLoose.electronQuality = 'robust'
 
-electronIdRobustTight = eidCutBasedExt.clone()
-electronIdRobustTight.electronQuality = 'robust'
-electronIdRobustTight.robusttightEleIDCuts.barrel = [0.015, 0.0092, 0.020, 0.0025]
-electronIdRobustTight.robusttightEleIDCuts.endcap = [0.018, 0.025, 0.020, 0.0040]
+eidRobustTight = eidCutBasedExt.clone()
+eidRobustTight.electronQuality = 'robust'
+eidRobustTight.robusttightEleIDCuts.barrel = [0.015, 0.0092, 0.020, 0.0025]
+eidRobustTight.robusttightEleIDCuts.endcap = [0.018, 0.025, 0.020, 0.0040]
 
-electronIdRobustHighEnergy = eidCutBasedExt.clone()
-electronIdRobustHighEnergy.electronQuality = 'robust'
-electronIdRobustHighEnergy.robusthighenergyEleIDCuts.barrel = [0.050, 0.011, 0.090, 0.005]
-electronIdRobustHighEnergy.robusthighenergyEleIDCuts.endcap = [0.100, 0.0275, 0.090, 0.007]
+eidRobustHighEnergy = eidCutBasedExt.clone()
+eidRobustHighEnergy.electronQuality = 'robust'
+eidRobustHighEnergy.robusthighenergyEleIDCuts.barrel = [0.050, 0.011, 0.090, 0.005]
+eidRobustHighEnergy.robusthighenergyEleIDCuts.endcap = [0.100, 0.0275, 0.090, 0.007]
 
-electronIdLoose = eidCutBasedExt.clone()
-electronIdLoose.electronQuality = 'loose'
+eidLoose = eidCutBasedExt.clone()
+eidLoose.electronQuality = 'loose'
 
-electronIdTight = eidCutBasedExt.clone()
-electronIdTight.electronQuality = 'loose'
+eidTight = eidCutBasedExt.clone()
+eidTight.electronQuality = 'loose'
 
-electronIdSequence = cms.Sequence(
-    electronIdRobustLoose +
-    electronIdRobustTight +
-    electronIdRobustHighEnergy +
-    electronIdLoose +
-    electronIdTight
+eidSequence = cms.Sequence(
+    eidRobustLoose +
+    eidRobustTight +
+    eidRobustHighEnergy +
+    eidLoose +
+    eidTight
     )
 
 # -------------------- JetTrackAssociation --------------------
@@ -73,7 +73,7 @@ JPTCorrectorIC5 = cms.EDProducer("CaloJetCorrectionProducer",
 # -------------------- Sequence --------------------
 
 JPTCorrections = cms.Sequence(
-    electronIdSequence *
+    eidSequence *
     JetTrackAssociations *
     JPTCorrectorIC5
     )
