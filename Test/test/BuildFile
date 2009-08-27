@@ -104,7 +104,6 @@
   <use name=JetMETCorrections/Objects>
   <lib name=bainbridTest_JPTCorrector>
   <use name=boost>
-  <flags CXXFLAGS="-O0 -g -DDEBUG">
   <flags EDM_PLUGIN=1>
 </library>
 
@@ -115,7 +114,6 @@
   <use name=FWCore/Framework>
   <use name=FWCore/ParameterSet>
   <use name=FWCore/MessageLogger>
-  <flags CXXFLAGS="-O0 -g -DDEBUG">
   <flags EDM_PLUGIN=1>
 </library>
 
