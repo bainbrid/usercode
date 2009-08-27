@@ -2,16 +2,13 @@
 #define bainbrid_Test_MHT_h
 
 #include "DataFormats/Candidate/interface/LeafCandidate.h"
-#include "FWCore/Framework/interface/EDAnalyzer.h"
+#include "FWCore/Framework/interface/EDProducer.h"
 #include "FWCore/ParameterSet/interface/InputTag.h"
 #include <vector>
 #include <string>
 #include <map>
 
-class TH1D;
-class TH2D;
-
-class MHT : public edm::EDAnalyzer {
+class MHT : public edm::EDProducer {
 
  public:
   
@@ -22,20 +19,18 @@ class MHT : public edm::EDAnalyzer {
   
   typedef reco::LeafCandidate Candidate;
   typedef Candidate::LorentzVector LorentzVector;
+  typedef std::vector<Candidate> Candidates;
 
   void beginJob( const edm::EventSetup& );
-  void analyze( const edm::Event&, const edm::EventSetup& );
+  void produce( edm::Event&, const edm::EventSetup& );
   double ht( const std::vector<Candidate>& );
   double mht( const std::vector<Candidate>& );
   
-  bool getPhotons( const edm::Event&, std::vector<Candidate>& );
-  bool getJets( const edm::Event&, std::vector<Candidate>& );
-  bool getMuons( const edm::Event&, std::vector<Candidate>& );
-  bool getElectrons( const edm::Event&, std::vector<Candidate>& );
+  bool getPhotons( const edm::Event&, Candidates& );
+  bool getJets( const edm::Event&, Candidates&, Candidates& );
+  bool getMuons( const edm::Event&, Candidates& );
+  bool getElectrons( const edm::Event&, Candidates& );
   
-  TH1D* histo( const std::string& histogram_name );
-  TH2D* histo2d( const std::string& histogram_name );
-
   double Et( const LorentzVector& );
   LorentzVector t4Mom( const LorentzVector& );
 
@@ -46,9 +41,8 @@ class MHT : public edm::EDAnalyzer {
   edm::InputTag electrons_;
   edm::InputTag photons_;
 
-  edm::InputTag met_;  
-  edm::InputTag ccMet_;  
-  edm::InputTag genMet_;  
+  edm::InputTag caloMet_;
+  edm::InputTag genMet_;
 
   double jetEt_;
   double jetEta_;
@@ -72,9 +66,6 @@ class MHT : public edm::EDAnalyzer {
   uint32_t minMuons_;
   uint32_t minElectrons_;
   uint32_t minPhotons_;
-  
-  std::map<std::string,TH1D*> histos_; 
-  std::map<std::string,TH2D*> histos2d_; 
   
 };
 
