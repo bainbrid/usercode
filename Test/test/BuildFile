@@ -134,10 +134,11 @@
   <flags EDM_PLUGIN=1>
 </library>
 
-<library name=bainbridTest_MHT file=MHT.cc>
+<library name=bainbridTest_MHT file=MHT.cc,Ntuplizer.cc,TestNtuplizer.cc>
   <use name=CommonTools/Utils>
   <use name=DataFormats/Candidate>
   <use name=DataFormats/Math>
+  <use name=DataFormats/METReco>
   <use name=DataFormats/PatCandidates>
   <use name=DataFormats/RecoCandidate>
   <use name=FWCore/Framework>
@@ -145,11 +146,12 @@
   <use name=FWCore/MessageLogger>
   <use name=FWCore/ServiceRegistry>
   <use name=PhysicsTools/UtilAlgos>
+  <use name=root>
   <flags CXXFLAGS="-O0 -g -DDEBUG">
   <flags EDM_PLUGIN=1>
 </library>
 
-<library name=bainbridTest_LorentzVectorNtuplizer file=LorentzVectorNtuplizer.cc>
+<library name=bainbridTest_CandidateNtuplizer file=CandidateNtuplizer.cc>
   <use name=CommonTools/UtilAlgos>
   <use name=DataFormats/Candidate>
   <use name=DataFormats/Common>
