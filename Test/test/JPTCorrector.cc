@@ -200,10 +200,10 @@ double JPTCorrector::correction( const reco::Jet& fJet,
     edm::LogVerbatim("JPTCorrector") << ss.str();
   }
 
-  //   LogTrace("test") << " mScale= " << jet_energy / fJet.energy()
-  // 		   << " NewResponse " << jet_energy 
-  // 		   << " Jet energy " << fJet.energy()
-  // 		   << " event " << event.id().event();
+//   LogTrace("test") << " mScale= " << jet_energy / fJet.energy()
+//    		   << " NewResponse " << jet_energy 
+//    		   << " Jet energy " << fJet.energy()
+//    		   << " event " << event.id().event();
   
   return jet_energy / fJet.energy();
 
@@ -377,19 +377,7 @@ void JPTCorrector::particles( const AssociatedTracks& associated_tracks,
     if ( !usePat_ ) {
 
       // Get RECO muons
-      //try { 
       event.getByLabel( muons_, reco_muons ); 
-      //}
-//       catch (...) {
-// 	found_reco_muons = false;
-// 	edm::LogError("JPTCorrector")
-// 	  << "[JPTCorrector::" << __func__ << "]"
-// 	  << " Unable to retrieve reco::GsfMuon collection"
-// 	  << " with InputTag (label:instance:process) \"" 
-// 	  << muons_.label() << ":"
-// 	  << muons_.instance() << ":"
-// 	  << muons_.process() << "\"";
-//       }
       if ( !reco_muons.isValid() || reco_muons.failedToGet() ) {
 	found_reco_muons = false;
 	edm::LogError("JPTCorrector")
@@ -404,19 +392,7 @@ void JPTCorrector::particles( const AssociatedTracks& associated_tracks,
     } else { 
       
       // Get PAT muons
-      //try { 
       event.getByLabel( muons_, pat_muons ); 
-      //}
-//       catch (...) {
-// 	found_pat_muons = false;
-// 	edm::LogError("JPTCorrector")
-// 	  << "[JPTCorrector::" << __func__ << "]"
-// 	  << " Unable to retrieve pat::Muon collection"
-// 	  << " with InputTag (label:instance:process) \"" 
-// 	  << muons_.label() << ":"
-// 	  << muons_.instance() << ":"
-// 	  << muons_.process() << "\"";
-//       }
       if ( !pat_muons.isValid() || pat_muons.failedToGet() ) {
 	found_pat_muons = false;
 	edm::LogError("JPTCorrector")
@@ -430,7 +406,7 @@ void JPTCorrector::particles( const AssociatedTracks& associated_tracks,
 
     }
 
-  } // useMuons_
+  } 
   
   // Get electrons
   bool found_reco_electrons    = true;
@@ -444,19 +420,7 @@ void JPTCorrector::particles( const AssociatedTracks& associated_tracks,
     if ( !usePat_ ) {
 
       // Get RECO electrons
-      //try { 
       event.getByLabel( electrons_, reco_electrons ); 
-      //}
-//       catch (...) {
-// 	found_reco_electrons = false;
-// 	edm::LogError("JPTCorrector")
-// 	  << "[JPTCorrector::" << __func__ << "]"
-// 	  << " Unable to retrieve reco::GsfElectron collection"
-// 	  << " with InputTag (label:instance:process) \"" 
-// 	  << electrons_.label() << ":"
-// 	  << electrons_.instance() << ":"
-// 	  << electrons_.process() << "\"";
-//       }
       if ( !reco_electrons.isValid() || reco_electrons.failedToGet() ) {
 	found_reco_electrons = false;
 	edm::LogError("JPTCorrector")
@@ -469,19 +433,7 @@ void JPTCorrector::particles( const AssociatedTracks& associated_tracks,
       }
 
       // Get RECO electron IDs
-      //try { 
       event.getByLabel( electronIds_, reco_electron_ids ); 
-      //}
-//       catch (...) {
-// 	found_reco_electron_ids = false;
-// 	edm::LogError("JPTCorrector")
-// 	  << "[JPTCorrector::" << __func__ << "]"
-// 	  << " Unable to retrieve reco::ElectronIDs collection"
-// 	  << " with InputTag (label:instance:process) \"" 
-// 	  << electronIds_.label() << ":"
-// 	  << electronIds_.instance() << ":"
-// 	  << electronIds_.process() << "\"";
-//       }
       if ( !reco_electron_ids.isValid() || reco_electron_ids.failedToGet() ) {
 	found_reco_electron_ids = false;
 	edm::LogError("JPTCorrector")
@@ -496,19 +448,7 @@ void JPTCorrector::particles( const AssociatedTracks& associated_tracks,
     } else { 
       
       // Get PAT electrons
-      //try { 
       event.getByLabel( electrons_, pat_electrons ); 
-      //}
-//       catch (...) {
-// 	found_pat_electrons = false;
-// 	edm::LogError("JPTCorrector")
-// 	  << "[JPTCorrector::" << __func__ << "]"
-// 	  << " Unable to retrieve pat::Electron collection"
-// 	  << " with InputTag (label:instance:process) \"" 
-// 	  << electrons_.label() << ":"
-// 	  << electrons_.instance() << ":"
-// 	  << electrons_.process() << "\"";
-//       }
       if ( !pat_electrons.isValid() || pat_electrons.failedToGet() ) {
 	found_pat_electrons = false;
 	edm::LogError("JPTCorrector")
@@ -522,7 +462,7 @@ void JPTCorrector::particles( const AssociatedTracks& associated_tracks,
 
     }
 
-  } // useElectrons_
+  } 
   
   // Check
   bool found_reco = found_reco_muons && found_reco_electrons && found_reco_electron_ids;
@@ -593,8 +533,8 @@ void JPTCorrector::particles( const AssociatedTracks& associated_tracks,
 						  *itrk );
 	
 	if ( it == pions.inVertexInCalo_.end() && 
-	     im == muons.inVertexInCalo_.end() &&
-	     ie == electrons.inVertexInCalo_.end() ) {
+	     im == muons.inVertexInCalo_.end() ) { //@@ &&
+	     //@@ ie == electrons.inVertexInCalo_.end() ) {
 	  
 	  bool is_muon = false;
 	  bool is_ele  = false;
