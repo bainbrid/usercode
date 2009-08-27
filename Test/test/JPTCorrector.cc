@@ -241,22 +241,7 @@ bool JPTCorrector::jetTrackAssociation( const reco::Jet& fJet,
     
     // Get Jet-track association at Vertex
     edm::Handle<reco::JetTracksAssociation::Container> jetTracksAtVertex;
-    //try { 
     event.getByLabel( jetTracksAtVertex_, jetTracksAtVertex ); 
-    //}
-//     catch (...) {
-//       if ( verbose_ && edm::isDebugEnabled() ) {
-// 	edm::LogWarning("JPTCorrector")
-// 	  << "[JPTCorrector::" << __func__ << "]"
-// 	  << " Unable to retrieve reco::JetTracksAssociation::Container (for Vertex)"
-// 	  << " with InputTag (label:instance:process) \"" 
-// 	  << muons_.label() << ":"
-// 	  << muons_.instance() << ":"
-// 	  << muons_.process() << "\"" << std::endl
-// 	  << " Attempting to use JTA \"on-the-fly\" mode...";
-//       }	
-//       return jtaOnTheFly( fJet, event, setup, trks );
-//     }
     if ( !jetTracksAtVertex.isValid() || jetTracksAtVertex.failedToGet() ) {
       if ( verbose_ && edm::isDebugEnabled() ) {
 	edm::LogWarning("JPTCorrector")
@@ -280,22 +265,7 @@ bool JPTCorrector::jetTrackAssociation( const reco::Jet& fJet,
 
     // Get Jet-track association at Calo
     edm::Handle<reco::JetTracksAssociation::Container> jetTracksAtCalo;
-    //try { 
     event.getByLabel( jetTracksAtCalo_, jetTracksAtCalo ); 
-    //}
-//     catch (...) {
-//       if ( verbose_ && edm::isDebugEnabled() ) {
-// 	edm::LogWarning("JPTCorrector")
-// 	  << "[JPTCorrector::" << __func__ << "]"
-// 	  << " Unable to retrieve reco::JetTracksAssociation::Container (for CaloFace)"
-// 	  << " with InputTag (label:instance:process) \"" 
-// 	  << muons_.label() << ":"
-// 	  << muons_.instance() << ":"
-// 	  << muons_.process() << "\"" << std::endl
-// 	  << " Attempting to use JTA \"on-the-fly\" mode...";
-//       }	
-//       return jtaOnTheFly( fJet, event, setup, trks );
-//     }
     if ( !jetTracksAtCalo.isValid() || jetTracksAtCalo.failedToGet() ) {
       if ( verbose_ && edm::isDebugEnabled() ) {
 	edm::LogWarning("JPTCorrector")
@@ -314,7 +284,7 @@ bool JPTCorrector::jetTrackAssociation( const reco::Jet& fJet,
     const reco::JetTracksAssociation::Container jtC = *( jetTracksAtCalo.product() );
     trks.atCaloFace_ = reco::JetTracksAssociation::getValue( jtC, fJet );
     
-    // Successfull
+    // Successful
     return true;
     
   } else { return jtaOnTheFly( fJet, event, setup, trks ); }
@@ -327,55 +297,60 @@ bool JPTCorrector::jtaOnTheFly( const reco::Jet& fJet,
 				const edm::Event& event, 
 				const edm::EventSetup& setup,
 				AssociatedTracks& trks ) const {
+
+  edm::LogWarning("JPTCorrector") 
+    << "[JPTCorrector::" << __func__ << "]"
+    << " \"On-the-fly\" mode not yet implemented!...";
+  return false;
   
-  // Construct objects that perform association 
-  static JetTracksAssociationDRVertex vrtx(coneSize_);
-  static JetTracksAssociationDRCalo   calo(coneSize_);
+//   // Construct objects that perform association 
+//   static JetTracksAssociationDRVertex vrtx(coneSize_);
+//   static JetTracksAssociationDRCalo   calo(coneSize_);
   
-  // Container for propagated tracks
-  static JetTracksAssociationDR::TrackRefs propagated;
+//   // Container for propagated tracks
+//   static JetTracksAssociationDR::TrackRefs propagated;
     
-  // Perform once per event
-  static uint32_t last_event = 0;
-  if ( event.id().event() != last_event ) {
-    last_event = event.id().event();
+//   // Perform once per event
+//   static uint32_t last_event = 0;
+//   if ( event.id().event() != last_event ) {
+//     last_event = event.id().event();
 
-    // Retrieve magnetic field and track propagator
-    edm::ESHandle<MagneticField> field;
-    setup.get<IdealMagneticFieldRecord>().get( field );
-    edm::ESHandle<Propagator> propagator;
-    setup.get<TrackingComponentsRecord>().get( propagator_, propagator );
+//     // Retrieve magnetic field and track propagator
+//     edm::ESHandle<MagneticField> field;
+//     setup.get<IdealMagneticFieldRecord>().get( field );
+//     edm::ESHandle<Propagator> propagator;
+//     setup.get<TrackingComponentsRecord>().get( propagator_, propagator );
 
-    // Retrieve global tracks 
-    edm::Handle<reco::TrackCollection> tracks;
-    event.getByLabel( tracks_, tracks );
-    if ( !tracks.isValid() || tracks.failedToGet() ) {
-      edm::LogError("JPTCorrector")
-	<< "[JPTCorrector::" << __func__ << "]"
-	<< " Invalid handle to \"reco::TrackCollection\""
-	<< " with InputTag (label:instance:process) \"" 
-	<< tracks_.label() << ":"
-	<< tracks_.instance() << ":"
-	<< tracks_.process() << "\"";
-      return false;
-    }
+//     // Retrieve global tracks 
+//     edm::Handle<reco::TrackCollection> tracks;
+//     event.getByLabel( tracks_, tracks );
+//     if ( !tracks.isValid() || tracks.failedToGet() ) {
+//       edm::LogError("JPTCorrector")
+// 	<< "[JPTCorrector::" << __func__ << "]"
+// 	<< " Invalid handle to \"reco::TrackCollection\""
+// 	<< " with InputTag (label:instance:process) \"" 
+// 	<< tracks_.label() << ":"
+// 	<< tracks_.instance() << ":"
+// 	<< tracks_.process() << "\"";
+//       return false;
+//     }
 
-    // Propagate tracks for to calo face 
-    JetTracksAssociationDR::createTrackRefs( propagated, tracks, trackQuality_ );
-    vrtx.propagateTracks( propagated ); //@@ needed?
-    calo.propagateTracks( propagated, *field, *propagator );
+//     // Propagate tracks for to calo face 
+//     JetTracksAssociationDR::createTrackRefs( propagated, tracks, trackQuality_ );
+//     vrtx.propagateTracks( propagated ); //@@ needed?
+//     calo.propagateTracks( propagated, *field, *propagator );
       
-  } 
+//   } 
 
-  // Associate tracks to jets at both vertex and calo face
-  vrtx.associateTracksToJet( trks.atVertex_, fJet, propagated );
-  calo.associateTracksToJet( trks.atCaloFace_, fJet, propagated );
+//   // Associate tracks to jets at both vertex and calo face
+//   vrtx.associateTracksToJet( trks.atVertex_, fJet, propagated );
+//   calo.associateTracksToJet( trks.atCaloFace_, fJet, propagated );
     
-  // Check if any tracks are associated to jet at vertex
-  if ( trks.atVertex_.empty() ) { return false; }
+//   // Check if any tracks are associated to jet at vertex
+//   if ( trks.atVertex_.empty() ) { return false; }
     
-  return true;
-  
+//   return true;
+
 }
 
 // -----------------------------------------------------------------------------
