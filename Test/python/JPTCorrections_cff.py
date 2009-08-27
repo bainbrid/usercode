@@ -4,31 +4,32 @@ import FWCore.ParameterSet.Config as cms
 
 from RecoEgamma.ElectronIdentification.electronIdCutBasedExt_cfi import *
 
-eidRobustLoose = eidCutBasedExt.clone()
-eidRobustLoose.electronQuality = 'robust'
+eleIdRobustLoose = eidCutBasedExt.clone()
+eleIdRobustLoose.electronIDType = cms.string('robust')
+eleIdRobustLoose.electronQuality = cms.string('loose')
 
-eidRobustTight = eidCutBasedExt.clone()
-eidRobustTight.electronQuality = 'robust'
-eidRobustTight.robusttightEleIDCuts.barrel = [0.015, 0.0092, 0.020, 0.0025]
-eidRobustTight.robusttightEleIDCuts.endcap = [0.018, 0.025, 0.020, 0.0040]
+eleIdRobustTight = eidCutBasedExt.clone()
+eleIdRobustTight.electronIDType = cms.string('robust')
+eleIdRobustTight.electronQuality = cms.string('tight')
 
-eidRobustHighEnergy = eidCutBasedExt.clone()
-eidRobustHighEnergy.electronQuality = 'robust'
-eidRobustHighEnergy.robusthighenergyEleIDCuts.barrel = [0.050, 0.011, 0.090, 0.005]
-eidRobustHighEnergy.robusthighenergyEleIDCuts.endcap = [0.100, 0.0275, 0.090, 0.007]
+eleIdRobustHighEnergy = eidCutBasedExt.clone()
+eleIdRobustHighEnergy.electronIDType = cms.string('robust')
+eleIdRobustHighEnergy.electronQuality = cms.string('highenergy')
 
-eidLoose = eidCutBasedExt.clone()
-eidLoose.electronQuality = 'loose'
+eleIdLoose = eidCutBasedExt.clone()
+eleIdLoose.electronIDType = cms.string('classbased')
+eleIdLoose.electronQuality = cms.string('loose')
 
-eidTight = eidCutBasedExt.clone()
-eidTight.electronQuality = 'loose'
+eleIdTight = eidCutBasedExt.clone()
+eleIdTight.electronIDType = cms.string('classbased')
+eleIdTight.electronQuality = cms.string('tight')
 
-eidSequence = cms.Sequence(
-    eidRobustLoose +
-    eidRobustTight +
-    eidRobustHighEnergy +
-    eidLoose +
-    eidTight
+eleIdSequence = cms.Sequence(
+    eleIdRobustLoose +
+    eleIdRobustTight +
+    eleIdRobustHighEnergy +
+    eleIdLoose +
+    eleIdTight
     )
 
 # -------------------- JetTrackAssociation --------------------
@@ -73,7 +74,7 @@ JPTCorrectorIC5 = cms.EDProducer("CaloJetCorrectionProducer",
 # -------------------- Sequence --------------------
 
 JPTCorrections = cms.Sequence(
-    eidSequence *
+    eleIdSequence *
     JetTrackAssociations *
     JPTCorrectorIC5
     )
