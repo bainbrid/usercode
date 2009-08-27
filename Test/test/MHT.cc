@@ -209,15 +209,13 @@ bool MHT::getJets( const edm::Event& event,
     
   }
 
-  THIS WILL NOT BUILD!!!
-
-  std::sort( jets.begin(), jets.end(), GreaterByEt<Candidate>() );
-  Candidates::const_iterator ii = jets.begin();
-  Candidates::const_iterator jj = jets.end();
-  for ( ; ii != jj; ++ii  ) { 
-    if ( ii->genJet() ) { gen_jets.push_back( *(ii->genJet()) ); }
-    else { gen_jets.push_back( Candidate() ) }
-  }
+//   std::sort( jets.begin(), jets.end(), GreaterByEt<Candidate>() );
+//   Candidates::const_iterator ii = jets.begin();
+//   Candidates::const_iterator jj = jets.end();
+//   for ( ; ii != jj; ++ii  ) { 
+//     if ( ii->genJet() ) { gen_jets.push_back( *(ii->genJet()) ); }
+//     else { gen_jets.push_back( Candidate() ) }
+//   }
 
   return false;
   
