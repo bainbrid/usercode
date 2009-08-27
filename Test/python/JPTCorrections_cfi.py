@@ -28,9 +28,9 @@ JPTCorrection = cms.PSet(
     Muons    = cms.InputTag("muons"),
     
     # Electrons
-    UseElectrons = cms.bool(False),
-    Electrons    = cms.InputTag("pixelMatchGsfElectrons"),
-    ElectronIds  = cms.InputTag("electronIdTight"),
+    UseElectrons    = cms.bool(True),
+    Electrons       = cms.InputTag("gsfElectrons"),
+    ElectronIds     = cms.InputTag("eleIdTight"),
     
     # Filtering tracks using quality
     UseTrackQuality = cms.bool(True),
