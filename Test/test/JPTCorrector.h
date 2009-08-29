@@ -58,7 +58,8 @@ class JPTCorrector : public JetCorrector {
   typedef reco::GsfElectronCollection RecoElectrons;
   typedef edm::ValueMap<float> RecoElectronIDs;
   typedef edm::View<pat::Electron> PatElectrons;
-
+  typedef reco::JetTracksAssociation::Container JetTracksAssociations;
+    
   /// Associates tracks to jets
   bool jetTrackAssociation( const reco::Jet&, 
 			    const edm::Event&, 
@@ -70,6 +71,18 @@ class JPTCorrector : public JetCorrector {
 		    const edm::Event&, 
 		    const edm::EventSetup&,
 		    jpt::AssociatedTracks& ) const;
+
+  /// Rebuild jet-track association 
+  void rebuildJta( const reco::Jet&, 
+		   const JetTracksAssociations&, 
+		   reco::TrackRefVector& included,
+		   reco::TrackRefVector& excluded ) const;
+  
+  /// Exclude jet-track association 
+  void excludeJta( const reco::Jet&, 
+		   const JetTracksAssociations&, 
+		   reco::TrackRefVector& included,
+		   const reco::TrackRefVector& excluded ) const;
   
   /// Categories tracks according to particle type
   void particles( const jpt::AssociatedTracks&,
@@ -132,6 +145,7 @@ class JPTCorrector : public JetCorrector {
   // Jet-track association
   edm::InputTag jetTracksAtVertex_;
   edm::InputTag jetTracksAtCalo_;
+  int mSplitMerge;
   
   // "On-the-fly" jet-track association
   edm::InputTag tracks_;
