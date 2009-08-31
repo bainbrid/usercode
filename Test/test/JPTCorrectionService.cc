@@ -1,4 +1,5 @@
 #include "bainbrid/Test/test/JPTCorrectionService.h"
+#include "bainbrid/Test/test/JPTCorrector.h"
 
 // -----------------------------------------------------------------------------
 //

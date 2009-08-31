@@ -1,7 +1,6 @@
 #ifndef bainbrid_Test_JPTCorrectionService_h
 #define bainbrid_Test_JPTCorrectionService_h
 
-#include "bainbrid/Test/test/JPTCorrector.h"
 #include "FWCore/Framework/interface/ModuleFactory.h"
 #include "FWCore/Framework/interface/ESProducer.h"
 #include "FWCore/Framework/interface/EventSetupRecordIntervalFinder.h"
