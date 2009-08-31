@@ -18,7 +18,7 @@ JPTCorrection = cms.PSet(
     JetTracksAssociationAtCaloFace = cms.InputTag("JetTracksAssociationAtCaloFace"),
 
     # Jet merging/splitting
-    SplitMergeP = cms.int32(0),
+    JetSplitMerge = cms.int32(0),
     
     # Jet-tracks association "on-the-fly" mode
     AllowOnTheFly = cms.bool(False),

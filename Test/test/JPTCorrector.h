@@ -145,7 +145,7 @@ class JPTCorrector : public JetCorrector {
   // Jet-track association
   edm::InputTag jetTracksAtVertex_;
   edm::InputTag jetTracksAtCalo_;
-  int mSplitMerge;
+  int jetSplitMerge_;
   
   // "On-the-fly" jet-track association
   edm::InputTag tracks_;

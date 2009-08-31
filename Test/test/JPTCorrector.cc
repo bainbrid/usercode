@@ -29,7 +29,7 @@ JPTCorrector::JPTCorrector( const edm::ParameterSet& pset )
     useTrackQuality_( pset.getParameter<bool>("UseTrackQuality") ),
     jetTracksAtVertex_( pset.getParameter<edm::InputTag>("JetTracksAssociationAtVertex") ),
     jetTracksAtCalo_( pset.getParameter<edm::InputTag>("JetTracksAssociationAtCaloFace") ),
-    mSplitMerge( pset.getParameter<int>("SplitMergeP") ),
+    jetSplitMerge_( pset.getParameter<int>("JetSplitMerge") ),
     tracks_( pset.getParameter<edm::InputTag>("Tracks") ),
     propagator_( pset.getParameter<std::string>("Propagator") ),
     coneSize_( pset.getParameter<double>("ConeSize") ),
@@ -264,7 +264,7 @@ bool JPTCorrector::jetTrackAssociation( const reco::Jet& fJet,
     // Retrieve jet-tracks association for given jet
     const reco::JetTracksAssociation::Container jtV = *( jetTracksAtVertex.product() );
     reco::TrackRefVector excluded; 
-    if ( mSplitMerge < 0 ) { trks.atVertex_ = reco::JetTracksAssociation::getValue( jtV, fJet ); }
+    if ( jetSplitMerge_ < 0 ) { trks.atVertex_ = reco::JetTracksAssociation::getValue( jtV, fJet ); }
     else { rebuildJta( fJet, jtV, trks.atVertex_, excluded ); }
     
     // Check if any tracks are associated to jet at vertex
@@ -289,7 +289,7 @@ bool JPTCorrector::jetTrackAssociation( const reco::Jet& fJet,
     
     // Retrieve jet-tracks association for given jet
     const reco::JetTracksAssociation::Container jtC = *( jetTracksAtCalo.product() );
-    if ( mSplitMerge < 0 ) { trks.atCaloFace_ = reco::JetTracksAssociation::getValue( jtC, fJet ); }
+    if ( jetSplitMerge_ < 0 ) { trks.atCaloFace_ = reco::JetTracksAssociation::getValue( jtC, fJet ); }
     else { excludeJta( fJet, jtC, trks.atCaloFace_, excluded ); }
     
     // Successful
@@ -368,11 +368,11 @@ void JPTCorrector::rebuildJta( const reco::Jet& fJet,
 			       reco::TrackRefVector& tracksthis,
 			       reco::TrackRefVector& Excl ) const {
   
-  //std::cout<<" NEW1 Merge/Split schema "<<mSplitMerge<<std::endl;
+  //std::cout<<" NEW1 Merge/Split schema "<<jetSplitMerge_<<std::endl;
 
   tracksthis = reco::JetTracksAssociation::getValue(jtV0,fJet);
 
-  if(mSplitMerge<0) return;
+  if(jetSplitMerge_<0) return;
 
   typedef std::vector<reco::JetBaseRef>::iterator JetBaseRefIterator;
   std::vector<reco::JetBaseRef> theJets = reco::JetTracksAssociation::allJets(jtV0);
@@ -394,8 +394,8 @@ void JPTCorrector::rebuildJta( const reco::Jet& fJet,
 //       double dR2check = sqrt(dfi*dfi+deta*deta);
       
       double scalethis = dR2this;
-      if(mSplitMerge == 0) scalethis = 1./fJet.et();
-      if(mSplitMerge == 2) scalethis = dR2this/fJet.et();
+      if(jetSplitMerge_ == 0) scalethis = 1./fJet.et();
+      if(jetSplitMerge_ == 2) scalethis = dR2this/fJet.et();
       tr++;
       int flag = 1;
       for(JetBaseRefIterator ii = theJets.begin(); ii != theJets.end(); ii++)
@@ -403,8 +403,8 @@ void JPTCorrector::rebuildJta( const reco::Jet& fJet,
 	  if(&(**ii) == &fJet ) {continue;}
           double dR2 = deltaR2 ((*ii)->eta(), (*ii)->phi(), (**it).eta(), (**it).phi());
           double scale = dR2;
-          if(mSplitMerge == 0) scale = 1./fJet.et();
-          if(mSplitMerge == 2) scale = dR2/fJet.et();
+          if(jetSplitMerge_ == 0) scale = 1./fJet.et();
+          if(jetSplitMerge_ == 2) scale = dR2/fJet.et();
           if(scale < scalethis) flag = 0;
 
           if(flag == 0) {
@@ -434,7 +434,7 @@ void JPTCorrector::excludeJta( const reco::Jet& fJet,
 
   tracksthis = reco::JetTracksAssociation::getValue(jtV0,fJet);
   if(Excl.size() == 0) return;
-  if(mSplitMerge<0) return;
+  if(jetSplitMerge_<0) return;
 
   reco::TrackRefVector tracks = tracksthis;
   tracksthis.clear();
