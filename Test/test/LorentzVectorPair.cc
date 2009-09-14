@@ -6,8 +6,8 @@ const double LorentzVectorPair::pi_ = 3.14159265359;
 
 // -----------------------------------------------------------------------------
 // 
-LorentzVectorPair::LorentzVectorPair( const HepLorentzVector& gen_object,
-				      const HepLorentzVector& reco_object ) 
+LorentzVectorPair::LorentzVectorPair( const math::XYZTLorentzVector& gen_object,
+				      const math::XYZTLorentzVector& reco_object ) 
   : gen_( gen_object ),
     reco_( reco_object ),
     g_(true),
@@ -16,7 +16,7 @@ LorentzVectorPair::LorentzVectorPair( const HepLorentzVector& gen_object,
 
 // -----------------------------------------------------------------------------
 // 
-LorentzVectorPair::LorentzVectorPair( const HepLorentzVector& gen_object ) 
+LorentzVectorPair::LorentzVectorPair( const math::XYZTLorentzVector& gen_object ) 
   : gen_( gen_object ),
     reco_(),
     g_(true),

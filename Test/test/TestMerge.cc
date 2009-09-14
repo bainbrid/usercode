@@ -1,4 +1,5 @@
 #include "TestMerge.h"
+#include "FWCore/MessageLogger/interface/MessageLogger.h"
 #include <algorithm>
 #include <sstream>
 #include <cstring>

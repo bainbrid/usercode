@@ -78,13 +78,13 @@ void EnergyScaleHistograms::analyze( const std::vector<LorentzVectorPair>& input
     for ( uint16_t ihist = 0; ihist < nhist; ++ihist ) {
       
       // Determine energy bin
-      if( ii->gen().perp() >= eBins_[ihist] && 
-	  ii->gen().perp() < eBins_[ihist+1]  ) { 
+      if( ii->gen().pt() >= eBins_[ihist] && 
+	  ii->gen().pt() < eBins_[ihist+1]  ) { 
 	
 	// Define scale
 	float scale = -1.;
-	if ( ii->gen().perp() > 0. ) { 
-	  scale = ii->reco().perp() / ii->gen().perp(); 
+	if ( ii->gen().pt() > 0. ) { 
+	  scale = ii->reco().pt() / ii->gen().pt(); 
 	}
 	
 	// Check scale
@@ -113,7 +113,7 @@ void EnergyScaleHistograms::analyze( const std::vector<LorentzVectorPair>& input
 	
 	// Fill histograms
 	if ( ihist < hScale_.size() && hScale_[ihist] ) { hScale_[ihist]->Fill( scale ); }
-	if ( hEt_ ) { hEt_->Fill( ii->gen().perp() ); }
+	if ( hEt_ ) { hEt_->Fill( ii->gen().pt() ); }
 	if ( hDR_ ) { hDR_->Fill( ii->dR() ); }
 	
       }	

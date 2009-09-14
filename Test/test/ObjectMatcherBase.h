@@ -3,7 +3,6 @@
 
 #include "bainbrid/Test/test/ObjectTags.h"
 #include "bainbrid/Test/test/LorentzVectorPair.h"
-#include "CLHEP/Vector/LorentzVector.h"
 #include <vector>
 #include <string>
 
@@ -19,7 +18,7 @@ namespace edm  {
 class ObjectMatcherBase {
   
  public:
-  
+
   /// Destructor
   virtual ~ObjectMatcherBase();
   
@@ -43,12 +42,12 @@ class ObjectMatcherBase {
   /// Extracts 4-vectors from generator objects
   virtual void gen( const edm::Event&, 
 		    const edm::EventSetup&, 
-		    std::vector<HepLorentzVector>& ) = 0;
+		    std::vector<math::XYZTLorentzVector>& ) = 0;
   
   /// Extracts 4-vectors from reco objects
   virtual void reco( const edm::Event&, 
 		     const edm::EventSetup&, 
-		     std::vector<HepLorentzVector>& ) = 0;
+		     std::vector<math::XYZTLorentzVector>& ) = 0;
   
   /// Returns string to identify specialised class  
   std::string id();
@@ -62,8 +61,8 @@ class ObjectMatcherBase {
   
   // "Old skool"
   void analyze( const edm::Event&, 
-		const std::vector<HepLorentzVector>&,
-		const std::vector<HepLorentzVector>& );
+		const std::vector<math::XYZTLorentzVector>&,
+		const std::vector<math::XYZTLorentzVector>& );
 
   // "Old skool"
   void analyze( const edm::Event&, 

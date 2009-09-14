@@ -1,6 +1,7 @@
 #include "bainbrid/Test/test/ObjectMatcher.h"
 #include "DataFormats/Common/interface/Handle.h"
 #include "DataFormats/Common/interface/View.h"
+#include "DataFormats/Math/interface/deltaR.h"
 #include "DataFormats/Provenance/interface/Provenance.h"
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/EventSetup.h"
@@ -41,7 +42,7 @@ ObjectMatcher<GEN,RECO>::~ObjectMatcher() {
 template<class GEN, class RECO>
 void ObjectMatcher<GEN,RECO>::gen( const edm::Event& event, 
 				   const edm::EventSetup& setup, 
-				   std::vector<HepLorentzVector>& objects ) {
+				   std::vector<math::XYZTLorentzVector>& objects ) {
   
   // Retrieve collection
   edm::Handle< edm::View<GEN> > collection;
@@ -75,8 +76,8 @@ void ObjectMatcher<GEN,RECO>::gen( const edm::Event& event,
   }
   
   // Two "leptons" in z-dir (why?!)
-  HepLorentzVector l1(0.,0.,1.,1.);
-  HepLorentzVector l2(0.,0.,1.,1.); //@@ should be (0.,0.,-1.,1.) ??
+  math::XYZTLorentzVector l1(0.,0.,1.,1.);
+  math::XYZTLorentzVector l2(0.,0.,1.,1.); //@@ should be (0.,0.,-1.,1.) ??
   
   // pT threshold
   float pt_threshold = 20.;
@@ -86,48 +87,48 @@ void ObjectMatcher<GEN,RECO>::gen( const edm::Event& event,
   typename edm::View<GEN>::const_iterator jj = collection->end(); 
   for ( ; ii != jj; ++ii ) {
 
-//     std::cout << "ALL GenJets:"
-// 	      << " Event: " << event.id().event()
-// 	      << " GenJet# " << int( ii - collection->begin() )
-// 	      << " e= " << ii->energy()
-// 	      << " et= " << ii->et()
-// 	      << " pt= " << ii->pt()
-// 	      << " px= " << ii->px()
-// 	      << " py= " << ii->py()
-// 	      << " pz= " << ii->pz()
-// 	      << std::endl;
+    //     std::cout << "ALL GenJets:"
+    // 	      << " Event: " << event.id().event()
+    // 	      << " GenJet# " << int( ii - collection->begin() )
+    // 	      << " e= " << ii->energy()
+    // 	      << " et= " << ii->et()
+    // 	      << " pt= " << ii->pt()
+    // 	      << " px= " << ii->px()
+    // 	      << " py= " << ii->py()
+    // 	      << " pz= " << ii->pz()
+    // 	      << std::endl;
     
-//     if ( edm::isDebugEnabled() && verbose_ ) {
-//       std::stringstream ss;
-//       ss << "[ObjectMatcher" << id() << "::" << __func__ << "]"
-// 	 << " Event: " << event.id().event()
-// 	 << " Object# " << static_cast<uint32_t>( ii - collection->begin() ) 
-// 	 << std::endl
-// 	 << " e: " << ii->energy() << std::endl
-// 	 << " et: " << ii->et()
-// 	 << " pt: " << ii->pt()
-// 	 << " px: " << ii->px()
-// 	 << " py: " << ii->py()
-// 	 << " pz: " << ii->pz()
-// 	 << " eta: " << ii->eta()
-// 	 << " phi: " << ii->phi()
-// 	 << std::endl 
-// 	 << ii->print();
-//       LogTrace("EnergyScale") << ss.str();
-//     }
+    //     if ( edm::isDebugEnabled() && verbose_ ) {
+    //       std::stringstream ss;
+    //       ss << "[ObjectMatcher" << id() << "::" << __func__ << "]"
+    // 	 << " Event: " << event.id().event()
+    // 	 << " Object# " << static_cast<uint32_t>( ii - collection->begin() ) 
+    // 	 << std::endl
+    // 	 << " e: " << ii->energy() << std::endl
+    // 	 << " et: " << ii->et()
+    // 	 << " pt: " << ii->pt()
+    // 	 << " px: " << ii->px()
+    // 	 << " py: " << ii->py()
+    // 	 << " pz: " << ii->pz()
+    // 	 << " eta: " << ii->eta()
+    // 	 << " phi: " << ii->phi()
+    // 	 << std::endl 
+    // 	 << ii->print();
+    //       LogTrace("EnergyScale") << ss.str();
+    //     }
     
-//     // Only consider objects above energy threshold
-//     if ( ii->pt() < pt_threshold ) { continue; } //@@ configurable ??
+    //     // Only consider objects above energy threshold
+    //     if ( ii->pt() < pt_threshold ) { continue; } //@@ configurable ??
     
     // Build Lorentz vector for each object
-    HepLorentzVector vec( ii->px(), 
-			  ii->py(), 
-			  ii->pz(), 
-			  ii->energy() );
+    math::XYZTLorentzVector vec( ii->px(), 
+				 ii->py(), 
+				 ii->pz(), 
+				 ii->energy() );
     
     // Check jet not co-linear with either of "leptons"
-    if ( l1.deltaR(vec) < 1. || 
-	 l2.deltaR(vec) < 1. ) { continue; }
+    if ( reco::deltaR( l1.eta(), l1.phi(), vec.eta(), vec.phi() ) < 1. || 
+	 reco::deltaR( l2.eta(), l2.phi(), vec.eta(), vec.phi() ) < 1. ) { continue; }
     
     // Push back first 'N' objects
     if ( objects.size() < 2 ) { objects.push_back(vec); } //@@ configurable ??
@@ -149,7 +150,7 @@ void ObjectMatcher<GEN,RECO>::gen( const edm::Event& event,
 template<class GEN, class RECO>
 void ObjectMatcher<GEN,RECO>::reco( const edm::Event& event, 
 				    const edm::EventSetup& setup,
-				    std::vector<HepLorentzVector>& objects ) {
+				    std::vector<math::XYZTLorentzVector>& objects ) {
   
   // Get collection
   edm::Handle< edm::View<RECO> > collection;
@@ -190,16 +191,16 @@ void ObjectMatcher<GEN,RECO>::reco( const edm::Event& event,
   typename edm::View<RECO>::const_iterator jj = collection->end(); 
   for ( ; ii != jj; ++ii ) {
 
-//     std::cout << "ALL RecoJets:"
-// 	      << " Event: " << event.id().event()
-// 	      << " RecoJet# " << int( ii - collection->begin() )
-// 	      << " e= " << ii->energy()
-// 	      << " et= " << ii->et()
-// 	      << " pt= " << ii->pt()
-// 	      << " px= " << ii->px()
-// 	      << " py= " << ii->py()
-// 	      << " pz= " << ii->pz()
-// 	      << std::endl;
+    //     std::cout << "ALL RecoJets:"
+    // 	      << " Event: " << event.id().event()
+    // 	      << " RecoJet# " << int( ii - collection->begin() )
+    // 	      << " e= " << ii->energy()
+    // 	      << " et= " << ii->et()
+    // 	      << " pt= " << ii->pt()
+    // 	      << " px= " << ii->px()
+    // 	      << " py= " << ii->py()
+    // 	      << " pz= " << ii->pz()
+    // 	      << std::endl;
     
     if ( edm::isDebugEnabled() && verbose_ ) {
       std::stringstream ss;
@@ -207,15 +208,15 @@ void ObjectMatcher<GEN,RECO>::reco( const edm::Event& event,
 	 << " Event: " << event.id().event()
 	 << " Object# " << static_cast<uint32_t>( ii - collection->begin() ) 
 	 << std::endl
-// 	 << " e: " << ii->energy() << std::endl
-// 	 << " et: " << ii->et()
-// 	 << " pt: " << ii->pt()
-// 	 << " px: " << ii->px()
-// 	 << " py: " << ii->py()
-// 	 << " pz: " << ii->pz()
-// 	 << " eta: " << ii->eta()
-// 	 << " phi: " << ii->phi()
-// 	 << std::endl 
+	// 	 << " e: " << ii->energy() << std::endl
+	// 	 << " et: " << ii->et()
+	// 	 << " pt: " << ii->pt()
+	// 	 << " px: " << ii->px()
+	// 	 << " py: " << ii->py()
+	// 	 << " pz: " << ii->pz()
+	// 	 << " eta: " << ii->eta()
+	// 	 << " phi: " << ii->phi()
+	// 	 << std::endl 
 	 << ii->print();
       LogTrace("EnergyScale") << ss.str();
     }
@@ -224,10 +225,10 @@ void ObjectMatcher<GEN,RECO>::reco( const edm::Event& event,
     if ( ii->pt() < pt_threshold ) { continue; } //@@ configurable ??
     
     // Build Lorentz vector for each object
-    HepLorentzVector vec( ii->px(),
-			  ii->py(),
-			  ii->pz(),
-			  ii->energy() );
+    math::XYZTLorentzVector vec( ii->px(),
+				 ii->py(),
+				 ii->pz(),
+				 ii->energy() );
     
     // Push back first 'N' objects
     if ( objects.size() < 100 ) { objects.push_back(vec); } //@@ configurable ??

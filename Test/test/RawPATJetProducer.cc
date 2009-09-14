@@ -1,6 +1,8 @@
 #include "bainbrid/Test/test/RawPATJetProducer.h"
 #include "CommonTools/Utils/interface/PtComparator.h"
 #include "DataFormats/PatCandidates/interface/JetCorrFactors.h"
+#include "FWCore/Framework/interface/Event.h"
+#include "FWCore/Framework/interface/EventSetup.h"
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
 #include <vector>
 

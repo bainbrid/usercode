@@ -120,6 +120,7 @@
 <library name=bainbridTest_EnergyScale file=ObjectMatcher.cc,ObjectMatcherBase.cc,ObjectTags.cc,LorentzVectorPair.cc,EnergyScaleHistogrammer.cc,EnergyScaleHistograms.cc,EnergyScaleAnalyzer.cc,modules.cc>
   <use name=DataFormats/Common>
   <use name=DataFormats/JetReco>
+  <use name=DataFormats/Math>
   <use name=DataFormats/PatCandidates>
   <use name=DataFormats/Provenance>
   <use name=FWCore/Framework>
@@ -128,7 +129,6 @@
   <use name=FWCore/ServiceRegistry>
   <use name=roothistmatrix>
   <use name=rootgraphics>
-  <use name=clhep>
   <flags EDM_PLUGIN=1>
 </library>
 

@@ -4,6 +4,8 @@
 #include "DataFormats/Common/interface/ValueMap.h"
 #include "DataFormats/Common/interface/View.h"
 #include "DataFormats/PatCandidates/interface/JetCorrFactors.h"
+#include "FWCore/Framework/interface/Event.h"
+#include "FWCore/Framework/interface/EventSetup.h"
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
 #include <vector>
 

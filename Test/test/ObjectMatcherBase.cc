@@ -1,4 +1,5 @@
 #include "bainbrid/Test/test/ObjectMatcherBase.h"
+#include "DataFormats/Math/interface/deltaR.h"
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/EventSetup.h"
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
@@ -117,7 +118,7 @@ void ObjectMatcherBase::analyze( const edm::Event& event,
 				 const edm::EventSetup& setup ) {
   
   // Build vector of suitable gen objects:
-  std::vector<HepLorentzVector> gen_objects;
+  std::vector<math::XYZTLorentzVector> gen_objects;
   gen( event, setup, gen_objects );
   
   // Check if gen objects were found
@@ -135,15 +136,15 @@ void ObjectMatcherBase::analyze( const edm::Event& event,
   }
 
 //   {
-//     std::vector<HepLorentzVector>::const_iterator ig = gen_objects.begin();
-//     std::vector<HepLorentzVector>::const_iterator jg = gen_objects.end();
+//     std::vector<math::XYZTLorentzVector>::const_iterator ig = gen_objects.begin();
+//     std::vector<math::XYZTLorentzVector>::const_iterator jg = gen_objects.end();
 //     for ( ; ig != jg; ++ig ) {
 //       std::cout << "TWO GenJets:"
 // 		<< " Event: " << event.id().event()
 // 		<< " GenJet# " << int( ig - gen_objects.begin() )
 // 		<< " e= " << ig->e()
 // 		<< " et= " << ig->et()
-// 		<< " pt= " << ig->perp()
+// 		<< " pt= " << ig->pt()
 // 		<< " px= " << ig->px()
 // 		<< " py= " << ig->py()
 // 		<< " pz= " << ig->pz()
@@ -152,7 +153,7 @@ void ObjectMatcherBase::analyze( const edm::Event& event,
 //   }
   
   // Build vector of suitable reco objects:
-  std::vector<HepLorentzVector> reco_objects;
+  std::vector<math::XYZTLorentzVector> reco_objects;
   reco( event, setup, reco_objects );
   
   // Check if reco objects were found
@@ -174,39 +175,39 @@ void ObjectMatcherBase::analyze( const edm::Event& event,
   pairs.clear();
   
   // Iterate through 4-vectors of gen objects
-  std::vector<HepLorentzVector>::const_iterator gg = gen_objects.begin();
-  std::vector<HepLorentzVector>::const_iterator ig = gen_objects.begin();
-  std::vector<HepLorentzVector>::const_iterator jg = gen_objects.end();
+  std::vector<math::XYZTLorentzVector>::const_iterator gg = gen_objects.begin();
+  std::vector<math::XYZTLorentzVector>::const_iterator ig = gen_objects.begin();
+  std::vector<math::XYZTLorentzVector>::const_iterator jg = gen_objects.end();
   for ( ; ig != jg; ++ig ) {
     
     // Store 4-vector of gen object 
     pairs.push_back( LorentzVectorPair(*ig) );
     
     // Iterate through 4-vectors of reco objects and find match
-    std::vector<HepLorentzVector>::const_iterator rr = reco_objects.end(); 
-    std::vector<HepLorentzVector>::const_iterator ir = reco_objects.begin(); 
-    std::vector<HepLorentzVector>::const_iterator jr = reco_objects.end(); 
+    std::vector<math::XYZTLorentzVector>::const_iterator rr = reco_objects.end(); 
+    std::vector<math::XYZTLorentzVector>::const_iterator ir = reco_objects.begin(); 
+    std::vector<math::XYZTLorentzVector>::const_iterator jr = reco_objects.end(); 
     for ( ; ir != jr; ++ir ) {
       if ( !pairs.back().both() || 
-	   ig->deltaR(*ir) < pairs.back().dR() ) {
+	   reco::deltaR( ig->eta(), ig->phi(), ir->eta(), ir->phi() ) < pairs.back().dR() ) {
 	pairs.back().reco( *ir ); 
       }
     }
   }
   
 //   // Iterate through 4-vectors of gen objects
-//   std::vector<HepLorentzVector>::const_iterator gg = gen_objects.begin();
-//   std::vector<HepLorentzVector>::const_iterator ig = gen_objects.begin();
-//   std::vector<HepLorentzVector>::const_iterator jg = gen_objects.end();
+//   std::vector<math::XYZTLorentzVector>::const_iterator gg = gen_objects.begin();
+//   std::vector<math::XYZTLorentzVector>::const_iterator ig = gen_objects.begin();
+//   std::vector<math::XYZTLorentzVector>::const_iterator jg = gen_objects.end();
 //   for ( ; ig != jg; ++ig ) {
 
 //     // Store 4-vector of gen object 
 //     pairs.push_back( LorentzVectorPair(*ig) );
     
 //     // Iterate through 4-vectors of reco objects and find match
-//     std::vector<HepLorentzVector>::const_iterator rr = reco_objects.end(); 
-//     std::vector<HepLorentzVector>::const_iterator ir = reco_objects.begin(); 
-//     std::vector<HepLorentzVector>::const_iterator jr = reco_objects.end(); 
+//     std::vector<math::XYZTLorentzVector>::const_iterator rr = reco_objects.end(); 
+//     std::vector<math::XYZTLorentzVector>::const_iterator ir = reco_objects.begin(); 
+//     std::vector<math::XYZTLorentzVector>::const_iterator jr = reco_objects.end(); 
 //     for ( ; ir != jr; ++ir ) {
 //       float dr = pairs.back().both() ? pairs.back().dR() : 1000.;
 //       if ( ig->deltaR(*ir) < dr ) { pairs.back().reco( *ir ); }
@@ -230,7 +231,7 @@ void ObjectMatcherBase::analyze( const edm::Event& event,
       ss << std::endl
 	 << "  GenObject:  " 
 	 << " e: " << ip->gen().e() 
-	 << " pt: " << ip->gen().perp() 
+	 << " pt: " << ip->gen().pt() 
 	 << " px: " << ip->gen().px() 
 	 << " py: " << ip->gen().py() 
 	 << " pz: " << ip->gen().pz() 
@@ -240,7 +241,7 @@ void ObjectMatcherBase::analyze( const edm::Event& event,
       if ( ip->both() ) {
 	ss << "  RecoObject: " 
 	   << " e: " << ip->reco().e() 
-	   << " pt: " << ip->reco().perp() 
+	   << " pt: " << ip->reco().pt() 
 	   << " px: " << ip->reco().px() 
 	   << " py: " << ip->reco().py() 
 	   << " pz: " << ip->reco().pz() 
@@ -278,8 +279,8 @@ std::string ObjectMatcherBase::id() {
 // -----------------------------------------------------------------------------
 //
 void ObjectMatcherBase::analyze( const edm::Event& iEvent, 
-				 const std::vector<HepLorentzVector>& gen_objects,
-				 const std::vector<HepLorentzVector>& reco_objects ) {
+				 const std::vector<math::XYZTLorentzVector>& gen_objects,
+				 const std::vector<math::XYZTLorentzVector>& reco_objects ) {
 
   // Check if gen objects were found
   if ( gen_objects.empty() ) { 
@@ -309,7 +310,7 @@ void ObjectMatcherBase::analyze( const edm::Event& iEvent,
     }
   }
 
-  std::vector<HepLorentzVector> gjets;
+  std::vector<math::XYZTLorentzVector> gjets;
   gjets.clear();
 
   // initialize tree variables
@@ -336,31 +337,31 @@ void ObjectMatcherBase::analyze( const edm::Event& iEvent,
   DRMAXgjet2 = 1000.;
 
   // l1 and l2 are leptons from Z->ll to be checked they are not gen jets (DR match)
-  HepLorentzVector l1(0.,0.,1.,1.);
-  HepLorentzVector l2(0.,0.,1.,1.);
+  math::XYZTLorentzVector l1(0.,0.,1.,1.);
+  math::XYZTLorentzVector l2(0.,0.,1.,1.);
 
   int jg = 0;
   //    for(GenJetCollection::const_iterator gjet = genjets->begin(); 
   //        gjet != genjets->end(); ++gjet ) {
-  for(std::vector<HepLorentzVector>::const_iterator gjet = gen_objects.begin(); 
+  for(std::vector<math::XYZTLorentzVector>::const_iterator gjet = gen_objects.begin(); 
       gjet != gen_objects.end(); ++gjet ) {
 
-      HepLorentzVector jet(gjet->px(), gjet->py(), gjet->pz(), gjet->e());
+      math::XYZTLorentzVector jet(gjet->px(), gjet->py(), gjet->pz(), gjet->e());
 
 //       std::cout << "ALL GenJets:"
 // 		<< " Event: " << iEvent.id().event()
 // 		<< " GenJet# " << int( gjet - gen_objects.begin() )
 // 		<< " e= " << jet.e()
 // 		<< " et= " << jet.et()
-// 		<< " pt= " << jet.perp()
+// 		<< " pt= " << jet.pt()
 // 		<< " px= " << jet.px()
 // 		<< " py= " << jet.py()
 // 		<< " pz= " << jet.pz()
 // 		<< std::endl;
 
-    if(gjet->perp() >= 20.) {
-      double drjl1 = l1.deltaR(jet);
-      double drjl2 = l2.deltaR(jet);
+    if(gjet->pt() >= 20.) {
+      double drjl1 = reco::deltaR( l1.eta(), l1.phi(), jet.eta(), jet.phi() );
+      double drjl2 = reco::deltaR( l2.eta(), l2.phi(), jet.eta(), jet.phi() );
 
 //       std::cout <<" Gen Jet " << jg
 // 		<<" pt = " << gjet->pt()
@@ -388,15 +389,15 @@ void ObjectMatcherBase::analyze( const edm::Event& iEvent,
     }
   }
 
-//   std::vector<HepLorentzVector>::const_iterator ii = gjets.begin();
-//   std::vector<HepLorentzVector>::const_iterator jj = gjets.end();
+//   std::vector<math::XYZTLorentzVector>::const_iterator ii = gjets.begin();
+//   std::vector<math::XYZTLorentzVector>::const_iterator jj = gjets.end();
 //   for ( ; ii != jj; ++ii ) {
 //     std::cout << "TWO GenJets:"
 // 	      << " Event: " << iEvent.id().event()
 // 	      << " GenJet# " << int( ii - gjets.begin() )
 // 	      << " e= " << ii->e()
 // 	      << " et= " << ii->et()
-// 	      << " pt= " << ii->perp()
+// 	      << " pt= " << ii->pt()
 // 	      << " px= " << ii->px()
 // 	      << " py= " << ii->py()
 // 	      << " pz= " << ii->pz()
@@ -410,49 +411,49 @@ void ObjectMatcherBase::analyze( const edm::Event& iEvent,
        
     //       for( CaloJetCollection::const_iterator cjet = calojets->begin(); 
     // 	   cjet != calojets->end(); ++cjet ){ 
-    for(std::vector<HepLorentzVector>::const_iterator cjet = reco_objects.begin(); 
+    for(std::vector<math::XYZTLorentzVector>::const_iterator cjet = reco_objects.begin(); 
 	cjet != reco_objects.end(); ++cjet ){ 
       //
-      HepLorentzVector cjetv(cjet->px(), cjet->py(), cjet->pz(), cjet->e());
+      math::XYZTLorentzVector cjetv(cjet->px(), cjet->py(), cjet->pz(), cjet->e());
 
 //       std::cout << "ALL RecoJets:"
 // 		<< " Event: " << iEvent.id().event()
 // 		<< " RecoJet# " << int( cjet - reco_objects.begin() ) 
 // 		<< " e= " << cjetv.e()
 // 		<< " et= " << cjetv.et()
-// 		<< " pt= " << cjetv.perp()
+// 		<< " pt= " << cjetv.pt()
 // 		<< " px= " << cjetv.px()
 // 		<< " py= " << cjetv.py()
 // 		<< " pz= " << cjetv.pz()
 // 		<< std::endl;
     
-      double DRgjet1 = gjets[0].deltaR(cjetv);
+      double DRgjet1 = reco::deltaR( gjets[0].eta(), gjets[0].phi(), cjetv.eta(), cjetv.phi() );
       
       if(DRgjet1 < DRMAXgjet1) {
 	DRMAXgjet1 = DRgjet1;
 	
 	EtaGen1 = gjets[0].eta();
 	PhiGen1 = gjets[0].phi();
-	EtGen1  = gjets[0].perp();
+	EtGen1  = gjets[0].pt();
 	
 	EtaRaw1 = cjet->eta(); 
 	PhiRaw1 = cjet->phi();
-	EtRaw1  = cjet->perp();
-	EtJPT1  = cjetv.perp(); 
+	EtRaw1  = cjet->pt();
+	EtJPT1  = cjetv.pt(); 
       }
       if(gjets.size() == 2) {
-	double DRgjet2 = gjets[1].deltaR(cjetv);
+	double DRgjet2 = reco::deltaR( gjets[1].eta(), gjets[1].phi(), cjetv.eta(), cjetv.phi() );
 	if(DRgjet2 < DRMAXgjet2) { 
 	  DRMAXgjet2 = DRgjet2;
 	  
 	  EtaGen2 = gjets[1].eta();
 	  PhiGen2 = gjets[1].phi();
-	  EtGen2  = gjets[1].perp();
+	  EtGen2  = gjets[1].pt();
 
 	  EtaRaw2 = cjet->eta(); 
 	  PhiRaw2 = cjet->phi();
-	  EtRaw2  = cjet->perp();
-	  EtJPT2  = cjetv.perp(); 
+	  EtRaw2  = cjet->pt();
+	  EtJPT2  = cjetv.pt(); 
 	}
       }
       jc++;
@@ -524,18 +525,18 @@ void ObjectMatcherBase::analyze( const edm::Event& iEvent,
     DRMAXgjet1 = pairs[0].dR();
     EtaGen1 = pairs[0].gen().eta();
     PhiGen1 = pairs[0].gen().phi();
-    EtGen1  = pairs[0].gen().perp();
-    //EtRaw1  = pairs[0].reco().perp(); //@@
-    EtJPT1  = pairs[0].reco().perp(); 
+    EtGen1  = pairs[0].gen().pt();
+    //EtRaw1  = pairs[0].reco().pt(); //@@
+    EtJPT1  = pairs[0].reco().pt(); 
   }
   
   if ( pairs.size() > 1 && pairs[1].both() ) {
     DRMAXgjet2 = pairs[1].dR();
     EtaGen2 = pairs[1].gen().eta();
     PhiGen2 = pairs[1].gen().phi();
-    EtGen2  = pairs[1].gen().perp();
-    //EtRaw2  = pairs[1].reco().perp(); //@@
-    EtJPT2  = pairs[1].reco().perp(); 
+    EtGen2  = pairs[1].gen().pt();
+    //EtRaw2  = pairs[1].reco().pt(); //@@
+    EtJPT2  = pairs[1].reco().pt(); 
   }
   
   t1->Fill();
@@ -567,14 +568,14 @@ void ObjectMatcherBase::analyze( const edm::Event& iEvent,
 //   pairs.resize( gen_objects.size() );
   
 //   // Iterate through 4-vectors of reco objects and find match
-//   std::vector<HepLorentzVector>::const_iterator rr = reco_objects.end(); 
-//   std::vector<HepLorentzVector>::const_iterator ir = reco_objects.begin(); 
-//   std::vector<HepLorentzVector>::const_iterator jr = reco_objects.end(); 
+//   std::vector<math::XYZTLorentzVector>::const_iterator rr = reco_objects.end(); 
+//   std::vector<math::XYZTLorentzVector>::const_iterator ir = reco_objects.begin(); 
+//   std::vector<math::XYZTLorentzVector>::const_iterator jr = reco_objects.end(); 
 //   for ( ; ir != jr; ++ir ) {
 //     // Iterate through 4-vectors of gen objects
-//     std::vector<HepLorentzVector>::const_iterator gg = gen_objects.begin();
-//     std::vector<HepLorentzVector>::const_iterator ig = gen_objects.begin();
-//     std::vector<HepLorentzVector>::const_iterator jg = gen_objects.end();
+//     std::vector<math::XYZTLorentzVector>::const_iterator gg = gen_objects.begin();
+//     std::vector<math::XYZTLorentzVector>::const_iterator ig = gen_objects.begin();
+//     std::vector<math::XYZTLorentzVector>::const_iterator jg = gen_objects.end();
 //     for ( ; ig != jg; ++ig ) {
 //       LorentzVectorPair& tmp = pairs[ static_cast<uint32_t>( ig - gg ) ];
 //       tmp.gen( *ig );
@@ -592,11 +593,11 @@ void ObjectMatcherBase::analyze( const edm::Event& iEvent,
 //   std::vector<LorentzVectorPair> pairs;
 
 //   // Record of matched reco objects
-//   std::vector< std::vector<HepLorentzVector>::const_iterator > matched;
+//   std::vector< std::vector<math::XYZTLorentzVector>::const_iterator > matched;
   
 //   // Iterate through 4-vectors of gen objects
-//   std::vector<HepLorentzVector>::const_iterator ig = gen_objects.begin();
-//   std::vector<HepLorentzVector>::const_iterator jg = gen_objects.end();
+//   std::vector<math::XYZTLorentzVector>::const_iterator ig = gen_objects.begin();
+//   std::vector<math::XYZTLorentzVector>::const_iterator jg = gen_objects.end();
 //   for ( ; ig != jg; ++ig ) {
     
 //     // Create 4-vector pair
@@ -604,9 +605,9 @@ void ObjectMatcherBase::analyze( const edm::Event& iEvent,
     
 //     // Iterate through 4-vectors of reco objects and find match
 //     double dr = 1.e6;
-//     std::vector<HepLorentzVector>::const_iterator iter = reco_objects.end(); 
-//     std::vector<HepLorentzVector>::const_iterator ir = reco_objects.begin(); 
-//     std::vector<HepLorentzVector>::const_iterator jr = reco_objects.end(); 
+//     std::vector<math::XYZTLorentzVector>::const_iterator iter = reco_objects.end(); 
+//     std::vector<math::XYZTLorentzVector>::const_iterator ir = reco_objects.begin(); 
+//     std::vector<math::XYZTLorentzVector>::const_iterator jr = reco_objects.end(); 
 //     for ( ; ir != jr; ++ir ) {
 //       //       if ( std::find( matched.begin(), 
 //       // 		      matched.end(), 
@@ -632,11 +633,11 @@ void ObjectMatcherBase::analyze( const edm::Event& iEvent,
 // 	   << " Matched GenObject #" << static_cast<uint32_t>( ig - gen_objects.begin() )
 // 	   << " to RecoObject #" << static_cast<uint32_t>( iter - reco_objects.begin() ) << std::endl
 // 	   << "  GenObject:  pt/eta/phi: " 
-// 	   << ig->perp() << "/" 
+// 	   << ig->pt() << "/" 
 // 	   << ig->eta() << "/"
 // 	   << ig->phi() << std::endl
 // 	   << "  RecoObject: pt/eta/phi: " 
-// 	   << iter->perp() << "/" 
+// 	   << iter->pt() << "/" 
 // 	   << iter->eta() << "/"
 // 	   << iter->phi() << std::endl
 // 	   << "  DR: " << dr << std::endl;

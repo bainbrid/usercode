@@ -26,11 +26,11 @@ class ObjectMatcher : public ObjectMatcherBase {
   
   void gen( const edm::Event&, 
 	    const edm::EventSetup&, 
-	    std::vector<HepLorentzVector>& );
+	    std::vector<math::XYZTLorentzVector>& );
   
   void reco( const edm::Event&, 
 	     const edm::EventSetup&, 
-	     std::vector<HepLorentzVector>& );
+	     std::vector<math::XYZTLorentzVector>& );
   
 };
 

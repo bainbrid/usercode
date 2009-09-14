@@ -1,7 +1,8 @@
 #ifndef JetMETCorrections_JetPlusTrack_LorentzVectorPair_H
 #define JetMETCorrections_JetPlusTrack_LorentzVectorPair_H
 
-#include "CLHEP/Vector/LorentzVector.h"
+#include "DataFormats/Math/interface/LorentzVector.h"
+#include "DataFormats/Math/interface/deltaR.h"
 
 class LorentzVectorPair {
 
@@ -10,11 +11,11 @@ class LorentzVectorPair {
   // ---------- Con(de)structors ----------
   
   /// 4-vectors of gen and reco object
-  explicit LorentzVectorPair( const HepLorentzVector& gen_object,
-			      const HepLorentzVector& reco_object );
+  explicit LorentzVectorPair( const math::XYZTLorentzVector& gen_object,
+			      const math::XYZTLorentzVector& reco_object );
   
   /// 4-vector of just gen object
-  explicit LorentzVectorPair( const HepLorentzVector& gen_object );
+  explicit LorentzVectorPair( const math::XYZTLorentzVector& gen_object );
   
   /// Default constructor
   LorentzVectorPair();
@@ -28,7 +29,7 @@ class LorentzVectorPair {
   // ---------- Setter methods ----------
   
   /// Add 4-vector for gen object 
-  void gen( const HepLorentzVector& gen_object );
+  void gen( const math::XYZTLorentzVector& gen_object );
   
   /// Add gen object 
   void gen( const double& px,
@@ -37,7 +38,7 @@ class LorentzVectorPair {
 	    const double& e );
   
   /// Add 4-vector for reco object 
-  void reco( const HepLorentzVector& reco_object );
+  void reco( const math::XYZTLorentzVector& reco_object );
   
   /// Add reco object 
   void reco( const double& px,
@@ -48,10 +49,10 @@ class LorentzVectorPair {
   // ---------- Getter methods ----------
   
   /// 4-vector of gen object
-  HepLorentzVector gen() const;
+  math::XYZTLorentzVector gen() const;
 
   /// 4-vector of reco object
-  HepLorentzVector reco() const;
+  math::XYZTLorentzVector reco() const;
   
   /// Indicates if both gen and reco objects are defined
   bool both() const;
@@ -78,10 +79,10 @@ class LorentzVectorPair {
  private:
   
   /// 4-vector of gen object
-  HepLorentzVector gen_;
+  math::XYZTLorentzVector gen_;
   
   /// 4-vector of reco object
-  HepLorentzVector reco_;
+  math::XYZTLorentzVector reco_;
   
   /// Indicates if gen object is defined
   bool g_;
@@ -93,7 +94,7 @@ class LorentzVectorPair {
 
 // ---------- Inline methods ----------
 
-inline void LorentzVectorPair::gen( const HepLorentzVector& object ) { 
+inline void LorentzVectorPair::gen( const math::XYZTLorentzVector& object ) { 
   gen_ = object; 
   g_ = true;
 }
@@ -102,11 +103,11 @@ inline void LorentzVectorPair::gen( const double& px,
 				    const double& py,
 				    const double& pz,
 				    const double& e ) { 
-  gen_ = HepLorentzVector(px,py,pz,e); 
+  gen_ = math::XYZTLorentzVector(px,py,pz,e); 
   g_ = true;
 }
 
-inline void LorentzVectorPair::reco( const HepLorentzVector& object ) { 
+inline void LorentzVectorPair::reco( const math::XYZTLorentzVector& object ) { 
   reco_ = object; 
   r_ = true;
 }
@@ -115,18 +116,18 @@ inline void LorentzVectorPair::reco( const double& px,
 				     const double& py,
 				     const double& pz,
 				     const double& e ) { 
-  reco_ = HepLorentzVector(px,py,pz,e); 
+  reco_ = math::XYZTLorentzVector(px,py,pz,e); 
   r_ = true;
 }
 
-inline HepLorentzVector LorentzVectorPair::gen() const { 
+inline math::XYZTLorentzVector LorentzVectorPair::gen() const { 
   if ( g_ ) { return gen_; }
-  else { return HepLorentzVector(); }
+  else { return math::XYZTLorentzVector(); }
 }
 
-inline HepLorentzVector LorentzVectorPair::reco() const {
+inline math::XYZTLorentzVector LorentzVectorPair::reco() const {
   if ( r_ ) { return reco_; }
-  else { return HepLorentzVector(); }
+  else { return math::XYZTLorentzVector(); }
 }
 
 inline bool LorentzVectorPair::both() const { return g_ && r_; }
@@ -142,7 +143,8 @@ inline double LorentzVectorPair::dPhi() const {
 }
 
 inline double LorentzVectorPair::deltaR() const { 
-  if ( both() ) { return gen_.deltaR(reco_); }
+  if ( both() ) { return reco::deltaR( gen_.eta(), gen_.phi(), 
+				       reco_.eta(), reco_.phi() ); }
   else { return -1.; }
 }
 
