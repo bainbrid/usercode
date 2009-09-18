@@ -9,170 +9,18 @@
 #include "DataFormats/JetReco/interface/JetTracksAssociation.h"
 #include "DataFormats/MuonReco/interface/Muon.h"
 #include "DataFormats/MuonReco/interface/MuonFwd.h"
-#include "DataFormats/PatCandidates/interface/Electron.h"
-#include "DataFormats/PatCandidates/interface/Muon.h"
 #include "DataFormats/TrackReco/interface/Track.h"
 #include "FWCore/Framework/interface/Event.h"
-#include "FWCore/Framework/interface/Frameworkfwd.h"
+#include "FWCore/Framework/interface/EventSetup.h"
 #include "FWCore/ParameterSet/interface/InputTag.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "JetMETCorrections/Objects/interface/JetCorrector.h"
 #include "boost/range/iterator_range.hpp"
 
-// Forward declaration of helper classes
-namespace jpt {
-  class Map;
-  class ParticleResponse;
-  class AssociatedTracks;
-  class ParticleTracks;
-}
 
-/**
-   \brief Jet energy correction algorithm using tracks
-*/
-class JPTCorrector : public JetCorrector {
-  
- public: 
-
-  /// Constructor
-  JPTCorrector( const edm::ParameterSet& );
-
-  /// Destructor
-  virtual ~JPTCorrector();
-
-  // ---------- Correction methods ----------
-
-  double correction( const reco::Jet&, const edm::Event&, const edm::EventSetup& ) const;
-
-  double correction( const reco::Jet& ) const;
-
-  double correction( const reco::Particle::LorentzVector& ) const;
-
-  bool eventRequired() const;
-
-  // ---------- Extended interface ----------
-
-  // Some useful typedefs
-  typedef reco::MuonCollection RecoMuons;
-  typedef edm::View<pat::Muon> PatMuons;
-  typedef reco::GsfElectronCollection RecoElectrons;
-  typedef edm::ValueMap<float> RecoElectronIDs;
-  typedef edm::View<pat::Electron> PatElectrons;
-  typedef reco::JetTracksAssociation::Container JetTracksAssociations;
-    
-  /// Associates tracks to jets
-  bool jetTrackAssociation( const reco::Jet&, 
-			    const edm::Event&, 
-			    const edm::EventSetup&,
-			    jpt::AssociatedTracks& ) const;
-
-  /// Associates tracks to jets "on-the-fly"
-  bool jtaOnTheFly( const reco::Jet&, 
-		    const edm::Event&, 
-		    const edm::EventSetup&,
-		    jpt::AssociatedTracks& ) const;
-
-  /// Rebuild jet-track association 
-  void rebuildJta( const reco::Jet&, 
-		   const JetTracksAssociations&, 
-		   reco::TrackRefVector& included,
-		   reco::TrackRefVector& excluded ) const;
-  
-  /// Exclude jet-track association 
-  void excludeJta( const reco::Jet&, 
-		   const JetTracksAssociations&, 
-		   reco::TrackRefVector& included,
-		   const reco::TrackRefVector& excluded ) const;
-  
-  /// Categories tracks according to particle type
-  void particles( const jpt::AssociatedTracks&,
-		  const edm::Event&, 
-		  const edm::EventSetup&,
-		  jpt::ParticleTracks& pions, 
-		  jpt::ParticleTracks& muons, 
-		  jpt::ParticleTracks& electrons ) const;
-  
-  /// Matches tracks to RECO muons
-  bool matching( reco::TrackRefVector::const_iterator,
-		 const edm::Handle<RecoMuons>& ) const;
-
-  /// Matches tracks to PAT muons
-  bool matching( reco::TrackRefVector::const_iterator,
-		 const edm::Handle<PatMuons>& ) const;
-  
-  /// Matches tracks to RECO electrons
-  bool matching( reco::TrackRefVector::const_iterator,
-		 const edm::Handle<RecoElectrons>&, 
-		 const edm::Handle<RecoElectronIDs>& ) const;
-
-  /// Matches tracks to PAT electrons
-  bool matching( reco::TrackRefVector::const_iterator,
-		 const edm::Handle<PatElectrons>& ) const;
-
-  /// Calculates correction to be applied using response function
-  double correction( const reco::TrackRefVector&, 
-		     jpt::ParticleResponse&,
-		     bool in_cone_at_vertex,
-		     bool in_cone_at_calo_face,
-		     double mass = 0.14,
-		     double mip = -1. ) const;
-  
-  /// Calculates correction to be applied using tracking efficiency 
-  double correction( jpt::ParticleResponse&,
-		     bool in_cone_at_calo_face ) const;
-  
- private:
-  
-  /// Private default constructor
-  JPTCorrector() {;}
-  
-  // Methods to access maps
-  const jpt::Map& response() const;
-  const jpt::Map& efficiency() const;
-  const jpt::Map& leakage() const;
-  
-  // Some general configuration
-  bool verbose_;
-  bool useInConeTracks_;
-  bool useOutOfConeTracks_;
-  bool useOutOfVertexTracks_;
-  bool useMuons_;
-  bool useElectrons_;
-  bool usePat_;
-  bool allowOnTheFly_;
-  bool useTrackQuality_;
-  
-  // Jet-track association
-  edm::InputTag jetTracksAtVertex_;
-  edm::InputTag jetTracksAtCalo_;
-  int jetSplitMerge_;
-  
-  // "On-the-fly" jet-track association
-  edm::InputTag tracks_;
-  std::string propagator_;
-  double coneSize_;
-
-  // Muons and electrons
-  edm::InputTag muons_;
-  edm::InputTag electrons_; 
-  edm::InputTag electronIds_;
-  
-  // Filter tracks by quality
-  reco::TrackBase::TrackQuality trackQuality_;
-
-  // Response and efficiency maps  
-  const jpt::Map* response_;
-  const jpt::Map* efficiency_;
-  const jpt::Map* leakage_;
-  
-};
-
-inline bool JPTCorrector::eventRequired() const { return true; }
-inline const jpt::Map& JPTCorrector::response() const { return *response_; }
-inline const jpt::Map& JPTCorrector::efficiency() const { return *efficiency_; }
-inline const jpt::Map& JPTCorrector::leakage() const { return *leakage_; }
-
+// --------------------------------------------------------
 // -------------------- Helper classes --------------------
+// --------------------------------------------------------
 
 
 namespace jpt {
@@ -199,7 +47,7 @@ namespace jpt {
 
     class Element {
     public:
-      Element() : ieta_(0), ipt_(0), eta_(0.), pt_(0.), val_(0.) {;} 
+    Element() : ieta_(0), ipt_(0), eta_(0.), pt_(0.), val_(0.) {;} 
       uint32_t ieta_;
       uint32_t ipt_;
       double eta_;
@@ -220,7 +68,7 @@ namespace jpt {
   inline uint32_t Map::nPtBins() const { return pt_.size(); }
   
   /// Generic container class 
-  class ParticleResponse {
+  class Response {
 
   public:
 
@@ -244,27 +92,269 @@ namespace jpt {
 
   };
   
-  /// Tracks associated to jets that in-cone at Vertex and CaloFace
-  class AssociatedTracks {
+  /// Tracks associated to jets that are in-cone at Vertex and CaloFace
+  class JetTracks {
   public:
-    AssociatedTracks();
-    ~AssociatedTracks();
+    JetTracks();
+    ~JetTracks();
     void clear();
-    reco::TrackRefVector atVertex_;
-    reco::TrackRefVector atCaloFace_;
+    reco::TrackRefVector vertex_;
+    reco::TrackRefVector caloFace_;
   };
 
-  /// Tracks of particles that are in/in, in/out, out/in at Vertex and CaloFace
-  class ParticleTracks {
+  /// Particles matched to tracks that are in/in, in/out, out/in at Vertex and CaloFace
+  class MatchedTracks {
   public:
-    ParticleTracks();
-    ~ParticleTracks();
+    MatchedTracks();
+    ~MatchedTracks();
     void clear();
     reco::TrackRefVector inVertexInCalo_;
     reco::TrackRefVector outOfVertexInCalo_;
     reco::TrackRefVector inVertexOutOfCalo_; 
   };
 
+}
+
+
+// -------------------------------------------------------
+// -------------------- JPT algorithm --------------------
+// -------------------------------------------------------
+
+
+/**
+   \brief Jet energy correction algorithm using tracks
+*/
+class JPTCorrector : public JetCorrector {
+
+  // ---------- Public interface ----------
+  
+ public: 
+
+  /// Constructor
+  JPTCorrector( const edm::ParameterSet& );
+
+  /// Destructor
+  virtual ~JPTCorrector();
+
+  /// Correction method
+  double correction( const reco::Jet&, const edm::Event&, const edm::EventSetup& ) const;
+
+  /// Correction method (not used)
+  double correction( const reco::Jet& ) const;
+
+  /// Correction method (not used)
+  double correction( const reco::Particle::LorentzVector& ) const;
+
+  /// Returns true
+  bool eventRequired() const;
+
+  // ---------- Extended interface ----------
+
+  /// Can jet be JPT-corrected?
+  bool canCorrect( const reco::Jet& ) const;
+  
+  /// Matches tracks to different particle types 
+  bool matchTracks( const reco::Jet&, 
+		    const edm::Event&, 
+		    const edm::EventSetup&,
+		    jpt::MatchedTracks& pions, 
+		    jpt::MatchedTracks& muons, 
+		    jpt::MatchedTracks& elecs ) const;
+  
+  /// Calculates corrections to be applied using pions
+  double pionCorrection( const jpt::MatchedTracks& pions ) const;
+  
+  /// Calculates correction to be applied using muons
+  double muonCorrection( const jpt::MatchedTracks& muons, bool ) const;
+  
+  /// Calculates correction to be applied using electrons
+  double elecCorrection( const jpt::MatchedTracks& elecs ) const;
+
+  // ---------- Protected interface ----------
+
+ protected: 
+
+  // Some useful typedefs
+  typedef reco::MuonCollection RecoMuons;
+  typedef reco::GsfElectronCollection RecoElectrons;
+  typedef edm::ValueMap<float> RecoElectronIds;
+  typedef reco::JetTracksAssociation::Container JetTracksAssociations;
+  typedef reco::TrackRefVector TrackRefs;
+
+  /// Associates tracks to jets
+  bool jetTrackAssociation( const reco::Jet&, 
+			    const edm::Event&, 
+			    const edm::EventSetup&,
+			    jpt::JetTracks& ) const;
+  
+  /// Associates tracks to jets "on-the-fly"
+  virtual bool jtaOnTheFly( const reco::Jet&, 
+			    const edm::Event&, 
+			    const edm::EventSetup&,
+			    jpt::JetTracks& ) const;
+  
+  /// Matches tracks to different particle types 
+  virtual void matchTracks( const jpt::JetTracks&,
+			    const edm::Event&, 
+			    jpt::MatchedTracks& pions, 
+			    jpt::MatchedTracks& muons, 
+			    jpt::MatchedTracks& elecs ) const;
+
+  /// Calculates individual pion corrections
+  double pionCorrection( const TrackRefs& pions, 
+			 jpt::Response& response,
+			 bool in_cone_at_vertex,
+			 bool in_cone_at_calo_face ) const; 
+
+  /// Calculates individual muons corrections
+  double muonCorrection( const TrackRefs& muons, 
+			 bool in_cone_at_vertex,
+			 bool in_cone_at_calo_face ) const;
+
+  /// Calculates individual electron corrections
+  double elecCorrection( const TrackRefs& elecs, 
+			 bool in_cone_at_vertex,
+			 bool in_cone_at_calo_face ) const;
+  
+  /// Generic method to calculates correction to be applied
+  double correction( const TrackRefs&, 
+		     jpt::Response&,
+		     bool in_cone_at_vertex,
+		     bool in_cone_at_calo_face,
+		     double mass = 0.14,
+		     double mip = -1. ) const;
+  
+  /// Correction to be applied using tracking efficiency 
+  double pionEfficiency( jpt::Response&,
+			 bool in_cone_at_calo_face ) const;
+
+  /// Check scale is not negative
+  double checkScale( double scale ) const;
+  
+  /// Get RECO muons
+  bool getMuons( const edm::Event&, edm::Handle<RecoMuons>& ) const;
+
+  /// Get RECO electrons
+  bool getElectrons( const edm::Event&, 
+		     edm::Handle<RecoElectrons>&, 
+		     edm::Handle<RecoElectronIds>& ) const;
+  
+  /// Matches tracks to RECO muons
+  bool matchMuons( TrackRefs::const_iterator,
+		   const edm::Handle<RecoMuons>& ) const;
+  
+  /// Matches tracks to RECO electrons
+  bool matchElectrons( TrackRefs::const_iterator,
+		       const edm::Handle<RecoElectrons>&, 
+		       const edm::Handle<RecoElectronIds>& ) const;
+  
+  /// Check on track quality
+  bool failTrackQuality( TrackRefs::const_iterator ) const;
+
+  /// Find track in JetTracks collection
+  bool findTrack( const jpt::JetTracks&, 
+		  TrackRefs::const_iterator,
+		  TrackRefs::iterator& ) const;
+
+  /// Find track in MatchedTracks collections
+  bool findTrack( const jpt::MatchedTracks& pions, 
+		  const jpt::MatchedTracks& muons,
+		  const jpt::MatchedTracks& electrons,
+		  TrackRefs::const_iterator ) const;
+
+  /// Determines if any tracks in cone at CaloFace
+  bool tracksInCalo( const jpt::MatchedTracks& pions, 
+		     const jpt::MatchedTracks& muons,
+		     const jpt::MatchedTracks& elecs ) const;
+  
+  /// Rebuild jet-track association 
+  void rebuildJta( const reco::Jet&, 
+		   const JetTracksAssociations&, 
+		   TrackRefs& included,
+		   TrackRefs& excluded ) const;
+  
+  /// Exclude jet-track association 
+  void excludeJta( const reco::Jet&, 
+		   const JetTracksAssociations&, 
+		   TrackRefs& included,
+		   const TrackRefs& excluded ) const;
+
+  // Methods to access maps
+  const jpt::Map& response() const;
+  const jpt::Map& efficiency() const;
+  const jpt::Map& leakage() const;
+
+  /// Default constructor
+  JPTCorrector() {;}
+
+  // ---------- Protected member data ----------
+
+ protected:
+  
+  // Some general configuration
+  bool verbose_;
+  bool useInConeTracks_;
+  bool useOutOfConeTracks_;
+  bool useOutOfVertexTracks_;
+  bool usePions_;
+  bool useEff_;
+  bool useMuons_;
+  bool useElecs_;
+  bool useTrackQuality_;
+  
+  // Jet-track association
+  edm::InputTag jetTracksAtVertex_;
+  edm::InputTag jetTracksAtCalo_;
+  int jetSplitMerge_;
+
+  // Muons and electrons
+  edm::InputTag muons_;
+  edm::InputTag electrons_; 
+  edm::InputTag electronIds_;
+  
+  // Filter tracks by quality
+  reco::TrackBase::TrackQuality trackQuality_;
+
+  // Response and efficiency maps  
+  const jpt::Map* response_;
+  const jpt::Map* efficiency_;
+  const jpt::Map* leakage_;
+  
+};
+
+// ---------- Inline methods ----------
+
+inline bool JPTCorrector::eventRequired() const { return true; }
+inline bool JPTCorrector::canCorrect( const reco::Jet& jet ) const { return ( fabs( jet.eta() ) <= 2.1 ); }
+
+inline const jpt::Map& JPTCorrector::response() const { return *response_; }
+inline const jpt::Map& JPTCorrector::efficiency() const { return *efficiency_; }
+inline const jpt::Map& JPTCorrector::leakage() const { return *leakage_; }
+
+inline double JPTCorrector::pionCorrection( const TrackRefs& pions, 
+					    jpt::Response& response,
+					    bool in_cone_at_vertex,
+					    bool in_cone_at_calo_face ) const {
+  return correction( pions, response, in_cone_at_vertex, in_cone_at_calo_face );
+}
+
+inline double JPTCorrector::muonCorrection( const TrackRefs& muons, 
+					    bool in_cone_at_vertex,
+					    bool in_cone_at_calo_face ) const {
+  jpt::Response response;
+  return correction( muons, response, in_cone_at_vertex, in_cone_at_calo_face, 0.105, 2. );
+} 
+
+inline double JPTCorrector::elecCorrection( const TrackRefs& elecs, 
+					    bool in_cone_at_vertex,
+					    bool in_cone_at_calo_face ) const {
+  jpt::Response response;
+  return correction( elecs, response, in_cone_at_vertex, in_cone_at_calo_face, 0.000511, 0. );
+} 
+
+inline double JPTCorrector::checkScale( double scale ) const {
+  if ( scale < 0. ) { return 1.; } 
+  else { return scale; }
 }
 
 #endif // bainbrid_Test_JPTCorrector_h
