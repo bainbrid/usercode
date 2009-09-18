@@ -5,26 +5,23 @@ from TrackPropagation.SteppingHelixPropagator.SteppingHelixPropagatorAlong_cfi i
 JPTCorrection = cms.PSet(
 
     # General Configuration
-    Verbose           = cms.bool(False),
-    UsePatCollections = cms.bool(False),
+    Verbose = cms.bool(False),
     
-    # Select correction types
+    # Select tracks used in correction
     UseInConeTracks      = cms.bool(True),
     UseOutOfConeTracks   = cms.bool(True),
     UseOutOfVertexTracks = cms.bool(True),
     
-    # Jet-tracks association (null value = "on-the-fly" mode)
+    # Jet-tracks association
     JetTracksAssociationAtVertex   = cms.InputTag("JetTracksAssociationAtVertex"), 
     JetTracksAssociationAtCaloFace = cms.InputTag("JetTracksAssociationAtCaloFace"),
-
+    
     # Jet merging/splitting
     JetSplitMerge = cms.int32(0),
-    
-    # Jet-tracks association "on-the-fly" mode
-    AllowOnTheFly = cms.bool(False),
-    Tracks        = cms.InputTag("generalTracks"),
-    Propagator    = cms.string('SteppingHelixPropagatorAlong'),
-    ConeSize      = cms.double(0.5),
+
+    # Pions
+    UsePions      = cms.bool(True),
+    UseEfficiency = cms.bool(True),
     
     # Muons
     UseMuons = cms.bool(True),
