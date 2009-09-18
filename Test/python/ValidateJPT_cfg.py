@@ -518,7 +518,7 @@ process.o = cms.OutputModule(
 
 process.e = cms.EndPath( process.o )
 
-process.profiler = cms.Service(
+process.ProfilerService = cms.Service(
     "ProfilerService",
     firstEvent = cms.untracked.int32(2), # avoid first event
     lastEvent = cms.untracked.int32(12),
