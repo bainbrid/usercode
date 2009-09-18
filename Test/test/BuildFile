@@ -72,7 +72,6 @@
   <use name=FWCore/ParameterSet>
   <use name=FWCore/MessageLogger>
   <use name=CommonTools/Utils>
-  <flags CXXFLAGS="-O0 -g -DDEBUG">
   <flags EDM_PLUGIN=1>
 </library>
 
@@ -80,21 +79,27 @@
   <use name=DataFormats/Common>
   <use name=DataFormats/EgammaCandidates>
   <use name=DataFormats/JetReco>
+  <use name=DataFormats/Math>
   <use name=DataFormats/MuonReco>
-  <use name=DataFormats/PatCandidates>
   <use name=DataFormats/TrackReco>
   <use name=FWCore/Framework>
   <use name=FWCore/ParameterSet>
   <use name=FWCore/MessageLogger>
   <use name=JetMETCorrections/Algorithms>
   <use name=JetMETCorrections/Objects>
-  <use name=MagneticField/Records>
-  <use name=RecoJets/JetAssociationAlgorithms>
-  <use name=TrackingTools/Records>
   <use name=boost>
 </library>
 
-<library name=bainbridTest_JPTCorrectionProducer file=JPTCorrectionModules.cc,JPTCorrectionService.cc,JPTCorrectionProducer.cc>
+<library name=bainbridTest_JPTPatCorrector file=JPTPatCorrector.cc>
+  <use name=DataFormats/PatCandidates>
+  <use name=MagneticField/Records>
+  <use name=RecoJets/JetAssociationAlgorithms>
+  <use name=TrackingTools/Records>
+  <lib name=bainbridTest_JPTCorrector>
+  <use name=boost>
+</library>
+
+<library name=bainbridTest_JPTCorrectionProducer file=JPTCorrectionService.cc,JPTCorrectionProducer.cc>
   <use name=CommonTools/Utils>
   <use name=DataFormats/Common>
   <use name=DataFormats/PatCandidates>
@@ -107,9 +112,23 @@
   <flags EDM_PLUGIN=1>
 </library>
 
-<library name=bainbridTest_JPTCorrFactorsProducer file=JPTCorrFactorsProducer.cc>
+<library name=bainbridTest_JPTPatCorrectionProducer file=JPTPatCorrectionService.cc>
+  <use name=CommonTools/Utils>
+  <use name=DataFormats/Common>
+  <use name=DataFormats/PatCandidates>
+  <use name=FWCore/Framework>
+  <use name=FWCore/ParameterSet>
+  <use name=FWCore/PluginManager>
+  <use name=JetMETCorrections/Objects>
+  <lib name=bainbridTest_JPTPatCorrector>
+  <use name=boost>
+  <flags EDM_PLUGIN=1>
+</library>
+
+<library name=bainbridTest_JPTCorrFactorsProducer file=JPTCorrFactorsProducer.cc,SortJetCollectionsByGenJetPt.cc>
   <use name=DataFormats/CaloTowers>
   <use name=DataFormats/Common>
+  <use name=DataFormats/JetReco>
   <use name=DataFormats/PatCandidates>
   <use name=FWCore/Framework>
   <use name=FWCore/ParameterSet>
