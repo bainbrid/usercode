@@ -15,8 +15,10 @@ SortJetCollectionsByGenJetPt::SortJetCollectionsByGenJetPt( const edm::Parameter
     caloJets_( pset.getParameter< std::vector<edm::InputTag> >("caloJets") ),
     patJets_( pset.getParameter< std::vector<edm::InputTag> >("patJets") )
 {
+
   // reco::GenJet products
   produces< std::vector<reco::GenJet> >( genJets_.label() );
+
   // reco::CaloJet products
   {
     std::vector<edm::InputTag>::const_iterator ii = caloJets_.begin();
@@ -25,6 +27,7 @@ SortJetCollectionsByGenJetPt::SortJetCollectionsByGenJetPt( const edm::Parameter
       produces< std::vector<reco::CaloJet> >( ii->label() );
     }
   }
+
   // pat::Jet products
   { 
     std::vector<edm::InputTag>::const_iterator ii = patJets_.begin();
@@ -33,6 +36,7 @@ SortJetCollectionsByGenJetPt::SortJetCollectionsByGenJetPt( const edm::Parameter
       produces< std::vector<pat::Jet> >( ii->label() );
     }
   }
+
 }
 
 // -----------------------------------------------------------------------------

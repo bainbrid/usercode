@@ -16,7 +16,6 @@ class SortJetCollectionsByGenJetPt : public edm::EDProducer {
   
  public:
   
-  
   explicit SortJetCollectionsByGenJetPt( const edm::ParameterSet& );
   ~SortJetCollectionsByGenJetPt();
   
