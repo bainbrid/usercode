@@ -103,4 +103,11 @@ namespace cms {
 
 }
 
+// -----------------------------------------------------------------------------
+//
+#include "FWCore/Framework/interface/MakerMacros.h"
+#include "DataFormats/PatCandidates/interface/Jet.h"
+typedef cms::JPTCorrectionProducer<pat::Jet> PatJetCorrectionProducer;
+DEFINE_FWK_MODULE(PatJetCorrectionProducer);
+
 #endif // bainbrid_Test_JPTCorrectionProducer_h

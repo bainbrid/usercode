@@ -29,3 +29,8 @@ void JPTCorrectionService::setIntervalFor( const edm::eventsetup::EventSetupReco
   fIOV = edm::ValidityInterval( edm::IOVSyncValue::beginOfTime(),
 				edm::IOVSyncValue::endOfTime() );
 }
+
+// -----------------------------------------------------------------------------
+//
+#include "FWCore/Framework/interface/SourceFactory.h"
+DEFINE_FWK_EVENTSETUP_SOURCE(JPTCorrectionService);
