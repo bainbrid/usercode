@@ -10,14 +10,15 @@ process.load("Configuration.StandardSequences.MagneticField_cff")
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
 process.GlobalTag.globaltag = cms.string('STARTUP31X_V4::All')
 
-# Input files: RelVal QCD 80-120 GeV, STARTUP conditions, 9000 events, from CMSSW_3_2_5 (replace with 33X when available!)
 fileNames1 = cms.untracked.vstring()
 fileNames2 = cms.untracked.vstring()
 process.source = cms.Source(
     "PoolSource",
-    fileNames = fileNames2,
+    fileNames = fileNames1,
     #skipEvents = cms.untracked.uint32(223),
     )
+
+# Input files: RelVal QCD 80-120 GeV, STARTUP conditions, 9000 events, from CMSSW_3_2_5 (replace with 33X when available!)
 fileNames1.extend( [
     '/store/relval/CMSSW_3_2_5/RelValQCD_Pt_80_120/GEN-SIM-RECO/STARTUP31X_V4-v1/0011/2AA47C1E-828E-DE11-B3C5-001D09F34488.root',
     '/store/relval/CMSSW_3_2_5/RelValQCD_Pt_80_120/GEN-SIM-RECO/STARTUP31X_V4-v1/0010/DA6FF61D-3D8E-DE11-938A-003048D37538.root',
@@ -60,8 +61,8 @@ process.load("bainbrid.Test.JPTCorrections_cff")
 process.JPTCorrectionIC5.ElectronIds = cms.InputTag("eidTight")
 process.JPTCorrectionIC5.Verbose = cms.bool(True)
 
-process.JPTCorrectionIC5.VectorialCorrection    = cms.bool(True)
-process.JPTCorrectionIC5.VecCorrUsingTracksOnly = cms.bool(True)
+process.JPTCorrectionIC5.VectorialCorrection = cms.bool(True)
+process.JPTCorrectionIC5.JetDirFromTracks    = cms.bool(True)
 
 #process.JPTCorrectionIC5.UseInConeTracks      = cms.bool(False)
 #process.JPTCorrectionIC5.UseOutOfConeTracks   = cms.bool(False)

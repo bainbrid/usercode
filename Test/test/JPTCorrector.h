@@ -122,7 +122,7 @@ namespace jpt {
     jpt::Map leakage_;
     
   };
-
+  
   inline uint32_t Efficiency::nEtaBins() const { return response_.nEtaBins(); }
   inline uint32_t Efficiency::nPtBins() const { return response_.nPtBins(); }
   inline uint32_t Efficiency::size() const { return data_.size(); }
@@ -216,12 +216,6 @@ class JPTCorrector : public JetCorrector {
   
   /// Calculates correction to be applied using electrons
   P4 elecCorrection( const P4& jet, const jpt::MatchedTracks& elecs ) const;
-
-  /// Calculates vectorial correction using total track 3-momentum
-  P4 trackCorrection( const P4& jet, 
-		      const jpt::MatchedTracks& pions,
-		      const jpt::MatchedTracks& muons,
-		      const jpt::MatchedTracks& elecs ) const;
   
   // ---------- Protected interface ----------
 
@@ -271,13 +265,20 @@ class JPTCorrector : public JetCorrector {
 		     bool in_cone_at_vertex,
 		     bool in_cone_at_calo_face ) const;
 
+  /// Calculates vectorial correction using total track 3-momentum
+  P4 jetDirFromTracks( const P4& jet, 
+		       const jpt::MatchedTracks& pions,
+		       const jpt::MatchedTracks& muons,
+		       const jpt::MatchedTracks& elecs ) const;
+  
   /// Generic method to calculates 4-momentum correction to be applied
-  P4 correction( const P4& jet, 
-		 const TrackRefs&, 
-		 bool in_cone_at_vertex,
-		 bool in_cone_at_calo_face,
-		 double mass,
-		 double mip ) const;
+  P4 calculateCorr( const P4& jet, 
+		    const TrackRefs&, 
+		    bool in_cone_at_vertex,
+		    bool in_cone_at_calo_face,
+		    double mass,
+		    bool is_mip,
+		    double mip ) const;
   
   /// Correction to be applied using tracking efficiency 
   P4 pionEfficiency( const P4& jet, bool in_cone_at_calo_face ) const;
@@ -372,8 +373,11 @@ class JPTCorrector : public JetCorrector {
   const jpt::Map leakage_;
   mutable jpt::Efficiency eff_;
 
-  mutable P4 p4_;
-
+  // Mass    
+  double pionMass_;
+  double muonMass_;
+  double elecMass_;
+  
 };
 
 // ---------- Inline methods ----------
@@ -393,21 +397,21 @@ inline JPTCorrector::P4 JPTCorrector::pionCorrection( const P4& jet,
 						      const TrackRefs& pions, 
 						      bool in_cone_at_vertex,
 						      bool in_cone_at_calo_face ) const {
-  return correction( jet, pions, in_cone_at_vertex, in_cone_at_calo_face, 0.140, -1. );
+  return calculateCorr( jet, pions, in_cone_at_vertex, in_cone_at_calo_face, pionMass_, false, -1. );
 }
 
 inline JPTCorrector::P4 JPTCorrector::muonCorrection( const P4& jet, 
 						      const TrackRefs& muons, 
 						      bool in_cone_at_vertex,
 						      bool in_cone_at_calo_face ) const {
-  return correction( jet, muons, in_cone_at_vertex, in_cone_at_calo_face, 0.105, 2. );
+  return calculateCorr( jet, muons, in_cone_at_vertex, in_cone_at_calo_face, muonMass_, true, 2. );
 } 
 
 inline JPTCorrector::P4 JPTCorrector::elecCorrection( const P4& jet, 
 						      const TrackRefs& elecs, 
 						      bool in_cone_at_vertex,
 						      bool in_cone_at_calo_face ) const {
-  return correction( jet, elecs, in_cone_at_vertex, in_cone_at_calo_face, 0.000511, 0. );
+  return calculateCorr( jet, elecs, in_cone_at_vertex, in_cone_at_calo_face, elecMass_, true, 0. ); 
 } 
 
 inline double JPTCorrector::checkScale( const P4& jet, P4& corrected ) const {

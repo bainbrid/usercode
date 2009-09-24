@@ -8,8 +8,8 @@ JPTCorrection = cms.PSet(
     Verbose = cms.bool(False),
 
     # Vectorial corrections
-    VectorialCorrection    = cms.bool(False),
-    VecCorrUsingTracksOnly = cms.bool(False),
+    VectorialCorrection = cms.bool(True),
+    JetDirFromTracks    = cms.bool(True),
     
     # Select tracks used in correction
     UseInConeTracks      = cms.bool(True),
