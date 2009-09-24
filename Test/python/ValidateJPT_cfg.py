@@ -11,26 +11,40 @@ process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
 process.GlobalTag.globaltag = cms.string('STARTUP31X_V4::All')
 
 # Input files: RelVal QCD 80-120 GeV, STARTUP conditions, 9000 events, from CMSSW_3_2_5 (replace with 33X when available!)
+fileNames1 = cms.untracked.vstring()
+fileNames2 = cms.untracked.vstring()
 process.source = cms.Source(
-    "PoolSource", 
-    fileNames = cms.untracked.vstring(
-    '/store/relval/CMSSW_3_2_5/RelValQCD_Pt_80_120/GEN-SIM-RECO/STARTUP31X_V4-v1/0011/2AA47C1E-828E-DE11-B3C5-001D09F34488.root',
-    '/store/relval/CMSSW_3_2_5/RelValQCD_Pt_80_120/GEN-SIM-RECO/STARTUP31X_V4-v1/0010/DA6FF61D-3D8E-DE11-938A-003048D37538.root',
-    '/store/relval/CMSSW_3_2_5/RelValQCD_Pt_80_120/GEN-SIM-RECO/STARTUP31X_V4-v1/0010/82CF8666-398E-DE11-8F3B-000423D94A20.root',
-    '/store/relval/CMSSW_3_2_5/RelValQCD_Pt_80_120/GEN-SIM-RECO/STARTUP31X_V4-v1/0010/6255E85C-3F8E-DE11-B46A-000423D6B48C.root',
-    '/store/relval/CMSSW_3_2_5/RelValQCD_Pt_80_120/GEN-SIM-RECO/STARTUP31X_V4-v1/0010/3453CD32-418E-DE11-87D2-003048D2C020.root',
-    '/store/relval/CMSSW_3_2_5/RelValQCD_Pt_80_120/GEN-SIM-RECO/STARTUP31X_V4-v1/0010/2EC02533-3B8E-DE11-BE85-003048D37514.root',
-    ),
+    "PoolSource",
+    fileNames = fileNames2,
     )
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(10) )
+fileNames1.extend(
+    [ '/store/relval/CMSSW_3_2_5/RelValQCD_Pt_80_120/GEN-SIM-RECO/STARTUP31X_V4-v1/0011/2AA47C1E-828E-DE11-B3C5-001D09F34488.root',
+      '/store/relval/CMSSW_3_2_5/RelValQCD_Pt_80_120/GEN-SIM-RECO/STARTUP31X_V4-v1/0010/DA6FF61D-3D8E-DE11-938A-003048D37538.root',
+      '/store/relval/CMSSW_3_2_5/RelValQCD_Pt_80_120/GEN-SIM-RECO/STARTUP31X_V4-v1/0010/82CF8666-398E-DE11-8F3B-000423D94A20.root',
+      '/store/relval/CMSSW_3_2_5/RelValQCD_Pt_80_120/GEN-SIM-RECO/STARTUP31X_V4-v1/0010/6255E85C-3F8E-DE11-B46A-000423D6B48C.root',
+      '/store/relval/CMSSW_3_2_5/RelValQCD_Pt_80_120/GEN-SIM-RECO/STARTUP31X_V4-v1/0010/3453CD32-418E-DE11-87D2-003048D2C020.root',
+      '/store/relval/CMSSW_3_2_5/RelValQCD_Pt_80_120/GEN-SIM-RECO/STARTUP31X_V4-v1/0010/2EC02533-3B8E-DE11-BE85-003048D37514.root',
+      ] );
+fileNames2.extend(
+    [ 'file:/home/bainbrid/work/src/TEST/2AA47C1E-828E-DE11-B3C5-001D09F34488.root',
+      'file:/home/bainbrid/work/src/TEST/DA6FF61D-3D8E-DE11-938A-003048D37538.root',
+      'file:/home/bainbrid/work/src/TEST/82CF8666-398E-DE11-8F3B-000423D94A20.root',
+      'file:/home/bainbrid/work/src/TEST/6255E85C-3F8E-DE11-B46A-000423D6B48C.root',
+      'file:/home/bainbrid/work/src/TEST/3453CD32-418E-DE11-87D2-003048D2C020.root',
+      'file:/home/bainbrid/work/src/TEST/2EC02533-3B8E-DE11-BE85-003048D37514.root',
+      ] );
+
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 
 # ---------- Old and new JPT from RECO ----------
 
 process.load("JetMETCorrections.Configuration.ZSPJetCorrections219_cff")
 process.load("JetMETCorrections.Configuration.JetPlusTrackCorrections_cff")
 process.JetPlusTrackZSPCorrectorIcone5.ElectronIds = cms.InputTag("eidTight")
+
 process.load("bainbrid.Test.JPTCorrections_cff")
 process.JPTCorrectionIC5.ElectronIds = cms.InputTag("eidTight")
+process.JPTCorrectionIC5.VectorialCorrection = cms.bool(False)
 
 # ---------- New JPT from RECO, all steps ----------
 
@@ -40,13 +54,18 @@ from bainbrid.Test.JPTCorrections_cff import *
 
 process.JPTCorrectionNone = JPTCorrectionIC5.clone()
 process.JPTCorrectionNone.label = cms.string('JPTCorrectionNone')
-process.JPTCorrectionNone.UseInConeTracks      = cms.bool(False)
-process.JPTCorrectionNone.UseOutOfConeTracks   = cms.bool(False)
-process.JPTCorrectionNone.UseOutOfVertexTracks = cms.bool(False)
-process.JPTCorrectionNone.UseEfficiency        = cms.bool(False)
-process.JPTCorrectionNone.UseMuons             = cms.bool(False)
-process.JPTCorrectionNone.UseElectrons         = cms.bool(False)
-process.JPTCorrectionNone.lectronIds           = cms.InputTag("eidTight")
+#process.JPTCorrectionNone.Verbose = cms.bool(True)
+
+process.JPTCorrectionNone.ElectronIds = cms.InputTag("eidTight")
+
+process.JPTCorrectionNone.UseInConeTracks        = cms.bool(False)
+process.JPTCorrectionNone.UseOutOfConeTracks     = cms.bool(False)
+process.JPTCorrectionNone.UseOutOfVertexTracks   = cms.bool(False)
+process.JPTCorrectionNone.UseEfficiency          = cms.bool(False)
+process.JPTCorrectionNone.UseMuons               = cms.bool(False)
+process.JPTCorrectionNone.UseElectrons           = cms.bool(False)
+process.JPTCorrectionNone.VectorialCorrection    = cms.bool(False)
+process.JPTCorrectionNone.VecCorrUsingTracksOnly = cms.bool(False)
 
 process.JPTCorrectorNone = JPTCorrectorIC5.clone()
 process.JPTCorrectorNone.correctors = cms.vstring('JPTCorrectionNone')
@@ -124,6 +143,33 @@ process.JPTCorrectorElectrons = process.JPTCorrectorIC5.clone()
 process.JPTCorrectorElectrons.correctors = cms.vstring('JPTCorrectionElectrons')
 process.JPTCorrectorElectrons.alias = cms.untracked.string('JPTCorrectorElectrons')
 
+# + VectorialCorrection
+
+from bainbrid.Test.JPTCorrections_cff import *
+
+process.JPTCorrectionVectorial = process.JPTCorrectionElectrons.clone()
+process.JPTCorrectionVectorial.label = cms.string('JPTCorrectionVectorial')
+process.JPTCorrectionVectorial.VectorialCorrection = cms.bool(True)
+
+process.JPTCorrectorVectorial = process.JPTCorrectorIC5.clone()
+process.JPTCorrectorVectorial.correctors = cms.vstring('JPTCorrectionVectorial')
+process.JPTCorrectorVectorial.alias = cms.untracked.string('JPTCorrectorVectorial')
+
+# + VecCorrUsingTracksOnly
+
+from bainbrid.Test.JPTCorrections_cff import *
+
+process.JPTCorrectionVecTracks = process.JPTCorrectionVectorial.clone()
+process.JPTCorrectionVecTracks.label = cms.string('JPTCorrectionVecTracks')
+process.JPTCorrectionVecTracks.VecCorrUsingTracksOnly = cms.bool(True)
+
+process.JPTCorrectorVecTracks = process.JPTCorrectorIC5.clone()
+process.JPTCorrectorVecTracks.correctors = cms.vstring('JPTCorrectionVecTracks')
+process.JPTCorrectorVecTracks.alias = cms.untracked.string('JPTCorrectorVecTracks')
+
+
+process.JPTCorrectionNone.VecCorrUsingTracksOnly = cms.bool(False)
+
 # Sequences
 
 process.JPTValidation = cms.Sequence(
@@ -133,7 +179,9 @@ process.JPTValidation = cms.Sequence(
     process.JPTCorrectorOutOfVertex *
     process.JPTCorrectorPionEff *
     process.JPTCorrectorMuons *
-    process.JPTCorrectorElectrons 
+    process.JPTCorrectorElectrons * 
+    process.JPTCorrectorVectorial *
+    process.JPTCorrectorVecTracks 
     )
 
 # ---------- Raw PAT Jets ----------
@@ -204,7 +252,7 @@ process.PATJetPlusTrackZSPCorrectorIcone5.Electrons = cms.InputTag("cleanLayer1E
 process.PATJetPlusTrackZSPCorrectorIcone5.ElectronIds = cms.InputTag("eidTight")
 process.PATJetPlusTrackZSPCorrectorIcone5.JetTracksAssociationAtVertex = cms.InputTag("PATJtaAtVertex")
 process.PATJetPlusTrackZSPCorrectorIcone5.JetTracksAssociationAtCaloFace = cms.InputTag("PATJtaAtCaloFace")
-process.PATJetPlusTrackZSPCorrectorIcone5.Verbose = cms.bool(False)
+#process.PATJetPlusTrackZSPCorrectorIcone5.Verbose = cms.bool(True)
 
 process.PATJetPlusTracksCorrections = cms.Sequence(
     process.RawPATJets *
@@ -241,7 +289,7 @@ process.PATJPTCorrectorIC5.Electrons = cms.InputTag("cleanLayer1Electrons")
 process.PATJPTCorrectorIC5.ElectronIds = cms.InputTag("eidTight")
 process.PATJPTCorrectorIC5.JetTracksAssociationAtVertex = cms.InputTag("PATJtaAtVertex")
 process.PATJPTCorrectorIC5.JetTracksAssociationAtCaloFace = cms.InputTag("PATJtaAtCaloFace")
-process.PATJPTCorrectorIC5.Verbose = cms.bool(False)
+#process.PATJPTCorrectorIC5.Verbose = cms.bool(True)
 
 process.PATJPTCorrections = cms.Sequence(
     process.RawPATJets *
@@ -278,7 +326,7 @@ process.JTAJPTCorrectorIC5.Electrons = cms.InputTag("cleanLayer1Electrons")
 process.JTAJPTCorrectorIC5.ElectronIds = cms.InputTag("eidTight")
 process.JTAJPTCorrectorIC5.JetTracksAssociationAtVertex = cms.InputTag("")
 process.JTAJPTCorrectorIC5.JetTracksAssociationAtCaloFace = cms.InputTag("")
-process.JTAJPTCorrectorIC5.Verbose = cms.bool(True)
+#process.JTAJPTCorrectorIC5.Verbose = cms.bool(True)
 
 process.JTAJPTCorrections = cms.Sequence(
     process.RawPATJets *
@@ -296,9 +344,11 @@ process.UpdaterService = cms.Service("UpdaterService")
 
 kine = cms.PSet(
     energy = cms.string('energy'),
+    mass   = cms.string('mass'),
+    mt     = cms.string('mt'),
     et     = cms.string('et'),
-    p      = cms.string('p'),
     pt     = cms.string('pt'),
+    p      = cms.string('p'),
     px     = cms.string('px'),
     py     = cms.string('py'),
     pz     = cms.string('pz'),
@@ -343,7 +393,7 @@ process.anal = cms.EDFilter(
     leaves = cms.PSet(kine),
     ),
 
-    # JPT-corrected reco::CaloJets (new JPT)
+    # JPT-corrected reco::CaloJets (new JPT, all corrections, scalar)
     RecoCaloJetJPT = cms.PSet(
     Class = cms.string('reco::CaloJet'),
     src = cms.InputTag('sort:JPTCorrectorIC5'),
@@ -398,6 +448,20 @@ process.anal = cms.EDFilter(
     src = cms.InputTag('sort:JPTCorrectorElectrons'),
     leaves = cms.PSet(kine),
     ),
+
+    # JPT-corrected reco::CaloJets (+ vectorial)
+    RecoCaloJetJPTVectorial = cms.PSet(
+    Class = cms.string('reco::CaloJet'),
+    src = cms.InputTag('sort:JPTCorrectorVectorial'),
+    leaves = cms.PSet(kine),
+    ),
+
+    # JPT-corrected reco::CaloJets (+ vectorial using tracks only)
+    RecoCaloJetJPTVecTracks = cms.PSet(
+    Class = cms.string('reco::CaloJet'),
+    src = cms.InputTag('sort:JPTCorrectorVecTracks'),
+    leaves = cms.PSet(kine),
+    ),
     
     # Uncorrected pat::Jets
     PatJetIC5 = cms.PSet(
@@ -433,8 +497,8 @@ process.anal = cms.EDFilter(
     src = cms.InputTag('sort:JTAJPTCorrectionIC5'),
     leaves = cms.PSet(kine),
     ),
-
-    # JPT-corrected pat::Jets (JTA on-the-fly)
+    
+    # MC-corrected pat::Jets
     PatJetMC = cms.PSet(
     Class = cms.string('pat::Jet'),
     src = cms.InputTag('sort:cleanLayer1Jets'),
@@ -465,6 +529,8 @@ process.sort = cms.EDProducer(
     "JPTCorrectorPionEff",
     "JPTCorrectorMuons",
     "JPTCorrectorElectrons",
+    "JPTCorrectorVectorial",
+    "JPTCorrectorVecTracks",
     ),
     patJets = cms.VInputTag(
     "RawPATJets",
@@ -567,7 +633,7 @@ process.MessageLogger = cms.Service(
     ),
     
     #@@ comment to suppress debug statements!
-    #debugModules = cms.untracked.vstring('*'),
+    debugModules = cms.untracked.vstring('*'),
     
     # allows to suppress output from specific modules 
     suppressDebug = cms.untracked.vstring(),
