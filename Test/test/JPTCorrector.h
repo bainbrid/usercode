@@ -7,6 +7,7 @@
 #include "DataFormats/EgammaCandidates/interface/GsfElectron.h"
 #include "DataFormats/EgammaCandidates/interface/GsfElectronFwd.h"
 #include "DataFormats/JetReco/interface/JetTracksAssociation.h"
+#include "DataFormats/Math/interface/LorentzVector.h"
 #include "DataFormats/MuonReco/interface/Muon.h"
 #include "DataFormats/MuonReco/interface/MuonFwd.h"
 #include "DataFormats/TrackReco/interface/Track.h"
@@ -16,7 +17,8 @@
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "JetMETCorrections/Objects/interface/JetCorrector.h"
 #include "boost/range/iterator_range.hpp"
-
+#include <sstream>
+#include <string>
 
 // --------------------------------------------------------
 // -------------------- Helper classes --------------------
@@ -39,15 +41,23 @@ namespace jpt {
     
     double eta( uint32_t ) const;
     double pt( uint32_t ) const;
+
+    uint32_t etaBin( double eta ) const;
+    uint32_t ptBin( double pt ) const;
+    
     double value( uint32_t eta_bin, uint32_t pt_bin ) const;
+
+    double binCenterEta( uint32_t ) const;
+    double binCenterPt( uint32_t ) const;
     
     void clear();
+    void print( std::stringstream& ss ) const;
 
   private:
 
     class Element {
     public:
-    Element() : ieta_(0), ipt_(0), eta_(0.), pt_(0.), val_(0.) {;} 
+      Element() : ieta_(0), ipt_(0), eta_(0.), pt_(0.), val_(0.) {;} 
       uint32_t ieta_;
       uint32_t ipt_;
       double eta_;
@@ -68,30 +78,56 @@ namespace jpt {
   inline uint32_t Map::nPtBins() const { return pt_.size(); }
   
   /// Generic container class 
-  class Response {
+  class Efficiency {
 
   public:
 
-    typedef std::pair<uint16_t,double> Pair;
+    Efficiency( const jpt::Map& response,
+		const jpt::Map& efficiency,
+		const jpt::Map& leakage );
+      
+    Efficiency();
 
+    typedef std::pair<uint16_t,double> Pair;
+    
     uint16_t nTrks( uint32_t eta_bin, uint32_t pt_bin ) const;
+    
+    double inConeCorr( uint32_t eta_bin, uint32_t pt_bin ) const;
+    double outOfConeCorr( uint32_t eta_bin, uint32_t pt_bin ) const;
+    
+    uint32_t nEtaBins() const;
+    uint32_t nPtBins() const;
+
+    uint32_t size() const;
+    bool empty() const;
+    
+    void addE( uint32_t eta_bin, uint32_t pt_bin, double energy );
+    void reset();
+    
+    void print() const;
+    
+  private:
+    
     double sumE( uint32_t eta_bin, uint32_t pt_bin ) const;
     double meanE( uint32_t eta_bin, uint32_t pt_bin ) const;
-    void addE( uint32_t eta_bin, uint32_t pt_bin, double energy );
 
-    void clear();
-    void resize( uint32_t eta_bins, uint32_t pt_bins, Pair value = Pair(0,0.) );
-
-  private:
-
-    bool check( uint32_t eta_bin, uint32_t pt_bin ) const;
+    bool check( uint32_t eta_bin, uint32_t pt_bin, std::string name = "check" ) const;
 
     typedef std::vector<Pair> VPair;
     typedef std::vector<VPair> VVPair;
     VVPair data_;
 
+    jpt::Map response_;
+    jpt::Map efficiency_;
+    jpt::Map leakage_;
+    
   };
-  
+
+  inline uint32_t Efficiency::nEtaBins() const { return response_.nEtaBins(); }
+  inline uint32_t Efficiency::nPtBins() const { return response_.nPtBins(); }
+  inline uint32_t Efficiency::size() const { return data_.size(); }
+  inline bool Efficiency::empty() const { return data_.empty(); }
+
   /// Tracks associated to jets that are in-cone at Vertex and CaloFace
   class JetTracks {
   public:
@@ -136,18 +172,29 @@ class JPTCorrector : public JetCorrector {
   /// Destructor
   virtual ~JPTCorrector();
 
-  /// Correction method
+  // Typedefs for 4-momentum
+  typedef JetCorrector::LorentzVector P4;
+  typedef math::PtEtaPhiELorentzVectorD PtEtaPhiE;
+  typedef math::PtEtaPhiMLorentzVectorD PtEtaPhiM;
+  
+  /// Vectorial correction method (corrected 4-momentum passed by reference)
+  double correction( const reco::Jet&, const edm::Event&, const edm::EventSetup&, P4& ) const;
+  
+  /// Scalar correction method
   double correction( const reco::Jet&, const edm::Event&, const edm::EventSetup& ) const;
-
+  
   /// Correction method (not used)
   double correction( const reco::Jet& ) const;
 
   /// Correction method (not used)
-  double correction( const reco::Particle::LorentzVector& ) const;
-
+  double correction( const P4& ) const;
+  
   /// Returns true
   bool eventRequired() const;
-
+  
+  /// Returns value of configurable
+  bool vectorialCorrection() const;
+  
   // ---------- Extended interface ----------
 
   /// Can jet be JPT-corrected?
@@ -162,14 +209,20 @@ class JPTCorrector : public JetCorrector {
 		    jpt::MatchedTracks& elecs ) const;
   
   /// Calculates corrections to be applied using pions
-  double pionCorrection( const jpt::MatchedTracks& pions ) const;
+  P4 pionCorrection( const P4& jet, const jpt::MatchedTracks& pions ) const;
   
   /// Calculates correction to be applied using muons
-  double muonCorrection( const jpt::MatchedTracks& muons, bool ) const;
+  P4 muonCorrection( const P4& jet, const jpt::MatchedTracks& muons, bool ) const;
   
   /// Calculates correction to be applied using electrons
-  double elecCorrection( const jpt::MatchedTracks& elecs ) const;
+  P4 elecCorrection( const P4& jet, const jpt::MatchedTracks& elecs ) const;
 
+  /// Calculates vectorial correction using total track 3-momentum
+  P4 trackCorrection( const P4& jet, 
+		      const jpt::MatchedTracks& pions,
+		      const jpt::MatchedTracks& muons,
+		      const jpt::MatchedTracks& elecs ) const;
+  
   // ---------- Protected interface ----------
 
  protected: 
@@ -201,35 +254,36 @@ class JPTCorrector : public JetCorrector {
 			    jpt::MatchedTracks& elecs ) const;
 
   /// Calculates individual pion corrections
-  double pionCorrection( const TrackRefs& pions, 
-			 jpt::Response& response,
-			 bool in_cone_at_vertex,
-			 bool in_cone_at_calo_face ) const; 
+  P4 pionCorrection( const P4& jet, 
+		     const TrackRefs& pions, 
+		     bool in_cone_at_vertex,
+		     bool in_cone_at_calo_face ) const; 
 
   /// Calculates individual muons corrections
-  double muonCorrection( const TrackRefs& muons, 
-			 bool in_cone_at_vertex,
-			 bool in_cone_at_calo_face ) const;
-
-  /// Calculates individual electron corrections
-  double elecCorrection( const TrackRefs& elecs, 
-			 bool in_cone_at_vertex,
-			 bool in_cone_at_calo_face ) const;
-  
-  /// Generic method to calculates correction to be applied
-  double correction( const TrackRefs&, 
-		     jpt::Response&,
+  P4 muonCorrection( const P4& jet, 
+		     const TrackRefs& muons, 
 		     bool in_cone_at_vertex,
-		     bool in_cone_at_calo_face,
-		     double mass = 0.14,
-		     double mip = -1. ) const;
+		     bool in_cone_at_calo_face ) const;
+  
+  /// Calculates individual electron corrections
+  P4 elecCorrection( const P4& jet, 
+		     const TrackRefs& elecs, 
+		     bool in_cone_at_vertex,
+		     bool in_cone_at_calo_face ) const;
+
+  /// Generic method to calculates 4-momentum correction to be applied
+  P4 correction( const P4& jet, 
+		 const TrackRefs&, 
+		 bool in_cone_at_vertex,
+		 bool in_cone_at_calo_face,
+		 double mass,
+		 double mip ) const;
   
   /// Correction to be applied using tracking efficiency 
-  double pionEfficiency( jpt::Response&,
-			 bool in_cone_at_calo_face ) const;
-
-  /// Check scale is not negative
-  double checkScale( double scale ) const;
+  P4 pionEfficiency( const P4& jet, bool in_cone_at_calo_face ) const;
+  
+  /// Check corrected 4-momentum does not give negative scale
+  double checkScale( const P4& jet, P4& corrected ) const;
   
   /// Get RECO muons
   bool getMuons( const edm::Event&, edm::Handle<RecoMuons>& ) const;
@@ -279,11 +333,6 @@ class JPTCorrector : public JetCorrector {
 		   TrackRefs& included,
 		   const TrackRefs& excluded ) const;
 
-  // Methods to access maps
-  const jpt::Map& response() const;
-  const jpt::Map& efficiency() const;
-  const jpt::Map& leakage() const;
-
   /// Default constructor
   JPTCorrector() {;}
 
@@ -293,6 +342,8 @@ class JPTCorrector : public JetCorrector {
   
   // Some general configuration
   bool verbose_;
+  bool vectorial_;
+  bool vecTracks_;
   bool useInConeTracks_;
   bool useOutOfConeTracks_;
   bool useOutOfVertexTracks_;
@@ -316,45 +367,54 @@ class JPTCorrector : public JetCorrector {
   reco::TrackBase::TrackQuality trackQuality_;
 
   // Response and efficiency maps  
-  const jpt::Map* response_;
-  const jpt::Map* efficiency_;
-  const jpt::Map* leakage_;
-  
+  const jpt::Map response_;
+  const jpt::Map efficiency_;
+  const jpt::Map leakage_;
+  mutable jpt::Efficiency eff_;
+
+  mutable P4 p4_;
+
 };
 
 // ---------- Inline methods ----------
 
-inline bool JPTCorrector::eventRequired() const { return true; }
-inline bool JPTCorrector::canCorrect( const reco::Jet& jet ) const { return ( fabs( jet.eta() ) <= 2.1 ); }
-
-inline const jpt::Map& JPTCorrector::response() const { return *response_; }
-inline const jpt::Map& JPTCorrector::efficiency() const { return *efficiency_; }
-inline const jpt::Map& JPTCorrector::leakage() const { return *leakage_; }
-
-inline double JPTCorrector::pionCorrection( const TrackRefs& pions, 
-					    jpt::Response& response,
-					    bool in_cone_at_vertex,
-					    bool in_cone_at_calo_face ) const {
-  return correction( pions, response, in_cone_at_vertex, in_cone_at_calo_face );
+inline double JPTCorrector::correction( const reco::Jet& fJet,
+					const edm::Event& event,
+					const edm::EventSetup& setup ) const {
+  P4 not_used_for_scalar_correction;
+  return correction( fJet, event, setup, not_used_for_scalar_correction );
 }
 
-inline double JPTCorrector::muonCorrection( const TrackRefs& muons, 
-					    bool in_cone_at_vertex,
-					    bool in_cone_at_calo_face ) const {
-  jpt::Response response;
-  return correction( muons, response, in_cone_at_vertex, in_cone_at_calo_face, 0.105, 2. );
+inline bool JPTCorrector::eventRequired() const { return true; }
+inline bool JPTCorrector::vectorialCorrection() const { return vectorial_; }
+inline bool JPTCorrector::canCorrect( const reco::Jet& jet ) const { return ( fabs( jet.eta() ) <= 2.1 ); }
+
+inline JPTCorrector::P4 JPTCorrector::pionCorrection( const P4& jet, 
+						      const TrackRefs& pions, 
+						      bool in_cone_at_vertex,
+						      bool in_cone_at_calo_face ) const {
+  return correction( jet, pions, in_cone_at_vertex, in_cone_at_calo_face, 0.140, -1. );
+}
+
+inline JPTCorrector::P4 JPTCorrector::muonCorrection( const P4& jet, 
+						      const TrackRefs& muons, 
+						      bool in_cone_at_vertex,
+						      bool in_cone_at_calo_face ) const {
+  return correction( jet, muons, in_cone_at_vertex, in_cone_at_calo_face, 0.105, 2. );
 } 
 
-inline double JPTCorrector::elecCorrection( const TrackRefs& elecs, 
-					    bool in_cone_at_vertex,
-					    bool in_cone_at_calo_face ) const {
-  jpt::Response response;
-  return correction( elecs, response, in_cone_at_vertex, in_cone_at_calo_face, 0.000511, 0. );
+inline JPTCorrector::P4 JPTCorrector::elecCorrection( const P4& jet, 
+						      const TrackRefs& elecs, 
+						      bool in_cone_at_vertex,
+						      bool in_cone_at_calo_face ) const {
+  return correction( jet, elecs, in_cone_at_vertex, in_cone_at_calo_face, 0.000511, 0. );
 } 
 
-inline double JPTCorrector::checkScale( double scale ) const {
-  if ( scale < 0. ) { return 1.; } 
-  else { return scale; }
+inline double JPTCorrector::checkScale( const P4& jet, P4& corrected ) const {
+  if ( jet.energy() > 0. && ( corrected.energy() / jet.energy() ) < 0. ) { 
+    corrected = jet; 
+  }
+  return corrected.energy() / jet.energy();
 }
 
 #endif // bainbrid_Test_JPTCorrector_h
