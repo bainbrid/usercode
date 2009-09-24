@@ -36,7 +36,7 @@ eleIdSequence = cms.Sequence(
 
 from JetMETCorrections.Configuration.JetCorrectionsRecord_cfi import *
 from RecoJets.Configuration.RecoJetAssociations_cff import *
-from RecoJets.JetAssociationProducers.iterativeCone5JTA_cff import*
+from RecoJets.JetAssociationProducers.iterativeCone5JTA_cff import *
 
 JetTracksAssociationAtVertex = iterativeCone5JetTracksAssociatorAtVertex.clone() 
 JetTracksAssociationAtVertex.jets = cms.InputTag("ZSPJetCorJetIcone5")
