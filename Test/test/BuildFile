@@ -99,33 +99,16 @@
   <use name=boost>
 </library>
 
-<library name=bainbridTest_JPTCorrectionProducer file=JPTCorrectionService.cc,JPTCorrectionProducer.cc>
-  <use name=CommonTools/Utils>
-  <use name=DataFormats/Common>
+<library name=bainbridTest_JPTJetCorrectionProducer file=JPTCorrectionModules.cc>
   <use name=DataFormats/PatCandidates>
   <use name=FWCore/Framework>
-  <use name=FWCore/ParameterSet>
-  <use name=FWCore/PluginManager>
-  <use name=JetMETCorrections/Objects>
+  <use name=JetMETCorrections/Modules>
   <lib name=bainbridTest_JPTCorrector>
-  <use name=boost>
-  <flags EDM_PLUGIN=1>
-</library>
-
-<library name=bainbridTest_JPTPatCorrectionProducer file=JPTPatCorrectionService.cc>
-  <use name=CommonTools/Utils>
-  <use name=DataFormats/Common>
-  <use name=DataFormats/PatCandidates>
-  <use name=FWCore/Framework>
-  <use name=FWCore/ParameterSet>
-  <use name=FWCore/PluginManager>
-  <use name=JetMETCorrections/Objects>
   <lib name=bainbridTest_JPTPatCorrector>
-  <use name=boost>
   <flags EDM_PLUGIN=1>
 </library>
 
-<library name=bainbridTest_JPTCorrFactorsProducer file=JPTCorrFactorsProducer.cc,SortJetCollectionsByGenJetPt.cc>
+<library name=bainbridTest_JPTCorrFactorsProducer file=SortJetCollectionsByGenJetPt.cc>
   <use name=DataFormats/CaloTowers>
   <use name=DataFormats/Common>
   <use name=DataFormats/JetReco>
