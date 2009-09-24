@@ -35,7 +35,7 @@ fileNames2.extend( [
     'file:/home/bainbrid/work/src/TEST/2EC02533-3B8E-DE11-BE85-003048D37514.root',
     ] );
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(100) )
 
 # ---------- Old and new JPT from RECO ----------
 
@@ -635,7 +635,7 @@ process.MessageLogger = cms.Service(
     ),
     
     #@@ comment to suppress debug statements!
-    debugModules = cms.untracked.vstring('*'),
+    #debugModules = cms.untracked.vstring('*'),
     
     # allows to suppress output from specific modules 
     suppressDebug = cms.untracked.vstring(),

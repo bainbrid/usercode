@@ -114,10 +114,10 @@ double JPTCorrector::correction( const reco::Jet& fJet,
     edm::LogVerbatim("JPTCorrector") << ss.str();
   }
   
-  LogDebug("test") << " mScale= " << scale
-		   << " NewResponse " << corrected.energy() 
-		   << " Jet energy " << fJet.energy()
-		   << " event " << event.id().event();
+//   LogTrace("test") << " mScale= " << scale
+// 		   << " NewResponse " << corrected.energy() 
+// 		   << " Jet energy " << fJet.energy()
+// 		   << " event " << event.id().event();
   
   // Return energy correction
   return scale;

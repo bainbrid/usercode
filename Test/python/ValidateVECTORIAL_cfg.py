@@ -36,7 +36,7 @@ fileNames2.extend( [
     'file:/home/bainbrid/work/src/TEST/2EC02533-3B8E-DE11-BE85-003048D37514.root',
     ] );
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(100) )
 
 # ZSP
 
@@ -47,6 +47,9 @@ process.load("JetMETCorrections.Configuration.ZSPJetCorrections219_cff")
 process.load("JetMETCorrections.Configuration.JetPlusTrackCorrections_cff")
 process.JetPlusTrackZSPCorrectorIcone5.ElectronIds = cms.InputTag("eidTight")
 process.JetPlusTrackZSPCorrectorIcone5.Verbose = cms.bool(True)
+
+process.JetPlusTrackZSPCorrectorIcone5.VectorialCorrection = cms.bool(True)
+process.JetPlusTrackZSPCorrectorIcone5.JetDirFromTracks    = cms.bool(True)
 
 #process.JetPlusTrackZSPCorrectorIcone5.UseInConeTracks      = cms.bool(False)
 #process.JetPlusTrackZSPCorrectorIcone5.UseOutOfConeTracks   = cms.bool(False)
@@ -71,9 +74,9 @@ process.JPTCorrectionIC5.JetDirFromTracks    = cms.bool(True)
 #process.JPTCorrectionIC5.UseMuons             = cms.bool(False)
 #process.JPTCorrectionIC5.UseElectrons         = cms.bool(False)
 
-# Path
+# Paths
 
-process.p1 = cms.Path(
+without_electron_id = cms.Sequence( # requires "eidTight"
     process.ZSPJetCorJetIcone5 *
     process.ZSPiterativeCone5JetTracksAssociatorAtVertex *
     process.ZSPiterativeCone5JetTracksAssociatorAtCaloFace *
@@ -81,6 +84,17 @@ process.p1 = cms.Path(
     process.JetPlusTrackZSPCorJetIcone5 *
     process.JetTrackAssociations *
     process.JPTCorrectorIC5
+    )
+
+with_electron_id = cms.Sequence(
+    process.ZSPJetCorrectionsIcone5 *
+    process.JetPlusTrackCorrectionsIcone5 *
+    process.JPTCorrections
+    )
+
+process.p1 = cms.Path(
+    without_electron_id
+    #with_electron_id
     )
 
 # EndPath
