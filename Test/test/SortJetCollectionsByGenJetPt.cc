@@ -24,6 +24,7 @@ SortJetCollectionsByGenJetPt::SortJetCollectionsByGenJetPt( const edm::Parameter
     std::vector<edm::InputTag>::const_iterator ii = caloJets_.begin();
     std::vector<edm::InputTag>::const_iterator jj = caloJets_.end();
     for ( ; ii != jj; ++ii ) {
+      if ( ii->label().empty() ) { continue; }
       produces< std::vector<reco::CaloJet> >( ii->label() );
     }
   }
@@ -33,6 +34,7 @@ SortJetCollectionsByGenJetPt::SortJetCollectionsByGenJetPt( const edm::Parameter
     std::vector<edm::InputTag>::const_iterator ii = patJets_.begin();
     std::vector<edm::InputTag>::const_iterator jj = patJets_.end();
     for ( ; ii != jj; ++ii ) {
+      if ( ii->label().empty() ) { continue; }
       produces< std::vector<pat::Jet> >( ii->label() );
     }
   }
@@ -128,6 +130,9 @@ void SortJetCollectionsByGenJetPt::produce( edm::Event& event, const edm::EventS
     std::vector<edm::InputTag>::const_iterator ii = caloJets_.begin();
     std::vector<edm::InputTag>::const_iterator jj = caloJets_.end();
     for ( ; ii != jj; ++ii ) {
+      
+      // Check for non-null label
+      if ( ii->label().empty() ) { continue; }
 
       // Debug
       std::stringstream ss;
@@ -177,6 +182,9 @@ void SortJetCollectionsByGenJetPt::produce( edm::Event& event, const edm::EventS
     std::vector<edm::InputTag>::const_iterator ii = patJets_.begin();
     std::vector<edm::InputTag>::const_iterator jj = patJets_.end();
     for ( ; ii != jj; ++ii ) {
+
+      // Check for non-null label
+      if ( ii->label().empty() ) { continue; }
 
       // Debug
       std::stringstream ss;
