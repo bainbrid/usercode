@@ -1,0 +1,32 @@
+root ../output/analysis.root
+.L ../../scripts/JPTRootAnalysis.C
+JPTRootAnalysis t( (TTree*)_file0->Get("t1") )        
+t.Loop()
+
+root ../output/analysis.root
+.L ../../scripts/JPTPhiRootAnalysis.C
+JPTPhiRootAnalysis t( (TTree*)_file0->Get("t1") )        
+t.Loop()
+
+root ../output/analysis.root
+.L ../../scripts/JPTRootAnalysis-0.15.C
+JPTRootAnalysis t( (TTree*)_file0->Get("t1") )        
+t.Loop()
+
+root ../output/analysis.root
+.L ../../scripts/JPTPhiRootAnalysis-0.15.C
+JPTPhiRootAnalysis t( (TTree*)_file0->Get("t1") )        
+t.Loop()
+
+.L scripts/CompareEnergy.C 
+CompareEnergy("scalar/energy/test.root","vectorial/energy/test.root","tracks/energy/test.root")
+
+.L scripts/CompareEnergy-0.15.C
+CompareEnergy("tracks/energy/test.root","tracks-0.15/energy/test.root")
+
+.L scripts/ComparePhi.C
+ComparePhi("scalar/phi/test.root","vectorial/phi/test.root","tracks/phi/test.root") 
+
+.L scripts/ComparePhi-0.15.C
+ComparePhi("tracks/phi/test.root","tracks-0.15/phi/test.root")
+
