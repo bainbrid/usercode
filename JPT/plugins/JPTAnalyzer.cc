@@ -24,37 +24,43 @@ using namespace edm;
 
 // -----------------------------------------------------------------------------
 //
-class JPTAnalyzer : public edm::EDAnalyzer {
+namespace jpt {
 
-public:
+  class JPTAnalyzer : public edm::EDAnalyzer {
 
-  explicit JPTAnalyzer(const edm::ParameterSet&);
-  ~JPTAnalyzer();
+  public:
+
+    explicit JPTAnalyzer(const edm::ParameterSet&);
+    ~JPTAnalyzer();
   
-private:
+  private:
 
-  virtual void beginJob(const edm::EventSetup&) ;
-  virtual void analyze(const edm::Event&, const edm::EventSetup&);
-  virtual void endJob() ;
+    virtual void beginJob(const edm::EventSetup&) ;
+    virtual void analyze(const edm::Event&, const edm::EventSetup&);
+    virtual void endJob() ;
   
-  // ----------member data ---------------------------
+    // ----------member data ---------------------------
 
-  string fOutputFileName;
-  string calojetsSrc;
-  string zspjetsSrc;
-  string genjetsSrc;
+    string fOutputFileName;
+    string calojetsSrc;
+    string zspjetsSrc;
+    string genjetsSrc;
 
-  string JetCorrectionJPT;
+    string JetCorrectionJPT;
 
-  double  EtaGen1, PhiGen1, EtaRaw1, PhiRaw1, EtGen1, EtRaw1, EtMCJ1, EtZSP1, EtJPT1, DRMAXgjet1, EtaZSP1, PhiZSP1, EtaJPT1, PhiJPT1, MassGen1, MassRaw1, MassZSP1, MassJPT1, EnergyGen1, EnergyRaw1, EnergyZSP1, EnergyJPT1;
-  double  EtaGen2, PhiGen2, EtaRaw2, PhiRaw2, EtGen2, EtRaw2, EtMCJ2, EtZSP2, EtJPT2, DRMAXgjet2, EtaZSP2, PhiZSP2, EtaJPT2, PhiJPT2, MassGen2, MassRaw2, MassZSP2, MassJPT2, EnergyGen2, EnergyRaw2, EnergyZSP2, EnergyJPT2;
+    double  EtaGen1, PhiGen1, EtaRaw1, PhiRaw1, EtGen1, EtRaw1, EtMCJ1, EtZSP1, EtJPT1, DRMAXgjet1, EtaZSP1, PhiZSP1, EtaJPT1, PhiJPT1, MassGen1, MassRaw1, MassZSP1, MassJPT1, EnergyGen1, EnergyRaw1, EnergyZSP1, EnergyJPT1;
+    double  EtaGen2, PhiGen2, EtaRaw2, PhiRaw2, EtGen2, EtRaw2, EtMCJ2, EtZSP2, EtJPT2, DRMAXgjet2, EtaZSP2, PhiZSP2, EtaJPT2, PhiJPT2, MassGen2, MassRaw2, MassZSP2, MassJPT2, EnergyGen2, EnergyRaw2, EnergyZSP2, EnergyJPT2;
 
-  TFile* hOutputFile ;
-  TTree* t1;
+    TFile* hOutputFile ;
+    TTree* t1;
 
-  bool scalar_;
+    bool scalar_;
 
-};
+  };
+
+}
+
+using namespace jpt;
 
 // -----------------------------------------------------------------------------
 //
@@ -372,15 +378,16 @@ void JPTAnalyzer::analyze( const edm::Event& iEvent,
 	 double scaleJPT = -1.;
 	 Jet::LorentzVector jetscaleJPT;
 	 if ( scalar_ ) {
-	   
-	   scaleJPT = correctorJPT->correction ( (*zspjet), zspRef, iEvent, iSetup );
+	   scaleJPT = correctorJPT->correction ( (*zspjet), iEvent, iSetup );
+	   //scaleJPT = correctorJPT->correction ( (*zspjet), zspRef, iEvent, iSetup );
 	   jetscaleJPT = Jet::LorentzVector( zspjet->px()*scaleJPT, 
 					     zspjet->py()*scaleJPT,
 					     zspjet->pz()*scaleJPT, 
 					     zspjet->energy()*scaleJPT );
 	 } else {
 	   JetCorrector::LorentzVector p4;
-	   scaleJPT = correctorJPT->correction( *zspjet, zspRef, iEvent, iSetup, p4 );
+	   scaleJPT = correctorJPT->correction( *zspjet, iEvent, iSetup, p4 );
+	   //scaleJPT = correctorJPT->correction( *zspjet, zspRef, iEvent, iSetup, p4 );
 	   jetscaleJPT = Jet::LorentzVector( p4.Px(), p4.Py(), p4.Pz(), p4.E() );
 	 }	   
 	 
