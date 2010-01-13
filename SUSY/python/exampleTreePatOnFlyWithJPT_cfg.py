@@ -34,41 +34,15 @@ process.maxEvents.input = 100
 # MinBias MC STARTUP
 process.GlobalTag.globaltag = 'STARTUP3X_V8D::All'
 
-##### JPT Corrections on-the-fly #####
-process.load("bainbrid.SUSY.JptOnTheFly_cff")
-
-addJetCollection(process,
-                 cms.InputTag('ak5sJPT'),
-                 'AK5sJPT',
-                 doJTA        = True,
-                 doBTagging   = True,
-                 jetCorrLabel = None,
-                 doType1MET   = False,
-                 doL1Cleaning = True,
-                 doL1Counters = True,
-                 doJetID      = False,
-                 genJetCollection = cms.InputTag("ak5GenJets")
-                 )
-
-addJetCollection(process,
-                 cms.InputTag('ak5vJPT'),
-                 'AK5vJPT',
-                 doJTA        = True,
-                 doBTagging   = True,
-                 jetCorrLabel = None,
-                 doType1MET   = False,
-                 doL1Cleaning = True,
-                 doL1Counters = True,
-                 doJetID      = False,
-                 genJetCollection = cms.InputTag("ak5GenJets")
-                 )
-
 ############################# START SUSYPAT specifics ####################################
 from PhysicsTools.Configuration.SUSY_pattuple_cff import addDefaultSUSYPAT, getSUSY_pattuple_outputCommands, removeMCDependence
 #removeMCDependence(process)
 addDefaultSUSYPAT(process, True,'HLT','900GeV')
 SUSY_pattuple_outputCommands = getSUSY_pattuple_outputCommands( process )
 ############################## END SUSYPAT specifics ####################################
+
+##### JPT Corrections on-the-fly #####
+process.load("bainbrid.SUSY.JptOnTheFly_cff")
 
 #-- Output module configuration -----------------------------------------------
 process.out.fileName = 'SUSYPAT.root'       # <-- CHANGE THIS TO SUIT YOUR NEEDS
@@ -80,7 +54,7 @@ process.out.dropMetaData = cms.untracked.string('DROPPED')   # Get rid of metada
 process.out.outputCommands = cms.untracked.vstring('drop *', *SUSY_pattuple_outputCommands )
 
 # SusyCAF_nTuple
-process.load('SUSYBSMAnalysis.SusyCAF.theBigNtuplePatOnFlyWithJPT_cfi')
+process.load('bainbrid.SUSY.theBigNtuplePatOnFlyWithJPT_cfi')
 
 #-- Execution path ------------------------------------------------------------
 # Full path
