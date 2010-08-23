@@ -1128,20 +1128,20 @@ bool RobPlottingOps::ratio( Event::Data& ev ) {
     //double meff = RobOps::meff( gen );
     
     // Pre
-    if ( !hGenHtPre_.empty() && n > 3 ) { 
-      hGenHtPre_[0]->Fill( ht, weight ); 
+    if ( !hGenHtGenMultiPre_.empty() && n > 3 ) { 
+      hGenHtGenMultiPre_[0]->Fill( ht, weight ); 
     }
-    if ( n >= nMin_ && n <= nMax_ && n < hGenHtPre_.size() ) {
-      hGenHtPre_[n]->Fill( ht, weight ); 
+    if ( n >= nMin_ && n <= nMax_ && n < hGenHtGenMultiPre_.size() ) {
+      hGenHtGenMultiPre_[n]->Fill( ht, weight ); 
     }
     
     // Post
     if ( at >= alphaTcut_ ) {
-      if ( !hGenHtPost_.empty() && n > 3 ) { 
-	hGenHtPost_[0]->Fill( ht, weight ); 
+      if ( !hGenHtGenMultiPost_.empty() && n > 3 ) { 
+	hGenHtGenMultiPost_[0]->Fill( ht, weight ); 
       }
-      if ( n >= nMin_ && n <= nMax_ && n < hGenHtPost_.size() ) {
-	hGenHtPost_[n]->Fill( ht, weight ); 
+      if ( n >= nMin_ && n <= nMax_ && n < hGenHtGenMultiPost_.size() ) {
+	hGenHtGenMultiPost_[n]->Fill( ht, weight ); 
       }
     }
     
