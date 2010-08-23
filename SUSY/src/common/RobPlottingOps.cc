@@ -519,73 +519,73 @@ void RobPlottingOps::ratio() {
   
   BookHistArray( hHtPre_, 
 		 TString("HtPre"+ss.str()), 
-		 ";HT [GeV];",
+		 ";HT^{reco} [GeV];R(#alpha_{T})",
 		 200, 0., 2000., 
 		 nMax_+1, 0, 1, true );
 
   BookHistArray( hHtPost_, 
 		 TString("HtPost"+ss.str()), 
-		 ";HT [GeV];",
+		 ";HT^{reco} [GeV];R(#alpha_{T})",
 		 200, 0., 2000., 
 		 nMax_+1, 0, 1, true );
 
   BookHistArray( hGenHtPre_, 
 		 TString("GenHtPre"+ss.str()), 
-		 ";HT [GeV];",
+		 ";HT^{reco} [GeV];R(#alpha_{T})",
 		 200, 0., 2000., 
 		 nMax_+1, 0, 1, true );
 
   BookHistArray( hGenHtPost_, 
 		 TString("GenHtPost"+ss.str()), 
-		 ";HT [GeV];",
+		 ";HT^{reco} [GeV];R(#alpha_{T})",
 		 200, 0., 2000., 
 		 nMax_+1, 0, 1, true );
 
   BookHistArray( hGenHtGenMultiPre_, 
 		 TString("GenHtGenMultiPre"+ss.str()), 
-		 ";HT [GeV];",
+		 ";HT^{reco} [GeV];R(#alpha_{T})",
 		 200, 0., 2000., 
 		 nMax_+1, 0, 1, true );
 
   BookHistArray( hGenHtGenMultiPost_, 
 		 TString("GenHtGenMultiPost"+ss.str()), 
-		 ";HT [GeV];"+ss.str(),
+		 ";HT^{reco} [GeV];R(#alpha_{T})"+ss.str(),
 		 200, 0., 2000., 
 		 nMax_+1, 0, 1, true );
   
   BookHistArray( hMeffPre_, 
 		 TString("MeffPre"+ss.str()), 
-		 ";HT [GeV];",
+		 ";M_{eff}^{reco} [GeV];R(#alpha_{T})",
 		 200, 0., 2000., 
 		 nMax_+1, 0, 1, true );
 
   BookHistArray( hMeffPost_, 
 		 TString("MeffPost"+ss.str()), 
-		 ";HT [GeV];",
+		 ";M_{eff}^{reco} [GeV];R(#alpha_{T})",
 		 200, 0., 2000., 
 		 nMax_+1, 0, 1, true );
 
   BookHistArray( hGenMeffPre_, 
 		 TString("GenMeffPre"+ss.str()), 
-		 ";HT [GeV];",
+		 ";M_{eff}^{reco} [GeV];R(#alpha_{T})",
 		 200, 0., 2000., 
 		 nMax_+1, 0, 1, true );
 
   BookHistArray( hGenMeffPost_, 
 		 TString("GenMeffPost"+ss.str()), 
-		 ";HT [GeV];",
+		 ";M_{eff}^{reco} [GeV];R(#alpha_{T})",
 		 200, 0., 2000., 
 		 nMax_+1, 0, 1, true );
 
   BookHistArray( hGenMeffGenMultiPre_, 
 		 TString("GenMeffGenMultiPre"+ss.str()), 
-		 ";HT [GeV];",
+		 ";M_{eff}^{reco} [GeV];R(#alpha_{T})",
 		 200, 0., 2000., 
 		 nMax_+1, 0, 1, true );
 
   BookHistArray( hGenMeffGenMultiPost_, 
 		 TString("GenMeffGenMultiPost"+ss.str()), 
-		 ";HT [GeV];",
+		 ";M_{eff}^{reco} [GeV];R(#alpha_{T})",
 		 200, 0., 2000., 
 		 nMax_+1, 0, 1, true );
 
@@ -1054,99 +1054,66 @@ bool RobPlottingOps::ratio( Event::Data& ev ) {
 
   Double_t weight = ev.GetEventWeight();
 
-  // RECO jets
+  // RECO jets and variables
   std::vector<LorentzV> jets = ev.HadronicObjects(); 
-  uint nj = jets.size();
+  uint    n_reco = jets.size();
+  double at_reco = AlphaT()( jets );
+  double ht_reco = RobOps::ht( jets );
 
   // GEN jets
   std::vector<LorentzV> gen = RobOps::genJets( ev );
-  uint ng = gen.size();
+  uint    n_gen = gen.size();
+  double at_gen = AlphaT()( gen );
+  //double ht_gen = RobOps::ht( gen );
 
   // RECO plots
-  {
-
-    uint n = nj;
-    double ht = RobOps::ht( jets );
-    double at = AlphaT()( jets );
-    //double meff = RobOps::meff( jets );
-    
-    // Pre
-    if ( !hHtPre_.empty() && n > 3 ) { 
-      hHtPre_[0]->Fill( ht, weight ); 
+  if ( !hHtPre_.empty() && n_reco > 3 ) { 
+    hHtPre_[0]->Fill( ht_reco, weight ); 
+  }
+  if ( n_reco >= nMin_ && n_reco <= nMax_ && n_reco < hHtPre_.size() ) {
+    hHtPre_[n_reco]->Fill( ht_reco, weight ); 
+  }
+  if ( at_reco >= alphaTcut_ ) {
+    if ( !hHtPost_.empty() && n_reco > 3 ) { 
+      hHtPost_[0]->Fill( ht_reco, weight ); 
     }
-    if ( n >= nMin_ && n <= nMax_ && n < hHtPre_.size() ) {
-      hHtPre_[n]->Fill( ht, weight ); 
+    if ( n_reco >= nMin_ && n_reco <= nMax_ && n_reco < hHtPost_.size() ) {
+      hHtPost_[n_reco]->Fill( ht_reco, weight ); 
     }
-    
-    // Post
-    if ( at >= alphaTcut_ ) {
-      if ( !hHtPost_.empty() && n > 3 ) { 
-	hHtPost_[0]->Fill( ht, weight ); 
-      }
-      if ( n >= nMin_ && n <= nMax_ && n < hHtPost_.size() ) {
-	hHtPost_[n]->Fill( ht, weight ); 
-      }
+  }
+  
+  // GEN plots, based on RECO multiplicity (ie, mis-measurements only and no "lost" jets)
+  if ( !hGenHtPre_.empty() && n_reco > 3 ) { 
+    hGenHtPre_[0]->Fill( ht_reco, weight ); 
+  }
+  if ( n_reco >= nMin_ && n_reco <= nMax_ && n_reco < hGenHtPre_.size() ) {
+    hGenHtPre_[n_reco]->Fill( ht_reco, weight ); 
+  }
+  if ( at_gen >= alphaTcut_ ) {
+    if ( !hGenHtPost_.empty() && n_reco > 3 ) { 
+      hGenHtPost_[0]->Fill( ht_reco, weight ); 
     }
-    
+    if ( n_reco >= nMin_ && n_reco <= nMax_ && n_reco < hGenHtPost_.size() ) {
+      hGenHtPost_[n_reco]->Fill( ht_reco, weight ); 
+    }
   }
 
-  // GEN plots (based on RECO multiplicity)
-  {
-
-    uint n = nj;
-    double ht = RobOps::ht( gen );
-    double at = AlphaT()( gen );
-    //double meff = RobOps::meff( gen );
-    
-    // Pre
-    if ( !hGenHtPre_.empty() && n > 3 ) { 
-      hGenHtPre_[0]->Fill( ht, weight ); 
-    }
-    if ( n >= nMin_ && n <= nMax_ && n < hGenHtPre_.size() ) {
-      hGenHtPre_[n]->Fill( ht, weight ); 
-    }
-    
-    // Post
-    if ( at >= alphaTcut_ ) {
-      if ( !hGenHtPost_.empty() && n > 3 ) { 
-	hGenHtPost_[0]->Fill( ht, weight ); 
-      }
-      if ( n >= nMin_ && n <= nMax_ && n < hGenHtPost_.size() ) {
-	hGenHtPost_[n]->Fill( ht, weight ); 
-      }
-    }
-    
+  // GEN plots, based on GEN multiplicity (ie, with mis-measurements and "lost" jets)
+  if ( !hGenHtGenMultiPre_.empty() && n_gen > 3 ) { 
+    hGenHtGenMultiPre_[0]->Fill( ht_reco, weight ); 
   }
-
-
-  // GEN plots (based on GEN multiplicity)
-  {
-
-    uint n = ng;
-    double ht = RobOps::ht( gen );
-    double at = AlphaT()( gen );
-    //double meff = RobOps::meff( gen );
-    
-    // Pre
-    if ( !hGenHtGenMultiPre_.empty() && n > 3 ) { 
-      hGenHtGenMultiPre_[0]->Fill( ht, weight ); 
-    }
-    if ( n >= nMin_ && n <= nMax_ && n < hGenHtGenMultiPre_.size() ) {
-      hGenHtGenMultiPre_[n]->Fill( ht, weight ); 
-    }
-    
-    // Post
-    if ( at >= alphaTcut_ ) {
-      if ( !hGenHtGenMultiPost_.empty() && n > 3 ) { 
-	hGenHtGenMultiPost_[0]->Fill( ht, weight ); 
-      }
-      if ( n >= nMin_ && n <= nMax_ && n < hGenHtGenMultiPost_.size() ) {
-	hGenHtGenMultiPost_[n]->Fill( ht, weight ); 
-      }
-    }
-    
+  if ( n_gen >= nMin_ && n_gen <= nMax_ && n_gen < hGenHtGenMultiPre_.size() ) {
+    hGenHtGenMultiPre_[n_gen]->Fill( ht_reco, weight ); 
   }
-
+  if ( at_gen >= alphaTcut_ ) {
+    if ( !hGenHtGenMultiPost_.empty() && n_gen > 3 ) { 
+      hGenHtGenMultiPost_[0]->Fill( ht_reco, weight ); 
+    }
+    if ( n_gen >= nMin_ && n_gen <= nMax_ && n_gen < hGenHtGenMultiPost_.size() ) {
+      hGenHtGenMultiPost_[n_gen]->Fill( ht_reco, weight ); 
+    }
+  }
+  
   return true;
 
 }
