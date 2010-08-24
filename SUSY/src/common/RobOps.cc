@@ -76,7 +76,7 @@ bool RobOps::Process( Event::Data& ev ) {
     
   } else if ( algo_ == "HadronicAlphaT" ) {
 
-    std::vector<Event::Jet const *> jets = ev.JD_CommonJets().accepted;
+    std::vector<LorentzV> jets = ev.HadronicObjects();
     uint njets = jets.size();
     if ( njets < 2 || njets > 50 ) { return false; }
     if ( AlphaT()( jets ) > cut_ ) { return true; }
