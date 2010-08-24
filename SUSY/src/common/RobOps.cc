@@ -1,5 +1,6 @@
 #include "RobOps.hh"
 #include "AlphaT.hh"
+#include "Jet.hh"
 #include "KinSuite.hh"
 #include "Types.hh"
 #include <iostream>
@@ -72,6 +73,14 @@ bool RobOps::Process( Event::Data& ev ) {
       jets_[n] += ev.GetEventWeight();
       return true;
     } else { return false; }
+    
+  } else if ( algo_ == "HadronicAlphaT" ) {
+
+    std::vector<Event::Jet const *> jets = ev.JD_CommonJets().accepted;
+    uint njets = jets.size();
+    if ( njets < 2 || njets > 50 ) { return false; }
+    if ( AlphaT()( jets ) > cut_ ) { return true; }
+    else { return false; }
     
   } else if ( algo_ == "InvariantMass" ) {
     
