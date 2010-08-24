@@ -136,18 +136,18 @@ namespace Operation {
     double alphaTcut_;
     void ratio();
     bool ratio( Event::Data& );
-    std::vector<TH1D*> hHtPre_;
-    std::vector<TH1D*> hHtPost_;
-    std::vector<TH1D*> hGenHtPre_;
-    std::vector<TH1D*> hGenHtPost_;
-    std::vector<TH1D*> hGenHtGenMultiPre_;
-    std::vector<TH1D*> hGenHtGenMultiPost_;
-    std::vector<TH1D*> hMeffPre_;
-    std::vector<TH1D*> hMeffPost_;
-    std::vector<TH1D*> hGenMeffPre_;
-    std::vector<TH1D*> hGenMeffPost_;
-    std::vector<TH1D*> hGenMeffGenMultiPre_; 
-    std::vector<TH1D*> hGenMeffGenMultiPost_;
+    std::vector<TH1D*> hHtEqPre_; 
+    std::vector<TH1D*> hHtEqPost_; 
+    std::vector<TH1D*> hGenHtEqPre_; 
+    std::vector<TH1D*> hGenHtEqPost_; 
+    std::vector<TH1D*> hHtGtPre_; 
+    std::vector<TH1D*> hHtGtPost_; 
+    std::vector<TH1D*> hGenHtGtPre_; 
+    std::vector<TH1D*> hGenHtGtPost_; 
+    std::vector<TH1D*> hHtLtPre_;
+    std::vector<TH1D*> hHtLtPost_;
+    std::vector<TH1D*> hGenHtLtPre_;
+    std::vector<TH1D*> hGenHtLtPost_;
     
   }; 
 
