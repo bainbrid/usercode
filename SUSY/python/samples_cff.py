@@ -30,29 +30,19 @@ for point in range(0,14) :
 # -----------------------------------------------------------------------------
 # QCD Pythia
 
-
-path_qcd_pythia_merged="/nfs/data6/trommers/ICFNtuple/"
-#path_v_jets="/castor/cern.ch/user/j/jad/ICFNtuples7TeV_take2/"
-#path_qcd_pythia_merged="/castor/cern.ch/user/b/bainbrid/7TeV/V00-08-04-XX/"
-
-qcd_pythia_merged=PSet(
-    Name="QCD_Pythia_Merged",
-    Format=("ICF",2),
-    File=path_qcd_pythia_merged+"QCDPythia_7TeV_V00-08-04-XX_Skim.root",
-    Weights = PSet(
-    CrossSection = [ 8.762e+08, 6.041e+07, 9.238e+05, 2.547e+04, 1.256e+03, 8.798e+01, 2.186e+00, 1.122e-02 ],
-    Events       = [ 6246300,   5228992,   3203440,   3132800,   3274202,   2143390,   2143921,   1184123   ],
-    PtBin        = [ 15.,       30.,       80.,       170.,      300.,      470.,      800.,      1400.     ],
-    ),
-    )
-
 path_qcd_pythia="/vols/cms02/bm409/"
+prefix="QCD_Pythia6_"
+suffix="GeV"
+
+#path_qcd_pythia="/vols/cms02/bainbrid/SUSYv2/bainbrid/results/prescale100/"
+#prefix="Skim_QCDPythia6_Pt"
+#suffix=""
 
 qcd6 = []
 
 qcd_pythia_15=PSet(
     Name="QCDPythia6_Pt15",
-    File=path_qcd_pythia+"QCD_Pythia6_15GeV.root",
+    File=path_qcd_pythia+prefix+"15"+suffix+".root",
     CrossSection=8.762e+08,
     Format=("ICF",2),
     )
@@ -60,7 +50,7 @@ qcd6.append(qcd_pythia_15)
 
 qcd_pythia_30=PSet(
     Name="QCDPythia6_Pt30",
-    File=path_qcd_pythia+"QCD_Pythia6_30GeV.root",
+    File=path_qcd_pythia+prefix+"30"+suffix+".root",
     CrossSection=6.041e+07,
     Format=("ICF",2),
     )
@@ -68,7 +58,7 @@ qcd6.append(qcd_pythia_30)
 
 qcd_pythia_80=PSet(
     Name="QCDPythia6_Pt80",
-    File=path_qcd_pythia+"QCD_Pythia6_80GeV.root", 
+    File=path_qcd_pythia+prefix+"80"+suffix+".root", 
     CrossSection=9.238e+05,
     Format=("ICF",2),
     )
@@ -76,7 +66,7 @@ qcd6.append(qcd_pythia_80)
 
 qcd_pythia_170=PSet(
     Name="QCDPythia6_Pt170",
-    File=path_qcd_pythia+"QCD_Pythia6_170GeV.root",
+    File=path_qcd_pythia+prefix+"170"+suffix+".root",
     CrossSection=2.547e+04,
     Format=("ICF",2),
     )
@@ -84,7 +74,7 @@ qcd6.append(qcd_pythia_170)
 
 qcd_pythia_300=PSet(
     Name="QCDPythia6_Pt300",
-    File=path_qcd_pythia+"QCD_Pythia6_300GeV.root",
+    File=path_qcd_pythia+prefix+"300"+suffix+".root",
     CrossSection=1.256e+03,
     Format=("ICF",2),
     )
@@ -92,7 +82,7 @@ qcd6.append(qcd_pythia_300)
 
 qcd_pythia_470=PSet(
     Name="QCDPythia6_Pt470",
-    File=path_qcd_pythia+"QCD_Pythia6_470GeV.root",
+    File=path_qcd_pythia+prefix+"470"+suffix+".root",
     CrossSection=8.798e+01,
     Format=("ICF",2),
     )
@@ -100,7 +90,7 @@ qcd6.append(qcd_pythia_470)
 
 qcd_pythia_800=PSet(
     Name="QCDPythia6_Pt800",
-    File=path_qcd_pythia+"QCD_Pythia6_800GeV.root",
+    File=path_qcd_pythia+prefix+"800"+suffix+".root",
     CrossSection=2.186e+00,
     Format=("ICF",2),
     )
@@ -108,7 +98,7 @@ qcd6.append(qcd_pythia_800)
 
 qcd_pythia_1400=PSet(
     Name="QCDPythia6_Pt1400",
-    File=path_qcd_pythia+"QCD_Pythia6_1400GeV.root",
+    File=path_qcd_pythia+prefix+"1400"+suffix+".root",
     CrossSection=1.122e-02,
     Format=("ICF",2),
     )
