@@ -34,10 +34,6 @@ path_qcd_pythia="/vols/cms02/bm409/"
 prefix="QCD_Pythia6_"
 suffix="GeV"
 
-#path_qcd_pythia="/vols/cms02/bainbrid/SUSYv2/bainbrid/results/prescale100/"
-#prefix="Skim_QCDPythia6_Pt"
-#suffix=""
-
 qcd6 = []
 
 qcd_pythia_15=PSet(
