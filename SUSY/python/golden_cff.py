@@ -86,6 +86,7 @@ default_cc.Muons.PtCut=10.0
 default_cc.Muons.EtaCut=2.5
 default_cc.Muons.TrkIsoCut=6.0
 default_cc.Muons.CombIsoCut=0.2
+default_cc.Muons.ModifyJetEnergy=True
 default_cc.Electrons.PtCut=10.0
 default_cc.Electrons.EtaCut=2.5
 default_cc.Electrons.TrkIsoCut=6.0
