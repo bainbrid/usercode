@@ -36,45 +36,20 @@ numComJets = OP_NumComJets("==",2)
 ptbin = RobPlottingOps(PSet(DirName="GenPtHat",
                             PtHat=True).ps())
 
-ratio50 = RobPlottingOps(PSet(DirName="Ratio50",
-                              Ratio=True,
-                              AlphaTcut=0.50,
-                              ).ps())
-
-ratio51 = RobPlottingOps(PSet(DirName="Ratio51",
-                              Ratio=True,
-                              AlphaTcut=0.51,
-                              ).ps())
-
-ratio52 = RobPlottingOps(PSet(DirName="Ratio52",
-                              Ratio=True,
-                              AlphaTcut=0.52,
-                              ).ps())
-
-ratio53 = RobPlottingOps(PSet(DirName="Ratio53",
-                              Ratio=True,
-                              AlphaTcut=0.53,
-                              ).ps())
-
-ratio54 = RobPlottingOps(PSet(DirName="Ratio54",
-                              Ratio=True,
-                              AlphaTcut=0.54,
-                              ).ps())
-
-ratio55 = RobPlottingOps(PSet(DirName="Ratio55",
-                              Ratio=True,
-                              AlphaTcut=0.55,
-                              ).ps())
-
+ratio = []
+for ii in range(0,11) :
+    val = 500 + ii * 5
+    ratio.append( RobPlottingOps( PSet(DirName = "Ratio"+str(val),
+                                       Ratio = True,
+                                       UseGen = True,
+                                       AlphaTcut = (val/1000.),
+                                       ).ps() ) )
+    
 def addCutFlow(a) :
     a+=ptbin
     a+=numComJets
-    a+=ratio50
-    a+=ratio51
-    a+=ratio52
-    a+=ratio53
-    a+=ratio54
-    a+=ratio55
+    for jj in range(0,len(ratio)) :
+        a+=ratio[jj] 
     
 # -----------------------------------------------------------------------------
 # Samples
@@ -98,6 +73,7 @@ qcd300=PSet(
     )
 
 #qcd.File=["results/prescale100/Skim_QCDPythia6_Pt*.root"]
+#qcd.File=["results/skim/Skim_QCDPythia6_Pt*.root"]
 
 # -----------------------------------------------------------------------------
 # Analyses

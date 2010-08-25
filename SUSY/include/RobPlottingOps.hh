@@ -134,18 +134,23 @@ namespace Operation {
     // AlphaT ratio
     bool ratio_;
     double alphaTcut_;
+    bool useGen_;
     void ratio();
     bool ratio( Event::Data& );
+    std::vector<TH1D*> hHtNonPre_; 
+    std::vector<TH1D*> hHtNonPost_; 
     std::vector<TH1D*> hHtEqPre_; 
     std::vector<TH1D*> hHtEqPost_; 
-    std::vector<TH1D*> hGenHtEqPre_; 
-    std::vector<TH1D*> hGenHtEqPost_; 
     std::vector<TH1D*> hHtGtPre_; 
     std::vector<TH1D*> hHtGtPost_; 
-    std::vector<TH1D*> hGenHtGtPre_; 
-    std::vector<TH1D*> hGenHtGtPost_; 
     std::vector<TH1D*> hHtLtPre_;
     std::vector<TH1D*> hHtLtPost_;
+    std::vector<TH1D*> hGenHtNonPre_; 
+    std::vector<TH1D*> hGenHtNonPost_; 
+    std::vector<TH1D*> hGenHtEqPre_; 
+    std::vector<TH1D*> hGenHtEqPost_; 
+    std::vector<TH1D*> hGenHtGtPre_; 
+    std::vector<TH1D*> hGenHtGtPost_; 
     std::vector<TH1D*> hGenHtLtPre_;
     std::vector<TH1D*> hGenHtLtPost_;
     
