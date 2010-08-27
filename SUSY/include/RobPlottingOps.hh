@@ -139,7 +139,8 @@ namespace Operation {
 
     // AlphaT ratio
     bool ratio_;
-    double alphaTcut_;
+    double alphaTcut_; 
+    double minPt_;
     bool useGen_;
     void ratio();
     bool ratio( Event::Data& );

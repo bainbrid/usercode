@@ -87,6 +87,7 @@ RobPlottingOps::RobPlottingOps( const Utils::ParameterSet& ps ) :
   // AlphaT ratio 
   ratio_(false),
   alphaTcut_(0.55),
+  minPt_(0.),
   useGen_(false),
   hHtNonPre_(),
   hHtNonPost_(),
@@ -128,6 +129,17 @@ RobPlottingOps::RobPlottingOps( const Utils::ParameterSet& ps ) :
   if ( ps.Contains("Ratio") ) ratio_ = ps.Get<bool>("Ratio"); 
   if ( ps.Contains("AlphaTcut") ) alphaTcut_ = ps.Get<double>("AlphaTcut"); 
   if ( ps.Contains("UseGen") ) useGen_ = ps.Get<bool>("UseGen"); 
+  if ( ps.Contains("MinJetPt") ) minPt_ = ps.Get<double>("MinJetPt"); 
+  
+  // If specified, ensure that min pT is greater than or equal to value used for "common jets"
+  if ( ps.Contains("MinJetPt") &&
+       Utils::Config::Instance().Contains("Common.Jets.PtCut") &&
+       minPt_ < Utils::GetConfig<double>("Common.Jets.PtCut") ) { 
+    std::cout << " WARNING! 'MinJetPt' (" << minPt_ 
+	      << ") is less than 'Common.Jets.PtCut' (" 
+	      << Utils::GetConfig<double>("Common.Jets.PtCut")
+	      << ")" << std::endl;
+  }
   
 }
 
@@ -537,7 +549,8 @@ void RobPlottingOps::response() {
 void RobPlottingOps::ratio() {
 
   std::stringstream ss; 
-  ss << "AlphaT" << int( 1000 * alphaTcut_ );
+  ss << "";
+  //ss << "AlphaT" << int( 1000 * alphaTcut_ );
   
   BookHistArray( hHtNonPre_, 
 		 TString("HtNonPre"+ss.str()), 
@@ -1118,17 +1131,57 @@ bool RobPlottingOps::ratio( Event::Data& ev ) {
 
   Double_t weight = ev.GetEventWeight();
 
+  // GEN jets and match index from ntuple
+  std::vector<LorentzV> gen_jets;
+  std::vector<int> gen_index;
+  if ( useGen_ ) {
+    gen_jets = *(ev.genJetP4());
+    gen_index = *(ev.genJetMatchIndex());
+  }
+  
+  // COMMON jets
+  std::vector<Event::Jet const*> common = ev.JD_CommonJets().accepted;
+  //std::vector<LorentzV> common = ev.HadronicObjects(); 
+  
+  // RECO jets above threshold
+  std::vector<LorentzV> reco;
+  
+  // Matched GEN jets above threshold
+  std::vector<LorentzV> gen;
+  
+  // Iterate through common jets
+  int n_matched = 0;
+  std::vector<Event::Jet const*>::const_iterator icommon = common.begin();
+  std::vector<Event::Jet const*>::const_iterator jcommon = common.end();
+  for ( ; icommon != jcommon; ++icommon ) {
+    
+    // Find matched GEN jet 
+    std::vector<LorentzV>::const_iterator gen_jet = gen_jets.end();
+    if ( useGen_ ) {
+      if ( (*icommon)->GetIndex() > -1 && 
+	   (*icommon)->GetIndex() < (int)gen_index.size() &&
+	   gen_index[(*icommon)->GetIndex()] > -1 &&
+	   gen_index[(*icommon)->GetIndex()] < (int)gen_jets.size() ) {
+	gen_jet = gen_jets.begin() + gen_index[(*icommon)->GetIndex()];
+	n_matched++;
+      } else { break; }
+    }
+
+    // Check if above threshold
+    if ( (*icommon)->Pt() > minPt_ ) { reco.push_back(**icommon); }
+    if ( useGen_ && gen_jet->Pt() > minPt_ ) { gen.push_back(*gen_jet); }
+    
+  }
+  
   // RECO jets
-  std::vector<LorentzV> jets = ev.HadronicObjects(); 
-  uint    n_reco = jets.size();
-  double at_reco = AlphaT()( jets );
-  double ht_reco = RobOps::ht( jets );
+  uint    n_reco = reco.size();
+  double at_reco = AlphaT()( reco );
+  double ht_reco = RobOps::ht( reco );
 
   // GEN jets
   uint    n_gen = n_reco;
   double at_gen = at_reco;
   if ( useGen_ ) {
-    std::vector<LorentzV> gen = RobOps::genJets( ev );
     n_gen = gen.size();
     at_gen = AlphaT()( gen );
   }
