@@ -51,6 +51,9 @@ RobPlottingOps::RobPlottingOps( const Utils::ParameterSet& ps ) :
   // PtHat
   ptHat_(false),
   hPtHat_(),
+  // GenMet
+  genMet_(false),
+  hGenMet_(),
   // MET
   met_(false),
   hMetDiff1_(),
@@ -110,6 +113,7 @@ RobPlottingOps::RobPlottingOps( const Utils::ParameterSet& ps ) :
   if ( ps.Contains("Dalitz") ) dalitz_ = ps.Get<bool>("Dalitz");
   if ( ps.Contains("AlphaT") ) alphaT_ = ps.Get<bool>("AlphaT");
   if ( ps.Contains("PtHat") ) ptHat_ = ps.Get<bool>("PtHat");
+  if ( ps.Contains("GenMet") ) genMet_ = ps.Get<bool>("GenMet");
   if ( ps.Contains("MET") ) met_ = ps.Get<bool>("MET");
   if ( ps.Contains("Summary") ) summary_ = ps.Get<bool>("Summary");
   if ( ps.Contains("CC") ) cc_ = ps.Get<bool>("CC");
@@ -144,6 +148,7 @@ void RobPlottingOps::BookHistos() {
   if ( dalitz_ )   { dalitz(); }
   if ( alphaT_ )   { alphaT(); }
   if ( ptHat_ )    { ptHat(); }
+  if ( genMet_ )   { genMet(); }
   if ( met_ )      { met(); }
   if ( kine_ )     { kine(); }
   if ( ht_ )       { ht(); }
@@ -163,6 +168,7 @@ bool RobPlottingOps::Process( Event::Data& ev ) {
   if ( dalitz_ )   { dalitz(ev); }
   if ( alphaT_ )   { alphaT(ev); }
   if ( ptHat_ )    { ptHat(ev); }
+  if ( genMet_ )   { genMet(ev); }
   if ( met_ )      { met(ev); }
   if ( cc_ )       { cc(ev); }
   if ( kine_ )     { kine(ev); }
@@ -368,6 +374,16 @@ void RobPlottingOps::ptHat() {
 		 "PtHat",
 		 "",
 		 100, 0., 2500.,
+		 1, 0, 1, true );
+}
+
+// -----------------------------------------------------------------------------
+//
+void RobPlottingOps::genMet() {
+  BookHistArray( hGenMet_,
+		 "GenMet",
+		 "",
+		 100, 0., 1000.,
 		 1, 0, 1, true );
 }
 
@@ -848,6 +864,20 @@ bool RobPlottingOps::ptHat( Event::Data& ev ) {
 
 // -----------------------------------------------------------------------------
 //
+bool RobPlottingOps::genMet( Event::Data& ev ) {
+
+  // Event weight
+  Double_t weight = ev.GetEventWeight();
+
+  // Gen MET plot
+  if ( genMet_ ) { hGenMet_[0]->Fill( ev.genMetP4AK5()->Pt(), weight ); }
+
+  return true;
+
+}
+
+// -----------------------------------------------------------------------------
+//
 bool RobPlottingOps::met( Event::Data& ev ) {
   
   // Event weight
@@ -1105,7 +1135,6 @@ bool RobPlottingOps::ratio( Event::Data& ev ) {
   
   for ( int ii = 0; ii < 4; ++ii ) {
 
-    
     std::vector<TH1D*>* rPre;
     std::vector<TH1D*>* gPre;
     std::vector<TH1D*>* rPost;
@@ -1131,6 +1160,7 @@ bool RobPlottingOps::ratio( Event::Data& ev ) {
       gPre  = &hGenHtLtPre_; 
       gPost = &hGenHtLtPost_; 
     } else { continue; }
+
 
     // RECO plots
     if ( !(*rPre).empty() && n_reco > 3 ) { 

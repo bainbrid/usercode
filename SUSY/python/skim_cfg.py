@@ -15,18 +15,19 @@ conf.XCleaning.MuonJet=False
 conf.XCleaning.ElectronJet=False
 conf.XCleaning.PhotonJet=False
 conf.XCleaning.ResolveConflicts=False
+conf.XCleaning.Muons.ModifyJetEnergy=False
 
 conf.Common.ApplyXCleaning=False
 conf.Common.Jets.EtaCut=3.0 
 conf.Common.Jets.PtCut=20.0
 
 numComJets = OP_NumComJets(">=",2)
-#alphaT = RobOps(PSet(Algo="HadronicAlphaT",Cut=0.5).ps())
+alphaT = RobOps(PSet(Algo="HadronicAlphaT",Cut=0.5).ps())
 
 def addCutFlow(a) :
     a+=numComJets
     #a+=alphaT
-
+    
 # -----------------------------------------------------------------------------
 # Ntuple slimming
 

@@ -202,10 +202,12 @@ conf_ak5_jpt = deepcopy(defaultConfig)
 conf_ak5_jpt.Ntuple = deepcopy(ak5_jpt)
 conf_ak5_jpt.XCleaning = deepcopy(default_cc)
 conf_ak5_jpt.Common = deepcopy(default_common)
+conf_ak5_jpt.XCleaning.Muons.ModifyJetEnergy=False
 
 conf_ak5_pf = deepcopy(defaultConfig)
 conf_ak5_pf.Ntuple = deepcopy(ak5_pf)
 conf_ak5_pf.XCleaning = deepcopy(default_cc)
 conf_ak5_pf.Common = deepcopy(default_common)
+conf_ak5_pf.XCleaning.Muons.ModifyJetEnergy=False
 
 

@@ -34,6 +34,17 @@ path_qcd_pythia="/vols/cms02/bm409/"
 prefix="QCD_Pythia6_"
 suffix="GeV"
 
+qcd=PSet(
+    Name="QCDPythia6",
+    File=[path_qcd_pythia+prefix+"*"+suffix+".root"],
+    Weights = PSet(
+    CrossSection = [ 8.762e+08, 6.041e+07, 9.238e+05, 2.547e+04, 1.256e+03, 8.798e+01, 2.186e+00, 1.122e-02 ],
+    Events       = [ 6246300,   5228992,   3203440,   3132800,   3274202,   2143390,   2143921,   1184123   ],
+    PtBin        = [ 15.,       30.,       80.,       170.,      300.,      470.,      800.,      1400.     ],
+    ),
+    Format=("ICF",2),
+    )
+
 qcd6 = []
 
 qcd_pythia_15=PSet(

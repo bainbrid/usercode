@@ -64,6 +64,12 @@ namespace Operation {
     void ptHat();
     bool ptHat( Event::Data& );
 
+    // GenMet plots
+    bool genMet_;
+    std::vector<TH1D*> hGenMet_;
+    void genMet();
+    bool genMet( Event::Data& );
+
     // MET plots
     bool met_;
     std::vector<TH1D*> hMetDiff1_;

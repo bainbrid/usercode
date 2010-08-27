@@ -31,7 +31,7 @@ conf_reco50.Common.Jets.PtCut=50.0
 
 # Misc
 
-numComJets = OP_NumComJets("==",2)
+numComJets = OP_NumComJets(">=",2)
 
 ptbin = RobPlottingOps(PSet(DirName="GenPtHat",
                             PtHat=True).ps())
@@ -40,6 +40,8 @@ ratio = []
 for ii in range(0,11) :
     val = 500 + ii * 5
     ratio.append( RobPlottingOps( PSet(DirName = "Ratio"+str(val),
+                                       MinObjects=2,
+                                       MaxObjects=8,
                                        Ratio = True,
                                        UseGen = True,
                                        AlphaTcut = (val/1000.),

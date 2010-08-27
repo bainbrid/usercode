@@ -50,7 +50,7 @@ conf_reco50.Common.Jets.PtCut=50.0
 
 # Misc
 
-numComJets = OP_NumComJets("==",2)
+numComJets = OP_NumComJets(">=",2)
 
 ptbin = RobPlottingOps(PSet(DirName="GenPtHat",
                             PtHat=True).ps())
@@ -141,16 +141,16 @@ anal_reco50.Run("results",conf_reco50,[qcd])
 
 anal_gen20 = Analysis("Gen20")
 addCutFlow(anal_gen20)
-anal_gen20.Run("results",conf_gen20,[qcd])
+#anal_gen20.Run("results",conf_gen20,[qcd])
 
 anal_gen30 = Analysis("Gen30")
 addCutFlow(anal_gen30)
-anal_gen30.Run("results",conf_gen30,[qcd])
+#anal_gen30.Run("results",conf_gen30,[qcd])
 
 anal_gen40 = Analysis("Gen40")
 addCutFlow(anal_gen40)
-anal_gen40.Run("results",conf_gen40,[qcd])
+#anal_gen40.Run("results",conf_gen40,[qcd])
 
 anal_gen50 = Analysis("Gen50")
 addCutFlow(anal_gen50)
-anal_gen50.Run("results",conf_gen50,[qcd])
+#anal_gen50.Run("results",conf_gen50,[qcd])

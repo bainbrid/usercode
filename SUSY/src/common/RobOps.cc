@@ -64,6 +64,11 @@ bool RobOps::Process( Event::Data& ev ) {
     count++;
     return !(count%freq);
     
+  } else if ( algo_ == "GenMet" ) {
+    
+    if ( ev.genMetP4AK5()->Pt() < cut_ ) { return true; }
+    else { return false; }
+    
   } else if ( algo_ == "AlphaT" ) {
     
     // AlphaT
