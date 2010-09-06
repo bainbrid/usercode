@@ -56,7 +56,7 @@ def addCutFlow(a) :
 
 from samples_cff import *
 
-if (False) :
+if (True) :
     new_path_qcd_pythia="/vols/cms02/bainbrid/SUSYv2/bainbrid/results/prescale100/"
     new_prefix="Skim_QCDPythia6_Pt"
     new_suffix=""

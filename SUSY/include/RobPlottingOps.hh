@@ -139,11 +139,18 @@ namespace Operation {
 
     // AlphaT ratio
     bool ratio_;
+    void ratio();
+    void ratio( std::vector<TH1D*>&, std::string );
+    bool ratio( Event::Data& );
+
     double alphaTcut_; 
     double minPt_;
+    double minPt1_;
+    double minPt2_;
     bool useGen_;
-    void ratio();
-    bool ratio( Event::Data& );
+    double minGenPt_;
+    double maxGenMet_;
+
     std::vector<TH1D*> hHtNonPre_; 
     std::vector<TH1D*> hHtNonPost_; 
     std::vector<TH1D*> hHtEqPre_; 
@@ -160,6 +167,23 @@ namespace Operation {
     std::vector<TH1D*> hGenHtGtPost_; 
     std::vector<TH1D*> hGenHtLtPre_;
     std::vector<TH1D*> hGenHtLtPost_;
+
+    std::vector<TH1D*> hMhtNonPre_; 
+    std::vector<TH1D*> hMhtNonPost_; 
+    std::vector<TH1D*> hMhtEqPre_; 
+    std::vector<TH1D*> hMhtEqPost_; 
+    std::vector<TH1D*> hMhtGtPre_; 
+    std::vector<TH1D*> hMhtGtPost_; 
+    std::vector<TH1D*> hMhtLtPre_;
+    std::vector<TH1D*> hMhtLtPost_;
+    std::vector<TH1D*> hGenMhtNonPre_; 
+    std::vector<TH1D*> hGenMhtNonPost_; 
+    std::vector<TH1D*> hGenMhtEqPre_; 
+    std::vector<TH1D*> hGenMhtEqPost_; 
+    std::vector<TH1D*> hGenMhtGtPre_; 
+    std::vector<TH1D*> hGenMhtGtPost_; 
+    std::vector<TH1D*> hGenMhtLtPre_;
+    std::vector<TH1D*> hGenMhtLtPost_;
     
   }; 
 

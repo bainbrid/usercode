@@ -23,6 +23,12 @@ using namespace Operation;
 
 // -----------------------------------------------------------------------------
 //
+bool SortByPt( const LorentzV& first, const LorentzV& second ) {
+  return ( first.Pt() > second.Pt() );
+}
+
+// -----------------------------------------------------------------------------
+//
 RobPlottingOps::RobPlottingOps( const Utils::ParameterSet& ps ) :
   // Misc
   dirName_("Plots"),
@@ -88,7 +94,11 @@ RobPlottingOps::RobPlottingOps( const Utils::ParameterSet& ps ) :
   ratio_(false),
   alphaTcut_(0.55),
   minPt_(0.),
+  minPt1_(0.),
+  minPt2_(0.),
   useGen_(false),
+  minGenPt_(0.),
+  maxGenMet_(0.),
   hHtNonPre_(),
   hHtNonPost_(),
   hHtEqPre_(),
@@ -104,7 +114,23 @@ RobPlottingOps::RobPlottingOps( const Utils::ParameterSet& ps ) :
   hGenHtGtPre_(),
   hGenHtGtPost_(),
   hGenHtLtPre_(),
-  hGenHtLtPost_()
+  hGenHtLtPost_(),
+  hMhtNonPre_(),
+  hMhtNonPost_(),
+  hMhtEqPre_(),
+  hMhtEqPost_(),
+  hMhtGtPre_(),
+  hMhtGtPost_(),
+  hMhtLtPre_(),
+  hMhtLtPost_(),
+  hGenMhtNonPre_(),
+  hGenMhtNonPost_(),
+  hGenMhtEqPre_(),
+  hGenMhtEqPost_(),
+  hGenMhtGtPre_(),
+  hGenMhtGtPost_(),
+  hGenMhtLtPre_(),
+  hGenMhtLtPost_()
 {
 
   if ( ps.Contains("DirName") ) dirName_ = ps.Get<std::string>("DirName");
@@ -129,7 +155,11 @@ RobPlottingOps::RobPlottingOps( const Utils::ParameterSet& ps ) :
   if ( ps.Contains("Ratio") ) ratio_ = ps.Get<bool>("Ratio"); 
   if ( ps.Contains("AlphaTcut") ) alphaTcut_ = ps.Get<double>("AlphaTcut"); 
   if ( ps.Contains("UseGen") ) useGen_ = ps.Get<bool>("UseGen"); 
+  if ( ps.Contains("MaxGenMET") ) maxGenMet_ = ps.Get<double>("MaxGenMET"); 
+  if ( ps.Contains("MinGenJetPt") ) minGenPt_ = ps.Get<double>("MinGenJetPt"); 
   if ( ps.Contains("MinJetPt") ) minPt_ = ps.Get<double>("MinJetPt"); 
+  if ( ps.Contains("MinJetPt1") ) minPt1_ = ps.Get<double>("MinJetPt1"); 
+  if ( ps.Contains("MinJetPt2") ) minPt2_ = ps.Get<double>("MinJetPt2"); 
   
   // If specified, ensure that min pT is greater than or equal to value used for "common jets"
   if ( ps.Contains("MinJetPt") &&
@@ -546,109 +576,58 @@ void RobPlottingOps::response() {
 
 // -----------------------------------------------------------------------------
 //
+void RobPlottingOps::ratio( std::vector<TH1D*>& histos, std::string name ) {
+  BookHistArray( histos, name, 
+		 ";HT^{reco} [GeV];R(#alpha_{T})", 
+		 200, 0., 2000., 
+		 nMax_+1, 0, 1, true );
+}
+
+// -----------------------------------------------------------------------------
+//
 void RobPlottingOps::ratio() {
 
   std::stringstream ss; 
   ss << "";
   //ss << "AlphaT" << int( 1000 * alphaTcut_ );
   
-  BookHistArray( hHtNonPre_, 
-		 TString("HtNonPre"+ss.str()), 
-		 ";HT^{reco} [GeV];R(#alpha_{T})",
-		 200, 0., 2000., 
-		 nMax_+1, 0, 1, true );
+  ratio( hHtNonPre_, "HtNonPre" );
+  ratio( hHtNonPost_, "HtNonPost" );
+  ratio( hHtEqPre_, "HtEqPre" );
+  ratio( hHtEqPost_, "HtEqPost" );
+  ratio( hHtGtPre_, "HtGtPre" );
+  ratio( hHtGtPost_, "HtGtPost" );
+  ratio( hHtLtPre_, "HtLtPre" );
+  ratio( hHtLtPost_, "HtLtPost" );
 
-  BookHistArray( hHtNonPost_, 
-		 TString("HtNonPost"+ss.str()), 
-		 ";HT^{reco} [GeV];R(#alpha_{T})",
-		 200, 0., 2000., 
-		 nMax_+1, 0, 1, true );
-
-  BookHistArray( hHtEqPre_, 
-		 TString("HtEqPre"+ss.str()), 
-		 ";HT^{reco} [GeV];R(#alpha_{T})",
-		 200, 0., 2000., 
-		 nMax_+1, 0, 1, true );
-
-  BookHistArray( hHtEqPost_, 
-		 TString("HtEqPost"+ss.str()), 
-		 ";HT^{reco} [GeV];R(#alpha_{T})",
-		 200, 0., 2000., 
-		 nMax_+1, 0, 1, true );
+  ratio( hMhtNonPre_, "MhtNonPre" );
+  ratio( hMhtNonPost_, "MhtNonPost" );
+  ratio( hMhtEqPre_, "MhtEqPre" );
+  ratio( hMhtEqPost_, "MhtEqPost" );
+  ratio( hMhtGtPre_, "MhtGtPre" );
+  ratio( hMhtGtPost_, "MhtGtPost" );
+  ratio( hMhtLtPre_, "MhtLtPre" );
+  ratio( hMhtLtPost_, "MhtLtPost" );
   
-  BookHistArray( hHtGtPre_, 
-		 TString("HtGtPre"+ss.str()), 
-		 ";HT^{reco} [GeV];R(#alpha_{T})",
-		 200, 0., 2000., 
-		 nMax_+1, 0, 1, true );
-
-  BookHistArray( hHtGtPost_, 
-		 TString("HtGtPost"+ss.str()), 
-		 ";HT^{reco} [GeV];R(#alpha_{T})",
-		 200, 0., 2000., 
-		 nMax_+1, 0, 1, true );
-  
-  BookHistArray( hHtLtPre_, 
-		 TString("HtLtPre"+ss.str()), 
-		 ";HT^{reco} [GeV];R(#alpha_{T})",
-		 200, 0., 2000., 
-		 nMax_+1, 0, 1, true );
-
-  BookHistArray( hHtLtPost_, 
-		 TString("HtLtPost"+ss.str()), 
-		 ";HT^{reco} [GeV];R(#alpha_{T})",
-		 200, 0., 2000., 
-		 nMax_+1, 0, 1, true );
-
   if ( useGen_ ) {
 
-    BookHistArray( hGenHtNonPre_, 
-		   TString("GenHtNonPre"+ss.str()), 
-		   ";HT^{reco} [GeV];R(#alpha_{T})",
-		   200, 0., 2000., 
-		   nMax_+1, 0, 1, true );
+    ratio( hGenHtNonPre_, "GenHtNonPre" );
+    ratio( hGenHtNonPost_, "GenHtNonPost" );
+    ratio( hGenHtEqPre_, "GenHtEqPre" );
+    ratio( hGenHtEqPost_, "GenHtEqPost" );
+    ratio( hGenHtGtPre_, "GenHtGtPre" );
+    ratio( hGenHtGtPost_, "GenHtGtPost" );
+    ratio( hGenHtLtPre_, "GenHtLtPre" );
+    ratio( hGenHtLtPost_, "GenHtLtPost" );
 
-    BookHistArray( hGenHtNonPost_, 
-		   TString("GenHtNonPost"+ss.str()), 
-		   ";HT^{reco} [GeV];R(#alpha_{T})",
-		   200, 0., 2000., 
-		   nMax_+1, 0, 1, true );
-
-    BookHistArray( hGenHtEqPre_, 
-		   TString("GenHtEqPre"+ss.str()), 
-		   ";HT^{reco} [GeV];R(#alpha_{T})",
-		   200, 0., 2000., 
-		   nMax_+1, 0, 1, true );
-
-    BookHistArray( hGenHtEqPost_, 
-		   TString("GenHtEqPost"+ss.str()), 
-		   ";HT^{reco} [GeV];R(#alpha_{T})",
-		   200, 0., 2000., 
-		   nMax_+1, 0, 1, true );
-
-    BookHistArray( hGenHtGtPre_, 
-		   TString("GenHtGtPre"+ss.str()), 
-		   ";HT^{reco} [GeV];R(#alpha_{T})",
-		   200, 0., 2000., 
-		   nMax_+1, 0, 1, true );
-
-    BookHistArray( hGenHtGtPost_, 
-		   TString("GenHtGtPost"+ss.str()), 
-		   ";HT^{reco} [GeV];R(#alpha_{T})",
-		   200, 0., 2000., 
-		   nMax_+1, 0, 1, true );
-
-    BookHistArray( hGenHtLtPre_, 
-		   TString("GenHtLtPre"+ss.str()), 
-		   ";HT^{reco} [GeV];R(#alpha_{T})",
-		   200, 0., 2000., 
-		   nMax_+1, 0, 1, true );
-
-    BookHistArray( hGenHtLtPost_, 
-		   TString("GenHtLtPost"+ss.str()), 
-		   ";HT^{reco} [GeV];R(#alpha_{T})",
-		   200, 0., 2000., 
-		   nMax_+1, 0, 1, true );
+    ratio( hGenMhtNonPre_, "GenMhtNonPre" );
+    ratio( hGenMhtNonPost_, "GenMhtNonPost" );
+    ratio( hGenMhtEqPre_, "GenMhtEqPre" );
+    ratio( hGenMhtEqPost_, "GenMhtEqPost" );
+    ratio( hGenMhtGtPre_, "GenMhtGtPre" );
+    ratio( hGenMhtGtPost_, "GenMhtGtPost" );
+    ratio( hGenMhtLtPre_, "GenMhtLtPre" );
+    ratio( hGenMhtLtPost_, "GenMhtLtPost" );
 
   }
 
@@ -1141,7 +1120,6 @@ bool RobPlottingOps::ratio( Event::Data& ev ) {
   
   // COMMON jets
   std::vector<Event::Jet const*> common = ev.JD_CommonJets().accepted;
-  //std::vector<LorentzV> common = ev.HadronicObjects(); 
   
   // RECO jets above threshold
   std::vector<LorentzV> reco;
@@ -1149,6 +1127,12 @@ bool RobPlottingOps::ratio( Event::Data& ev ) {
   // Matched GEN jets above threshold
   std::vector<LorentzV> gen;
   
+  // HT and MHT
+  double ht_reco = 0.;
+  double ht_gen = 0.;
+  LorentzV mht_reco(0.,0.,0.,0.);
+  LorentzV mht_gen(0.,0.,0.,0.);
+
   // Iterate through common jets
   int n_matched = 0;
   std::vector<Event::Jet const*>::const_iterator icommon = common.begin();
@@ -1168,15 +1152,34 @@ bool RobPlottingOps::ratio( Event::Data& ev ) {
     }
 
     // Check if above threshold
-    if ( (*icommon)->Pt() > minPt_ ) { reco.push_back(**icommon); }
-    if ( useGen_ && gen_jet->Pt() > minPt_ ) { gen.push_back(*gen_jet); }
+    if ( (*icommon)->Pt() > minPt_ ) { 
+      reco.push_back(**icommon); 
+      ht_reco += (*icommon)->Et();
+      mht_reco -= **icommon;
+    }
+    if ( useGen_ && 
+	 gen_jet < gen_jets.end() &&
+	 gen_jet->Pt() > minGenPt_ ) { 
+      gen.push_back(*gen_jet); 
+      ht_gen += (*icommon)->Et();
+      mht_gen -= **icommon;
+    }
     
+  }
+
+  // Sort jets by pt.
+  std::sort( reco.begin(), reco.end(), SortByPt );
+
+  // Check pt of leading and secondary jets
+  if ( reco.size() < 2 ||
+       reco[0].Pt() < minPt1_ ||
+       reco[1].Pt() < minPt2_ ) {
+    return true;
   }
   
   // RECO jets
-  uint    n_reco = reco.size();
-  double at_reco = AlphaT()( reco );
-  double ht_reco = RobOps::ht( reco );
+  uint     n_reco = reco.size();
+  double  at_reco = AlphaT()( reco );
 
   // GEN jets
   uint    n_gen = n_reco;
@@ -1187,6 +1190,8 @@ bool RobPlottingOps::ratio( Event::Data& ev ) {
   }
   
   for ( int ii = 0; ii < 4; ++ii ) {
+
+    //@@ ADD MHT HISTOS!!!!
 
     std::vector<TH1D*>* rPre;
     std::vector<TH1D*>* gPre;
@@ -1214,7 +1219,6 @@ bool RobPlottingOps::ratio( Event::Data& ev ) {
       gPost = &hGenHtLtPost_; 
     } else { continue; }
 
-
     // RECO plots
     if ( !(*rPre).empty() && n_reco > 3 ) { 
       (*rPre)[0]->Fill( ht_reco, weight ); 
@@ -1232,7 +1236,7 @@ bool RobPlottingOps::ratio( Event::Data& ev ) {
     }
     
     // GEN plots
-    if ( useGen_ ) {
+    if ( useGen_ && ev.genMetP4AK5()->Pt() < genMet_ ) {
       if ( !(*gPre).empty() && n_reco > 3 ) { 
 	(*gPre)[0]->Fill( ht_reco, weight ); 
       }

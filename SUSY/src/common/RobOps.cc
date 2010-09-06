@@ -290,7 +290,7 @@ double RobOps::ht( const std::vector<LorentzV>& jets ) {
   double ht = 0.;
   std::vector<LorentzV>::const_iterator ijet = jets.begin();
   std::vector<LorentzV>::const_iterator jjet = jets.end();
-  for ( ; ijet != jjet; ++ijet ) { ht += ijet->Pt(); } 
+  for ( ; ijet != jjet; ++ijet ) { ht += ijet->Et(); } 
   return ht;
 }
 

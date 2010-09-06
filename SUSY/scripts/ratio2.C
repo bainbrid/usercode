@@ -3,68 +3,108 @@
 */  
 int ratio2() {
 
-  TCanvas* canvas = new TCanvas("Ratio");
-  canvas->SetLogy();
-  canvas->SetFillColor(0);
-  gStyle->SetOptStat(0);
-  
-  TLegend* legend = new TLegend( 0.6, 0.6, 0.8, 0.8, NULL, "brNDC" );
-  legend->SetFillColor(0);
-  legend->SetLineColor(0); 
-  
-  const Int_t n = 6;
-  float pt[n] = { 50., 30., 20., 50., 30., 20. };
-  TString sample[n] = { "Gen50", "Gen30", "Gen20", "Reco50", "Reco30", "Reco20" };
-  Int_t style[n]  = { 20, 21, 22, 24, 25, 26 };
-  Int_t colour[n] = { 2, 3, 4, 2, 3, 4 };
-//   float pt[n] = { 20., 20. };
-//   TString sample[n] = { "Gen20", "Reco20" };
-//   Int_t style[n]  = { 20, 24 };
-//   Int_t colour[n] = { 2, 3 };
+  const Int_t n = 4;
+  float pt[n]     = { 50., 40., 30., 20. };
+  Int_t colour[n] = { 1, 2, 3, 4 };
 
+  const Int_t m = 3;
+  Int_t style[m]  = { kOpenCross, kOpenSquare, kFullSquare };
+  
   const Int_t ngr = 1000;
   double x3[ngr];
   double r[ngr];
+
   int count = 0;
+  int loop = 0;
 
+  // Loop through pt bins
   for ( Int_t i = 0; i < n; ++i ) {
-    TString name = "results/" + sample[i] + "_QCDPythia6.root";
+
+    std::stringstream can;
+    can << "Pt" << pt[i];
+    
+    TCanvas* canvas = new TCanvas(TString("Ratio"+can.str()));
+    canvas->SetLogy();
+    canvas->SetFillColor(0);
+    gStyle->SetOptStat(0);
+    
+    TLegend* legend = new TLegend( 0.5, 0.7, 0.88, 0.88, NULL, "brNDC" );
+    legend->SetFillColor(0);
+    legend->SetLineColor(0); 
+    
+    std::stringstream ss;
+    ss << "results/all/Reco" << pt[i] << "_QCDPythia6.root";
+    TString name(ss.str());
     TFile* file = new TFile(name);
+    if ( file->IsZombie() || !(file->IsOpen()) ) { continue; }
     file->cd();
-    TH1* numerator = (TH1*)file->Get("Ratio50/HtPostAlphaT0.5_2");
-    TH1* denominator = (TH1*)file->Get("Ratio50/HtPreAlphaT0.5_2");
-    int rebin = 40;
-    numerator->Rebin(rebin);
-    denominator->Rebin(rebin);
-    TH1* ratio = numerator->Clone();
-    ratio->GetXaxis()->SetRangeUser(0.,1400.);
-    ratio->Divide(denominator);
-    ratio->SetMarkerStyle(style[i]);
-    ratio->SetMarkerColor(colour[i]);
-
-    if ( i < 3 ) {
-      for ( Int_t ii = 1; ii < ratio->GetNbinsX(); ++ii ) {
-	double val = ratio->GetBinContent(ii);
-	if ( val == 0. ) { continue; }
-	if ( count < ngr ) { 
-	  double ht = ratio->GetBinLowEdge(ii);
-	  if ( ht < 150. || ht > 650. ) { continue; }
-	  double temp = ( 2. * pt[i] ) / ( ht + pt[i] );
-	  std::cout << " ht: " << ht 
-		    << " pt: " << pt[i]
-		    << " x3: " << temp
-		    << std::endl;
-	  x3[count] = temp;
-	  r[count] = val;
-	  count++;
-	}
+    
+    // Loop through MC reco, MC gen (binned by Nreco), MC gen (binned by Ngen)
+    for ( Int_t j = 0; j < m; ++j ) {
+      
+      std::stringstream pre;
+      std::stringstream post;
+      if ( j == 0 ) {
+	pre << "Ratio50/GenHtPreAlphaT0.5_2";
+	post << "Ratio50/GenHtPostAlphaT0.5_2";
+      } else if ( j == 1 ) {
+	pre << "Ratio50/GenHtGenMultiPreAlphaT0.5_2";
+	post << "Ratio50/GenHtGenMultiPostAlphaT0.5_2";
+      } else if ( j == 2 ) {
+	pre << "Ratio50/HtPreAlphaT0.5_2";
+	post << "Ratio50/HtPostAlphaT0.5_2";
       }
-    }
 
-    canvas->cd();
-    if ( i == 0 ) ratio->Draw("");
-    else ratio->Draw("same");
-    legend->AddEntry( ratio, sample[i], "lep" );
+      TH1* denominator = (TH1*)file->Get(TString(pre.str()));
+      TH1* numerator = (TH1*)file->Get(TString(post.str()));
+      int rebin = 5;
+      numerator->Rebin(rebin);
+      denominator->Rebin(rebin);
+      TH1* ratio = (TH1*)numerator->Clone();
+      ratio->Divide(denominator);
+      ratio->SetMarkerStyle(style[j]);
+      ratio->SetMarkerSize(1.5);
+      ratio->SetMarkerColor(colour[i]);
+      ratio->SetBarOffset(0.1*i);
+
+      ratio->GetXaxis()->SetRangeUser(200.,550.);
+      ratio->GetYaxis()->SetRangeUser(4.e-3,4.e-2);
+      
+//       if ( i < 3 ) {
+// 	for ( Int_t ii = 1; ii < ratio->GetNbinsX(); ++ii ) {
+// 	  double val = ratio->GetBinContent(ii);
+// 	  if ( val == 0. ) { continue; }
+// 	  if ( count < ngr ) { 
+// 	    double ht = ratio->GetBinLowEdge(ii);
+// // 	    if ( ht < 150. || ht > 650. ) { continue; }
+// 	    double temp = ( 2. * pt[i] ) / ( ht + pt[i] );
+// // 	    std::cout << " ht: " << ht 
+// // 		      << " pt: " << pt[i]
+// // 		      << " x3: " << temp
+// // 		      << std::endl;
+// 	    x3[count] = temp;
+// 	    r[count] = val;
+// 	    count++;
+// 	  }
+// 	}
+//       }
+      
+      canvas->cd();
+      if ( j == 0 ) ratio->Draw("");
+      else ratio->Draw("same");
+      loop++;
+      
+      std::stringstream leg;
+      if ( j == 0 ) {
+ 	leg << "p_{T}^{min} = " << pt[i] << " GeV, MC truth (N_{jets}^{reco} = 2)";
+      } else if ( j == 1 ) {
+ 	leg << "p_{T}^{min} = " << pt[i] << " GeV, MC truth (N_{jets}^{gen} = 2)";
+      } else if ( j == 2 ) {
+ 	leg << "p_{T}^{min} = " << pt[i] << " GeV, RECO";
+      }
+      legend->AddEntry( ratio, TString(leg.str()), "lep" );
+      
+    }
 
     if (0) {
 
@@ -104,20 +144,24 @@ int ratio2() {
 
     }
 
+    canvas->cd();
+    legend->Draw("same");
+    canvas->Update();
+    
+    canvas->SaveAs(TString(can.str()+".pdf"));
+    canvas->SaveAs(TString(can.str()+".png"));
+    canvas->SaveAs(TString(can.str()+".C"));
+    
   }
   
-  canvas->cd();
-  legend->Draw("same");
-  canvas->Update();
-
-  TCanvas* c2 = new TCanvas("C2");
-  c2->SetLogy();
-  c2->SetFillColor(0);
-  gStyle->SetOptStat(0);
-  if ( count > 0 ) {
-    TGraph* graph = new TGraph(count,x3,r); 
-    graph->Draw("a*");
-  }
+//   TCanvas* c2 = new TCanvas("C2");
+//   c2->SetLogy();
+//   c2->SetFillColor(0);
+//   gStyle->SetOptStat(0);
+//   if ( count > 0 ) {
+//     TGraph* graph = new TGraph(count,x3,r); 
+//     graph->Draw("a*");
+//   }
 
   
 }
