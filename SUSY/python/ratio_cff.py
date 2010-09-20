@@ -15,7 +15,7 @@ def createRatioPlots( ratio,
       pt_min = 20
       pt_max = 50
       pt_step = 10
-
+      
       # Define x3 from pT and HT defaults for analysis 
       x3_default = (2.*pt_default)/(ht_default+pt_default)
       factor = (2.-x3_default)/x3_default
@@ -39,21 +39,27 @@ def createRatioPlots( ratio,
                   pt1 = pt1_default * meff / meff_max
                   pt2 = pt2_default * meff / meff_max
 
-                  # Define histograms 
-                  dir = "Ratio"+str(alphat)+"Pt"+str(pt)
-                  ratio.append( RobPlottingOps( PSet(DirName = dir,
-                                                     MinObjects=2,
-                                                     MaxObjects=8,
-                                                     Ratio = True,
-                                                     MinJetPt = pt*1.,
-                                                     MinJetPt1 = pt1,
-                                                     MinJetPt2 = pt2,
-                                                     UseGen = truth,
-                                                     MinGenPt = pt_min*1.,
-                                                     MaxGenMET = 10.,
-                                                     AlphaTcut = (alphat/1000.),
-                                                     ).ps() ) )
+                  # Iterate through scaled pT values
+                  for jj in range(0.8,1.2,0.1) :
 
+                        # Define scaled pT values appropriate for given Meff
+                        pt1 *= jj
+                        pt2 *= jj
+                        
+                        # Define histograms 
+                        dir = "Ratio"+str(alphat)+"Pt"+str(pt)+"Scale"+str(jj)
+                        ratio.append( RobPlottingOps( PSet(DirName = dir,
+                                                           MinObjects=2,
+                                                           MaxObjects=8,
+                                                           Ratio = True,
+                                                           MinJetPt = pt*1.,
+                                                           MinJetPt1 = pt1,
+                                                           MinJetPt2 = pt2,
+                                                           UseGen = truth,
+                                                           MinGenPt = pt_min*1.,
+                                                           MaxGenMET = 10.,
+                                                           AlphaTcut = (alphat/1000.),
+                                                           ).ps() ) )
 
 def attachRatioPlots( ratio,
                       tree,
