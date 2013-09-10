@@ -1,0 +1,320 @@
+#ifndef hadronic_include_QcdBkgdEst_hh
+#define hadronic_include_QcdBkgdEst_hh
+
+#include "PlottingBase.hh"
+#include "Utils.hh"
+#include "Types.hh"
+#include <Math/PtEtaPhiE4D.h>
+
+class TH1D;
+class TH2D;
+
+typedef unsigned int uint;
+typedef std::vector<LorentzV> LorentzVs;
+typedef ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiE4D<float> > PtEtaPhiE;
+
+namespace temp { class mSuGraPlottingOps; } //@@ below!
+
+namespace Operation {
+
+  class QcdBkgdEst : public PlottingBase {
+    
+  public:
+    
+    QcdBkgdEst( const Utils::ParameterSet& );
+    ~QcdBkgdEst();
+    
+    void Start( Event::Data& );
+    bool Process( Event::Data& );
+    
+    std::ostream& Description( std::ostream& );
+    
+  private:
+
+    typedef std::vector<std::string> vstring;
+    typedef std::vector<vstring> vvstring;
+    int trigger( const Event::Data& ev, const vstring& triggers );
+    
+    void binning();
+    void BookHistos() {;} //@@ everything is done in Start()
+    
+    void calcDalitzVars( const std::vector<LorentzV>&, const std::vector<bool>&, const LorentzV&, double&, double& );
+
+    class DeadEcalRegion {
+    public:
+      double eta_;
+      double phi_;
+      int iEta_;
+      int iPhi_;
+      int nBadCells_;
+      DeadEcalRegion() : eta_(0.), phi_(0.), iEta_(0), iPhi_(0), nBadCells_(0) {;}
+      void print( std::stringstream& );
+    };
+
+    void deadEcalRegions();
+    double nearestDeadEcalRegion( LorentzV, int );
+    bool deadEcalCut( LorentzVs&, LorentzV, LorentzV, LorentzVs&, double, LorentzV );
+    bool deadEcalCutTanja( Event::Data&, LorentzVs&, LorentzV, LorentzV, LorentzVs&, double, LorentzV );
+    Double_t DeadECALDR(TString, float, float, int );
+    Double_t DeadECALDR( Event::Data&, float, float, int );
+    Double_t DeadECALDR_File( TString, float, float, int );
+    bool DeadECALCut( Event::Data&, std::vector<LorentzV>&, LorentzV, std::vector<LorentzV>& );
+    bool passVertexSumPtOverHt( Event::Data& ev, double ht = -1. );
+    
+    // Typedefs for nested vectors (1D = multiplicity, 2D = HT or Meff, 3D = HT/Meff bins, 4D = AlphaT)
+    typedef std::vector<TH1D*> vTH1D;
+    typedef std::vector<vTH1D> vvTH1D;
+    typedef std::vector<vvTH1D> vvvTH1D;
+    typedef std::vector<vvvTH1D> vvvvTH1D;
+    typedef std::vector<TH2D*> vTH2D;
+    typedef std::vector<vTH2D> vvTH2D;
+    typedef std::vector<vvTH2D> vvvTH2D;
+    typedef std::vector<vvvTH2D> vvvvTH2D;
+    
+    void fill( uint multi, double alpha_t, double at_cut, vTH1D&, double valx, double weight );
+    void fill( uint multi, vTH1D&, double valx, double weight );
+    void fill( uint multi, vTH2D&, double valx, double valy, double weight );
+    void fill2d( uint multi, vTH2D&, double x, double y, double weight );
+    
+    std::string ht( int );
+    std::string meff( int );
+    std::string at( int );
+    
+  private:
+
+    // Misc
+    bool doHtHistos_;
+    bool doMeffHistos_;
+    std::string dirName_;
+    uint nMin_;
+    uint nMax_;
+    bool verbose_;
+    int filter_;
+    bool gen_;
+    bool pthat_;
+    bool noQcd_;
+    bool noCleaningInDenom_;
+    bool susyScan_;
+    Utils::ParameterSet susyScanPSet_;
+    double norm_;
+    bool scale_;
+    bool scaleSignal_;
+    double maxGenMet_;
+    double minGenJetPt_;
+    double maxJetEta_;
+    double maxLeadingJetEta_;
+    double babyCut_;
+    int babyCutType_;
+
+    std::string deadEcalRegionsFile_;
+    double deadEcalRegionDrCut_;
+    std::vector<DeadEcalRegion> deadEcalRegions_;
+
+    double minJetPtCut_;
+    int nBadCells_;
+    bool useFile_;
+    std::string deadECALfile_;
+    double minBiasDeltaPhiCut_;
+    
+    // Analysis defaults (that define signal region)
+    std::vector<double> alphaT_; 
+    double ht_;
+    double meff_;
+    double pt1_;
+    double pt2_;
+    double pt3_;
+
+    // Binning
+    bool inclusive_;
+    uint htNbins_; 
+    double htXlow_; 
+    double htXhigh_; 
+    std::vector<double> htBins_; 
+    std::vector<double> htPt1Bins_; 
+    std::vector<double> htPt2Bins_; 
+    std::vector<double> htPt3Bins_; 
+    uint meffNbins_; 
+    double meffXlow_; 
+    double meffXhigh_; 
+    std::vector<double> meffBins_; 
+    std::vector<double> meffPt1Bins_; 
+    std::vector<double> meffPt2Bins_; 
+    std::vector<double> meffPt3Bins_; 
+
+    // pT hat    
+    vTH1D gPtHatAllEvents_;
+    
+    // Sanity Multiplicitycheck
+    vTH1D hHtCntr_; 
+    vTH1D hMeffCntr_; 
+    
+    // HT RECO histograms
+    vvTH1D hHtMultiplicity_; 
+    vvTH1D hHt_; 
+    vvTH1D hHtAfterDeadEcal_; 
+    vvTH1D hHtAfterBaby_; 
+    vvTH1D hHtAfterTrackless_; 
+    vTH2D hAlphaTVsHt_; 
+    vvvTH1D hBabyOverHtAfterDeadEcal_; 
+    vvvTH1D hBabyCutAfterDeadEcal_; 
+    vvvTH1D hBabyMhtOverMetAfterDeadEcal_;
+    vvvTH1D hPfMetAfterDeadEcal_; 
+    vvTH2D hHtDalitz_;
+    vvTH2D hHtDalitzAfterDeadEcal_;
+    vvTH2D hHtDalitzAfterBaby_;
+    vvTH1D hHtAlphaT_;
+    vvTH1D hHtAlphaTAfterDeadEcal_;
+    vvTH1D hHtAlphaTAfterBaby_;
+    std::vector<temp::mSuGraPlottingOps*> hHtSusyScan_;
+    
+    // HT GEN histograms
+    vvvTH1D gHtPtHat_;
+    vvTH1D gHtMultiplicity_; 
+    vvTH1D gHt_; 
+    vvTH1D gHtAfterBaby_; 
+    vTH2D gAlphaTVsHt_; 
+    vvvTH1D gBabyOverHt_; 
+    vvTH1D gHtNoMet_; 
+    vvTH1D gHtNoMetAfterBaby_; 
+    vTH2D gAlphaTVsHtNoMet_; 
+    vvvTH1D gBabyOverHtNoMet_; 
+    vvvTH1D gBabyMhtOverMet_; 
+    vvvTH1D gBabyMhtOverMetNoMet_; 
+    vvTH2D gHtDalitz_;
+    vvTH2D gHtDalitzAfterBaby_;
+    vvTH2D gHtDalitzNoMet_;
+    vvTH2D gHtDalitzNoMetAfterBaby_;
+    std::vector<temp::mSuGraPlottingOps*> gHtSusyScan_;
+    
+    // Meff RECO histograms
+    vvTH1D hMeffMultiplicity_; 
+    vvTH1D hMeff_; 
+    vvTH1D hMeffAfterDeadEcal_; 
+    vvTH1D hMeffAfterBaby_; 
+    vTH2D hAlphaTVsMeff_; 
+    vvvTH1D hBabyCaloOverMeffAfterDeadEcal_; 
+    vvvTH1D hBabyPfOverMeffAfterDeadEcal_; 
+    vvvTH1D hBabyPfOverMeffSqrtAfterDeadEcal_; 
+    vvTH2D hMeffDalitz_;
+    vvTH2D hMeffDalitzAfterDeadEcal_;
+    vvTH2D hMeffDalitzAfterBaby_;
+
+    // Meff GEN histograms
+    vvvTH1D gMeffPtHat_;
+    vvTH1D gMeffMultiplicity_; 
+    vvTH1D gMeff_; 
+    vvTH1D gMeffAfterBaby_; 
+    vTH2D gAlphaTVsMeff_; 
+    vvvTH1D gBabyOverMeff_; 
+    vvvTH1D gBabyOverMeffSqrt_; 
+    vvTH1D gMeffNoMet_; 
+    vvTH1D gMeffNoMetAfterBaby_; 
+    vTH2D gAlphaTVsMeffNoMet_; 
+    vvvTH1D gBabyOverMeffNoMet_; 
+    vvvTH1D gBabyOverMeffNoMetSqrt_; 
+    vvTH2D gMeffDalitz_;
+    vvTH2D gMeffDalitzAfterBaby_;
+    vvTH2D gMeffDalitzNoMet_;
+    vvTH2D gMeffDalitzNoMetAfterBaby_;
+
+    // Cntrs
+    double cntr_baseline;
+    double cntr_leading_jet_eta;
+    double cntr_odd_jet_veto;
+    double cntr_bad_muon_in_jet;
+    double cntr_leading_jet_pt;
+    double cntr_second_jet_pt;
+    double cntr_correct_reco_bin;
+    double cntr_jet_multiplicity;
+    double cntr_at;
+    double cntr_pass_dead_ecal;  
+    double cntr_pass_baby_cut;
+    double cntr_pass_pt_over_ht;
+
+    double cntr_baseline_gen;
+    double cntr_leading_jet_eta_gen;
+    double cntr_odd_jet_veto_gen;
+    double cntr_leading_jet_pt_gen;
+    double cntr_second_jet_pt_gen;
+    double cntr_correct_gen_bin;
+    double cntr_jet_multiplicity_gen;
+    double cntr_at_gen; 
+    double cntr_pass_baby_gen_cut;
+
+    bool addMuon;
+    vvstring signal_;
+    vvstring monitor_;
+    vstring names_;
+
+  }; 
+
+}
+
+namespace temp {
+
+  Double_t GetNLOCross(Double_t m0,Double_t m12, TString process, TString kFactorFile);
+  TString GetProcess(Event::Data& ev,int &genElectrons, int &genMuons);
+
+  class mSuGraPlottingOps : public PlottingBase {
+
+  public:
+    
+    mSuGraPlottingOps( const Utils::ParameterSet& );
+    ~mSuGraPlottingOps();
+    
+    void Start( Event::Data& );
+    bool Process( Event::Data& ev ) { return ProperProcess( ev ); }
+    bool ProperProcess( Event::Data&, int reco_jets = -1, int gen_jets = -1 );
+    
+    Double_t GetKfactor(Int_t m0, Int_t m12, TString process,TString kFactorFile);
+
+    std::ostream& Description( std::ostream& );
+
+  private:
+
+    void BookHistos();
+
+    std::string dirName_;
+    std::string mSuGraFile_;
+
+    bool verbose;
+
+    int genElectrons;
+    int genMuons;
+
+    std::vector<TH3D *> H_M0_M12_mChi;
+    std::vector<TH3D *> H_M0_M12_mChi_noweight;
+    std::vector<TH2D *> H_M0_M12_nn;
+    std::vector<TH2D *> H_M0_M12_ll;
+    std::vector<TH2D *> H_M0_M12_tb;
+    std::vector<TH2D *> H_M0_M12_bb;
+    std::vector<TH2D *> H_M0_M12_ns;
+    std::vector<TH2D *> H_M0_M12_ng;
+    std::vector<TH2D *> H_M0_M12_ss;
+    std::vector<TH2D *> H_M0_M12_sg;
+    std::vector<TH2D *> H_M0_M12_sb;
+    std::vector<TH2D *> H_M0_M12_gg;
+
+
+    std::vector<TH2D *> H_M0_M12_noweight;
+
+    std::vector<TH2D *> H_M0_M12_alphaT;
+    std::vector<TH2D *> H_M0_M12_MHT;
+    std::vector<TH2D *> H_M0_M12_MHTovHT;
+    std::vector<TH2D *> H_M0_M12_MissingTransverse;
+    std::vector<TH2D *> H_M0_M12_ThrustDeltaPhi;
+    int    xBins_;
+    double xLow_;
+    double xHigh_;
+    int    yBins_;
+    double yLow_;
+    double yHigh_;
+    int    zBins_;
+    double zLow_;
+    double zHigh_;
+
+  }; //~mSuGra scan class
+  
+}
+
+#endif // hadronic_include_QcdBkgdEst_hh

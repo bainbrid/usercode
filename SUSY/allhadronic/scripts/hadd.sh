@@ -1,0 +1,20 @@
+hadd Ratio__ewk_wjets_50pc.root Ratio__wjets_50pc.root Ratio__zinv.root Ratio__ttbar.root
+hadd Ratio__ewk_zinv_50pc.root Ratio__wjets.root Ratio__zinv_50pc.root Ratio__ttbar.root
+hadd Ratio__ewk_ttbar_50pc.root Ratio__wjets.root Ratio__zinv.root Ratio__ttbar_50pc.root
+hadd Ratio__ewk_top_50pc.root Ratio__wjets.root Ratio__zinv.root Ratio__top_50pc.root
+
+hadd Ratio__ewk_wjets_150pc.root Ratio__wjets_150pc.root Ratio__zinv.root Ratio__ttbar.root
+hadd Ratio__ewk_zinv_150pc.root Ratio__wjets.root Ratio__zinv_150pc.root Ratio__ttbar.root
+hadd Ratio__ewk_ttbar_150pc.root Ratio__wjets.root Ratio__zinv.root Ratio__ttbar_150pc.root
+hadd Ratio__ewk_top_150pc.root Ratio__wjets.root Ratio__zinv.root Ratio__top_150pc.root
+
+hadd Ratio__sm_wjets_50pc.root Ratio__ewk_wjets_50pc.root Ratio__qcd_pythia.root
+hadd Ratio__sm_zinv_50pc.root Ratio__ewk_zinv_50pc.root Ratio__qcd_pythia.root
+hadd Ratio__sm_ttbar_50pc.root Ratio__ewk_ttbar_50pc.root Ratio__qcd_pythia.root
+hadd Ratio__sm_top_50pc.root Ratio__ewk_top_50pc.root Ratio__qcd_pythia.root
+
+hadd Ratio__sm_wjets_150pc.root Ratio__ewk_wjets_150pc.root Ratio__qcd_pythia.root
+hadd Ratio__sm_zinv_150pc.root Ratio__ewk_zinv_150pc.root Ratio__qcd_pythia.root
+hadd Ratio__sm_ttbar_150pc.root Ratio__ewk_ttbar_150pc.root Ratio__qcd_pythia.root
+hadd Ratio__sm_top_150pc.root Ratio__ewk_top_150pc.root Ratio__qcd_pythia.root
+
